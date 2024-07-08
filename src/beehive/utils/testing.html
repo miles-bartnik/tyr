@@ -1,0 +1,53 @@
+<dl class="py method">
+    <dt id="h3pandas.h3pandas.H3Accessor.geo_to_h3">
+    <code class="sig-name descname"><span class="pre">geo_to_h3</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat_col</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'lat'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lng_col</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'lng'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas.core.frame.DataFrame</span><span class="p"><span class="pre">,</span> </span><span class="pre">geopandas.geodataframe.GeoDataFrame</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="_modules/h3pandas/h3pandas.html#H3Accessor.geo_to_h3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#h3pandas.h3pandas.H3Accessor.geo_to_h3" title="Permalink to this definition">¶</a></dt>
+    <dd><p>Description</p>
+    <dl class="field-list simple">
+    <dt class="field-odd">Parameters</dt>
+    <dd class="field-odd"><dl class="simple">
+    <dt><strong>Parameter 1</strong><span class="classifier">int</span></dt><dd><p>parameter 1 description</p>
+    </dd>
+    <dt><strong>Parameter 2</strong><span class="classifier">str</span></dt><dd><p>parameter 2 description</p>
+    </dd>
+    </dl>
+    </dd>
+    <dt class="field-even">Returns</dt>
+    <dd class="field-even"><dl class="simple">
+    <dt>Returns 1</dt><dd></dd>
+    <dt>Returns 2</dt><dd></dd>
+    </dl>
+    </dd>
+    </dl>
+    <div class="admonition seealso">
+    <p class="admonition-title">See also</p>
+    <dl class="simple">
+    <dt><a class="reference internal" href="#See Also href" title="See Also title"><code class="xref py py-obj docutils literal notranslate"><span class="pre">See Also 1</span></code></a></dt><dd><p>See Also 1 description</p>
+    </dd>
+    </dl>
+    </div>
+    <p class="rubric">Examples</p>
+    <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">51</span><span class="p">],</span> <span class="s1">&#39;lng&#39;</span><span class="p">:[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">]})</span>
+    <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">h3</span><span class="o">.</span><span class="n">geo_to_h3</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+    <span class="go">                 lat  lng</span>
+    <span class="go">h3_08</span>
+    <span class="go">881e309739fffff   50   14</span>
+    <span class="go">881e2659c3fffff   51   15</span>
+    </pre></div>
+    </div>
+    <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">h3</span><span class="o">.</span><span class="n">geo_to_h3</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">set_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="go">   lat  lng            h3_08</span>
+    <span class="go">0   50   14  881e309739fffff</span>
+    <span class="go">1   51   15  881e2659c3fffff</span>
+    </pre></div>
+    </div>
+    <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">({</span><span class="s1">&#39;val&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span>
+    <span class="gp">&gt;&gt;&gt; </span><span class="n">geometry</span><span class="o">=</span><span class="n">gpd</span><span class="o">.</span><span class="n">points_from_xy</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">14</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">51</span><span class="p">)))</span>
+    <span class="gp">&gt;&gt;&gt; </span><span class="n">gdf</span><span class="o">.</span><span class="n">h3</span><span class="o">.</span><span class="n">geo_to_h3</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+    <span class="go">                 val                   geometry</span>
+    <span class="go">h3_08</span>
+    <span class="go">881e309739fffff    5  POINT (14.00000 50.00000)</span>
+    <span class="go">881e2659c3fffff    1  POINT (15.00000 51.00000)</span>
+    </pre></div>
+    </div>
+    </dd>
+</dl>

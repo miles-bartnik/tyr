@@ -1,0 +1,38 @@
+duckdb	sql	postgres
+%a		
+%A		
+%b		
+%B		
+%c		
+%d	DD	DD
+%-d		
+%f		
+%g	nnn	ZZZ
+%G		
+%H	hh	hh
+%-H		
+%I		
+%-I		
+%j		
+%-j		
+%m	MM	MM
+%-m		
+%M	mm	mm
+%-m		
+%n		
+%p		
+%S	ss	ss
+%-S		
+%u		
+%U		
+%V		
+%w		
+%W		
+%x		
+%X		
+%y	YY	YY
+%-y		
+%Y	YYYY	YYYY
+%z		
+%Z		
+%%		
