@@ -1,6 +1,6 @@
-from ..lineage import core as lineage
-from ..lineage import values as lineage_values
-from ..lineage import expressions as lineage_expressions
+from ...lineage import core as lineage
+from ...lineage import values as lineage_values
+from ...lineage import expressions as lineage_expressions
 from typing import List as TypingList, Any
 import re
 import pandas as pd
@@ -178,7 +178,12 @@ class EpochMSToTimestamp(lineage._Function):
         self,
         source,
     ):
-        super().__init__(name="EPOCH_MS", args=[source], var_type=source.var_type)
+        super().__init__(
+            name="EPOCH_MS",
+            args=[source],
+            var_type=source.var_type,
+            data_type=lineage_values.Datatype("TIMESTAMP"),
+        )
 
 
 class EpochToTimestamp(lineage._Function):
@@ -186,7 +191,12 @@ class EpochToTimestamp(lineage._Function):
         self,
         source,
     ):
-        super().__init__(name="EPOCH", args=[source], var_type=source.var_type)
+        super().__init__(
+            name="TO_TIMESTAMP",
+            args=[source],
+            var_type=source.var_type,
+            data_type=lineage_values.Datatype("TIMESTAMP"),
+        )
 
 
 class TimestampToEpochMS(lineage._Function):

@@ -24,45 +24,51 @@ class Union:
                     self.ctes.add(cte)
 
         if self.columns.is_empty:
-            columns = lineage_columns.select_all(
-                lineage.ColumnList(
-                    self.tables.list_all()[0].columns[
-                        list(
-                            set.intersection(
-                                *map(
-                                    set,
-                                    [
-                                        table.columns.list_names()
-                                        for table in tables.list_all()
-                                    ],
+            columns = lineage.ColumnList(
+                [
+                    lineage_columns.Select(column)
+                    for column in lineage.ColumnList(
+                        self.tables.list_all()[0].columns[
+                            list(
+                                set.intersection(
+                                    *map(
+                                        set,
+                                        [
+                                            table.columns.list_names()
+                                            for table in tables.list_all()
+                                        ],
+                                    )
                                 )
                             )
-                        )
-                    ]
-                )
+                        ]
+                    ).list_all()
+                ]
             )
         else:
-            columns = lineage_columns.select_all(
-                lineage.ColumnList(
-                    self.tables.list_all()[0].columns[
-                        list(
-                            set.intersection(
-                                *map(
-                                    set,
-                                    [
+            columns = lineage.ColumnList(
+                [
+                    lineage_columns.Select(column)
+                    for column in lineage.ColumnList(
+                        self.tables.list_all()[0].columns[
+                            list(
+                                set.intersection(
+                                    *map(
+                                        set,
                                         [
-                                            column.name
-                                            for column in table.columns[
-                                                self.columns.list_names()
+                                            [
+                                                column.name
+                                                for column in table.columns[
+                                                    self.columns.list_names()
+                                                ]
                                             ]
-                                        ]
-                                        for table in tables.list_all()
-                                    ],
+                                            for table in tables.list_all()
+                                        ],
+                                    )
                                 )
                             )
-                        )
-                    ]
-                )
+                        ]
+                    )
+                ]
             )
 
         for column in columns.list_all():
