@@ -6,99 +6,6 @@ from typing import List
 import networkx as nx
 
 
-class Union:
-    def __init__(
-        self,
-        tables: lineage.TableList,
-        columns: lineage.ColumnList = lineage.ColumnList([]),
-        primary_key: lineage.ColumnList = lineage.ColumnList([]),
-        distinct: bool = False,
-    ) -> None:
-        self.columns = columns
-        self.tables = tables
-        self.ctes = lineage.TableList([])
-
-        for table in self.tables.list_all():
-            for cte in table.ctes.list_all():
-                if not cte.name in self.ctes.list_names():
-                    self.ctes.add(cte)
-
-        if self.columns.is_empty:
-            columns = lineage.ColumnList(
-                [
-                    lineage_columns.Select(column)
-                    for column in lineage.ColumnList(
-                        self.tables.list_all()[0].columns[
-                            list(
-                                set.intersection(
-                                    *map(
-                                        set,
-                                        [
-                                            table.columns.list_names()
-                                            for table in tables.list_all()
-                                        ],
-                                    )
-                                )
-                            )
-                        ]
-                    ).list_all()
-                ]
-            )
-        else:
-            columns = lineage.ColumnList(
-                [
-                    lineage_columns.Select(column)
-                    for column in lineage.ColumnList(
-                        self.tables.list_all()[0].columns[
-                            list(
-                                set.intersection(
-                                    *map(
-                                        set,
-                                        [
-                                            [
-                                                column.name
-                                                for column in table.columns[
-                                                    self.columns.list_names()
-                                                ]
-                                            ]
-                                            for table in tables.list_all()
-                                        ],
-                                    )
-                                )
-                            )
-                        ]
-                    )
-                ]
-            )
-
-        for column in columns.list_all():
-            for table in tables.list_all():
-                if column.name in table.columns.list_names():
-                    if (
-                        column.data_type.name
-                        == table.columns[column.name].data_type.name
-                    ):
-                        pass
-
-                    else:
-                        raise ValueError(rf"""{column.name} has mixed datatypes""")
-
-        self.columns = columns
-
-        self.distinct = distinct
-
-        self.name = rf"SELECT {', '.join(self.columns.list_names())} FROM {' UNION '.join(self.tables.list_names())}"
-
-    def _node_data(self):
-        return {"type": str(type(self))}
-
-    def _outbound_edge_data(self):
-        return {}
-
-    def _inbound_edge_data(self):
-        return {}
-
-
 class Join:
     def __init__(
         self,
@@ -141,9 +48,9 @@ class Join:
         return {}
 
 
-class JoinList:
+class CompoundJoin:
     def __init__(self, joins: List[Join]):
-        self.name = rf"JOIN LIST - {id(self)}"
+        self.name = rf"COMPOUND JOIN - {id(self)}"
         self.joins = joins
 
         self.columns = lineage.ColumnList([])

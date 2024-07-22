@@ -4,11 +4,10 @@ from ...lineage import core as lineage
 from ...lineage import values as lineage_values
 from ...lineage import functions as lineage_functions
 from ...lineage import columns as lineage_columns
-from ...lineage import aggregates as lineage_aggregates
 from ...lineage import expressions as lineage_expressions
 from ...lineage import operators as lineage_operators
 from ...lineage import tables as lineage_tables
-from ...lineage import combinations as lineage_combinations
+from ...lineage import joins as lineage_combinations
 from .functions import interpolate
 
 import numpy as np
@@ -40,8 +39,8 @@ def event_time_interval_transform(
         columns=lineage.ColumnList(
             lineage_columns.select_all(source.columns).list_all()
             + [
-                lineage_columns.Expand(
-                    source=lineage_functions.Lag(
+                lineage_columns.Core(
+                    source=lineage_functions.window.Lag(
                         source=lineage_columns.Select(column),
                         partition_by=lineage.PartitionBy(
                             lineage.ColumnList(
@@ -76,12 +75,14 @@ def event_time_interval_transform(
         source=lineage_tables.Select(base),
         columns=lineage.ColumnList(
             [
-                lineage_columns.Select(column)
+                lineage_columns.Core(
+                    name=column.name, source=lineage_columns.Select(column)
+                )
                 for column in base.columns[base.primary_key.list_names()]
             ]
             + [
-                lineage_columns.Expand(
-                    source=lineage_functions.Lag(
+                lineage_columns.Core(
+                    source=lineage_functions.window.Lag(
                         source=lineage_columns.Select(base.event_time),
                         order_by=lineage.OrderBy(
                             columns=lineage.ColumnList(
@@ -102,16 +103,16 @@ def event_time_interval_transform(
                     ),
                     name=rf"lag_{base.event_time.name}",
                 ),
-                lineage_columns.Expand(
-                    source=lineage_functions.DateBin(
+                lineage_columns.Core(
+                    source=lineage_functions.datetime.DateBin(
                         source=lineage_columns.Select(base.event_time),
                         interval=interval,
                     ),
                     name=rf"trunc_{base.event_time.name}",
                 ),
-                lineage_columns.Expand(
-                    source=lineage_functions.DateBin(
-                        source=lineage_functions.Lag(
+                lineage_columns.Core(
+                    source=lineage_functions.datetime.DateBin(
+                        source=lineage_functions.window.Lag(
                             source=lineage_columns.Select(base.event_time),
                             order_by=lineage.OrderBy(
                                 columns=lineage.ColumnList(
@@ -134,25 +135,25 @@ def event_time_interval_transform(
                     ),
                     name=rf"trunc_lag_{base.event_time.name}",
                 ),
-                lineage_columns.Expand(
+                lineage_columns.Core(
                     source=lineage.CaseWhen(
                         conditions=[
                             lineage.Condition(
                                 checks=[
                                     lineage_expressions.LessThan(
-                                        left=lineage_functions.Multiply(
+                                        left=lineage_functions.math.Multiply(
                                             left=lineage_values.Interval(
                                                 value=1,
                                                 unit=interval.unit,
                                             ),
-                                            right=lineage_functions.DateDiff(
-                                                start=lineage_functions.DateBin(
+                                            right=lineage_functions.datetime.DateDiff(
+                                                start=lineage_functions.datetime.DateBin(
                                                     source=lineage_columns.Select(
                                                         base.event_time
                                                     ),
                                                     interval=interval,
                                                 ),
-                                                end=lineage_functions.Lag(
+                                                end=lineage_functions.window.Lag(
                                                     source=lineage_columns.Select(
                                                         base.event_time
                                                     ),
@@ -184,7 +185,7 @@ def event_time_interval_transform(
                                                 unit=interval.unit,
                                             ),
                                         ),
-                                        right=lineage_functions.Multiply(
+                                        right=lineage_functions.math.Multiply(
                                             left=lineage_values.Integer(
                                                 max_n_intervals
                                             ),
@@ -192,19 +193,19 @@ def event_time_interval_transform(
                                         ),
                                     ),
                                     lineage_expressions.GreaterThan(
-                                        left=lineage_functions.Multiply(
+                                        left=lineage_functions.math.Multiply(
                                             left=lineage_values.Interval(
                                                 value=1,
                                                 unit=interval.unit,
                                             ),
-                                            right=lineage_functions.DateDiff(
-                                                start=lineage_functions.DateBin(
+                                            right=lineage_functions.datetime.DateDiff(
+                                                start=lineage_functions.datetime.DateBin(
                                                     source=lineage_columns.Select(
                                                         base.event_time
                                                     ),
                                                     interval=interval,
                                                 ),
-                                                end=lineage_functions.Lag(
+                                                end=lineage_functions.window.Lag(
                                                     source=lineage_columns.Select(
                                                         base.event_time
                                                     ),
@@ -243,12 +244,12 @@ def event_time_interval_transform(
                             )
                         ],
                         values=[
-                            lineage_functions.Range(
-                                start=lineage_functions.DateBin(
+                            lineage_functions.array.Range(
+                                start=lineage_functions.datetime.DateBin(
                                     source=lineage_columns.Select(base.event_time),
                                     interval=interval,
                                 ),
-                                end=lineage_functions.Lag(
+                                end=lineage_functions.window.Lag(
                                     source=lineage_columns.Select(base.event_time),
                                     order_by=lineage.OrderBy(
                                         columns=lineage.ColumnList(
@@ -272,7 +273,7 @@ def event_time_interval_transform(
                         ],
                         else_value=lineage_values.List(
                             values=[
-                                lineage_functions.DateBin(
+                                lineage_functions.datetime.DateBin(
                                     source=lineage_columns.Select(base.event_time),
                                     interval=interval,
                                 )
@@ -295,12 +296,14 @@ def event_time_interval_transform(
         source=lineage_tables.Select(date_arrays),
         columns=lineage.ColumnList(
             [
-                lineage_columns.Select(column)
+                lineage_columns.Core(
+                    name=column.name, source=lineage_columns.Select(column)
+                )
                 for column in date_arrays.primary_key.list_all()
             ]
             + [
-                lineage_columns.Expand(
-                    source=lineage_functions.Unnest(
+                lineage_columns.Core(
+                    source=lineage_functions.array.Unnest(
                         source=lineage_columns.Select(date_arrays.columns.date_array)
                     ),
                     name=rf"trunc_{date_arrays.event_time.name}",
@@ -342,12 +345,14 @@ def event_time_interval_transform(
         ),
         columns=lineage.ColumnList(
             [
-                lineage_columns.Select(column)
+                lineage_columns.Core(
+                    name=column.name, source=lineage_columns.Select(column)
+                )
                 for column in unnested_arrays.columns.list_all()
             ]
             + [
-                lineage_columns.Expand(
-                    source=lineage_functions.RowNumber(
+                lineage_columns.Core(
+                    source=lineage_functions.window.RowNumber(
                         partition_by=lineage.PartitionBy(
                             lineage.ColumnList(
                                 [
@@ -403,12 +408,14 @@ def event_time_interval_transform(
         event_time=lineage_columns.Select(row_number_assigned.event_time),
         columns=lineage.ColumnList(
             [
-                lineage_columns.Select(column)
+                lineage_columns.Core(
+                    name=column.name, source=lineage_columns.Select(column)
+                )
                 for column in row_number_assigned.primary_key.list_all()
             ]
             + [
-                lineage_columns.Expand(
-                    source=lineage_aggregates.Maximum(
+                lineage_columns.Core(
+                    source=lineage_functions.aggregate.Maximum(
                         source=lineage_columns.Select(
                             row_number_assigned.columns.row_num
                         )
@@ -431,7 +438,7 @@ def event_time_interval_transform(
                 max_row_number,
             ]
         ),
-        source=lineage_combinations.JoinList(
+        source=lineage_combinations.CompoundJoin(
             [
                 lineage_combinations.Join(
                     join_expression=lineage_expressions.LeftJoin(
@@ -483,20 +490,26 @@ def event_time_interval_transform(
         ),
         columns=lineage.ColumnList(
             [
-                lineage_columns.Select(column)
+                lineage_columns.Core(
+                    name=column.name, source=lineage_columns.Select(column)
+                )
                 for column in row_number_assigned.static_primary_key.list_all()
             ]
             + [
-                lineage_columns.Select(
-                    row_number_assigned.columns[
-                        rf"trunc_{row_number_assigned.event_time.name}"
-                    ],
-                    alias=row_number_assigned.event_time.name,
-                    var_type="timestamp",
+                lineage_columns.Core(
+                    name=row_number_assigned.event_time.name,
+                    source=lineage_columns.Select(
+                        row_number_assigned.columns[
+                            rf"trunc_{row_number_assigned.event_time.name}"
+                        ],
+                        var_type="timestamp",
+                    ),
                 ),
             ]
             + [
-                lineage_columns.Select(column)
+                lineage_columns.Core(
+                    name=column.name, source=lineage_columns.Select(column)
+                )
                 for column in base.columns.list_all()
                 if column.name[:4] != "lag_"
                 and column.name not in base.primary_key.list_names()
@@ -547,7 +560,9 @@ def event_time_interval_transform(
         source=lineage_tables.Select(transformed),
         columns=lineage.ColumnList(
             [
-                lineage_columns.Select(column)
+                lineage_columns.Core(
+                    name=column.name, source=lineage_columns.Select(column)
+                )
                 for column in transformed.columns.list_all()
             ]
         ),
@@ -570,12 +585,12 @@ def mapping(mapping_df: pd.DataFrame, columns: lineage.ColumnList):
         name=rf"{'_'.join(mapping_df.columns.tolist())}_mapping",
         columns=lineage.ColumnList(
             [
-                lineage_columns.Expand(
+                lineage_columns.Core(
                     name=column.name,
-                    source=lineage_functions.Unnest(
+                    source=lineage_functions.array.Unnest(
                         lineage_values.List(
                             [
-                                lineage_functions.Cast(
+                                lineage_functions.data_type.Cast(
                                     source=lineage_values.Varchar(str(value)),
                                     data_type=column.data_type,
                                 )
@@ -602,9 +617,9 @@ def date_vector_table(start_time, n_records: int, interval):
                             name="date",
                             var_type="timestamp",
                             data_type=lineage_values.Datatype("TIMESTAMP"),
-                        ): lineage_functions.DateAdd(
+                        ): lineage_functions.datetime.DateAdd(
                             start_time,
-                            lineage_functions.Multiply(
+                            lineage_functions.math.Multiply(
                                 lineage_values.Integer(i), interval
                             ),
                         )
@@ -622,10 +637,15 @@ def forward_fill(source):
         source=lineage_tables.Select(source),
         ctes=lineage.TableList([source]),
         columns=lineage.ColumnList(
-            [lineage_columns.Select(column) for column in source.columns.list_all()]
+            [
+                lineage_columns.Core(
+                    name=column.name, source=lineage_columns.Select(column)
+                )
+                for column in source.columns.list_all()
+            ]
             + [
-                lineage_columns.Expand(
-                    lineage_functions.Count(
+                lineage_columns.Core(
+                    lineage_functions.aggregate.Count(
                         source=lineage_columns.Select(column),
                         partition_by=lineage.PartitionBy(
                             lineage.ColumnList(
@@ -664,12 +684,14 @@ def forward_fill(source):
         ),
         columns=lineage.ColumnList(
             [
-                lineage_columns.Select(column)
+                lineage_columns.Core(
+                    name=column.name, source=lineage_columns.Select(column)
+                )
                 for column in source_grouped.primary_key.list_all()
             ]
             + [
-                lineage_columns.Expand(
-                    source=lineage_aggregates.Maximum(
+                lineage_columns.Core(
+                    source=lineage_functions.aggregate.Maximum(
                         lineage_columns.Select(source_grouped.columns[column.name]),
                         partition_by=lineage.PartitionBy(
                             lineage.ColumnList(

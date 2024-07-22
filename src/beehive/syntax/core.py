@@ -14,17 +14,17 @@ def selector(item):
     elif type(item).__bases__[0] is lineage.core._BlankColumn:
         function_name = "columns_blank"
 
-    elif type(item) is lineage.core.DataFrame:
-        function_name = "core_data_frame"
-
     # COLUMNS
 
     elif type(item).__bases__[0] is lineage.core._Column:
         if type(item) is lineage.columns.Select:
             function_name = "column_select"
 
-        elif type(item) is lineage.columns.Expand:
-            function_name = "column_expand"
+        elif type(item) is lineage.columns.Core:
+            function_name = "columns_core"
+
+        elif type(item) is lineage.columns.Blank:
+            function_name = "columns_blank"
 
     # VALUES
 
@@ -52,9 +52,6 @@ def selector(item):
 
         elif type(item) is lineage.values.Interval:
             function_name = "values_interval"
-
-        elif type(item) is lineage.values.Limit:
-            function_name = "values_limit"
 
         elif type(item) is lineage.values.List:
             function_name = "values_list"
@@ -97,28 +94,33 @@ def selector(item):
         elif type(item) is lineage.tables.FromRecords:
             function_name = "tables_from_records"
 
+        elif type(item) is lineage.tables.Union:
+            function_name = "unions_union"
+
     # FUNCTIONS
 
     elif type(item).__bases__[0] is lineage.core._Function:
         if type(item) not in [
-            lineage.functions.ToInterval,
-            lineage.functions.ListExtract,
-            lineage.functions.JSONExtract,
-            lineage.functions.RowNumber,
+            lineage.functions.data_type.ToInterval,
+            lineage.functions.array.ListExtract,
+            lineage.functions.json.JSONExtract,
+            lineage.functions.window.RowNumber,
+            lineage.functions.union.UnionColumn,
+            lineage.functions.string.StringExtract,
         ]:
             function_name = "core_function"
-        elif type(item) is lineage.functions.ToInterval:
+        elif type(item) is lineage.functions.data_type.ToInterval:
             function_name = "functions_to_interval"
-        elif type(item) is lineage.functions.ListExtract:
+        elif type(item) is lineage.functions.array.ListExtract:
             function_name = "functions_list_extract"
-        elif type(item) is lineage.functions.JSONExtract:
+        elif type(item) is lineage.functions.json.JSONExtract:
             function_name = "functions_json_extract"
-        elif type(item) is lineage.functions.RowNumber:
+        elif type(item) is lineage.functions.window.RowNumber:
             function_name = "functions_row_number"
-    # AGGREGATES
-
-    elif type(item).__bases__[0] is lineage.core._Aggregate:
-        function_name = "core_aggregate"
+        elif type(item) is lineage.functions.union.UnionColumn:
+            function_name = "unions_union_column"
+        elif type(item) is lineage.functions.string.StringExtract:
+            function_name = "functions_list_extract"
 
     # EXPRESSIONS
     elif type(item).__bases__[0] is lineage.core._Expression:
@@ -128,18 +130,14 @@ def selector(item):
     elif type(item).__bases__[0] is lineage.core._Operator:
         function_name = "core_operator"
 
-    # COMBINATIONS
-    elif type(item) is lineage.combinations.Join:
-        function_name = "combinations_join"
+    # JOINS
+    elif type(item) is lineage.joins.Join:
+        function_name = "joins_join"
 
-    elif type(item) is lineage.combinations.JoinList:
-        function_name = "combinations_join_list"
-
-    elif type(item) is lineage.combinations.Union:
-        function_name = "combinations_union"
+    elif type(item) is lineage.joins.CompoundJoin:
+        function_name = "joins_compound_join"
 
     # CORE
-
     elif type(item) is lineage.core.CaseWhen:
         function_name = "core_case_when"
 
@@ -163,6 +161,23 @@ def selector(item):
 
     elif type(item) is lineage.core.RecordGenerator:
         function_name = "core_record_generator"
+
+    # TRANSFORMATIONS
+    elif type(item) is lineage.transformations.Limit:
+        function_name = "transformations_limit"
+
+    elif type(item) is lineage.transformations.ReadCSV:
+        function_name = "transformations_read_csv"
+
+    # DATAFRAMES
+    elif type(item) is lineage.dataframes.DataFrame:
+        function = "dataframes_data_frame"
+
+    elif type(item) is lineage.dataframes.DataFrameColumn:
+        function = "dataframes_data_frame_column"
+
+    elif type(item) is lineage.dataframes.LambdaOutput:
+        function = "dataframes_lambda_output"
 
     else:
         raise ValueError("COULD NOT PARSE - ", type(item))

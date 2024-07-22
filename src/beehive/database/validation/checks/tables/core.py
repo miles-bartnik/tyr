@@ -5,7 +5,7 @@ from .....beeswax import lineage
 def primary_key_completeness(
     source: lineage.core._Table, scope: str, granularity: lineage.values.Interval = None
 ):
-    result = lineage.macros.aggregates.distinct_proportion(
+    result = lineage.macros.functions.aggregate.distinct_proportion(
         source=lineage.values.Tuple(
             values=lineage.columns.select_all(source.primary_key).list_all()
         )
@@ -33,10 +33,10 @@ def event_time_standard_deviation(
     source: lineage.core._Table, scope: str, granularity: lineage.values.Interval = None
 ):
     if source.event_time.data_type.value in ["TIMESTAMP"]:
-        result = lineage.functions.ToInterval(
-            source=lineage.functions.Cast(
-                source=lineage.aggregates.StandardDeviation(
-                    source=lineage.functions.TimestampToEpochMS(
+        result = lineage.functions.data_type.ToInterval(
+            source=lineage.functions.data_type.Cast(
+                source=lineage.functions.aggregate.StandardDeviation(
+                    source=lineage.functions.datetime.TimestampToEpochMS(
                         lineage.columns.Select(source.event_time)
                     )
                 ),
@@ -46,7 +46,7 @@ def event_time_standard_deviation(
         )
 
     elif source.event_time.data_type.value in ["INTEGER", "FLOAT"]:
-        result = lineage.aggregates.StandardDeviation(
+        result = lineage.functions.aggregate.StandardDeviation(
             source=lineage.columns.Select(source.event_time)
         )
     else:

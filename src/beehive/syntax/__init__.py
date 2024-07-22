@@ -1,1 +1,1 @@
-from ..syntax import core as duckdb_syntax
+from . import core, duckdb, network, translate

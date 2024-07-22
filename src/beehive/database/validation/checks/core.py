@@ -39,10 +39,10 @@ class Check:
                     name=rf"check_insert",
                     columns=lineage.core.ColumnList(
                         [
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_name", source=lineage.values.Varchar(name)
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="tables_checked",
                                 source=lineage.values.List(
                                     [
@@ -51,7 +51,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="columns_checked",
                                 source=lineage.values.List(
                                     [
@@ -60,7 +60,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_result",
                                 source=result,
                             ),
@@ -69,10 +69,10 @@ class Check:
                     source=source,
                     primary_key=lineage.core.ColumnList(
                         [
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_name", source=lineage.values.Varchar(name)
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="tables_checked",
                                 source=lineage.values.List(
                                     [
@@ -81,7 +81,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="columns_checked",
                                 source=lineage.values.List(
                                     [
@@ -102,10 +102,10 @@ class Check:
                     name=rf"check_insert",
                     columns=lineage.core.ColumnList(
                         [
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_name", source=lineage.values.Varchar(name)
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="tables_checked",
                                 source=lineage.values.List(
                                     [
@@ -114,7 +114,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="entity_key",
                                 source=lineage.values.List(
                                     [
@@ -123,11 +123,11 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="entity_checked",
                                 source=lineage.values.List(
                                     [
-                                        lineage.functions.Cast(
+                                        src.beehive.beeswax.lineage.functions.functions.Cast(
                                             lineage.columns.Select(column),
                                             data_type=lineage.values.Datatype(
                                                 "VARCHAR"
@@ -137,7 +137,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="columns_checked",
                                 source=lineage.values.List(
                                     [
@@ -146,7 +146,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_result",
                                 source=result,
                             ),
@@ -154,10 +154,10 @@ class Check:
                     ),
                     primary_key=lineage.core.ColumnList(
                         [
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_name", source=lineage.values.Varchar(name)
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="tables_checked",
                                 source=lineage.values.List(
                                     [
@@ -166,11 +166,11 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="entity_checked",
                                 source=lineage.values.List(
                                     [
-                                        lineage.functions.Cast(
+                                        src.beehive.beeswax.lineage.functions.functions.Cast(
                                             lineage.columns.Select(column),
                                             data_type=lineage.values.Datatype(
                                                 "VARCHAR"
@@ -191,10 +191,10 @@ class Check:
                     name=rf"check_insert",
                     columns=lineage.core.ColumnList(
                         [
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_name", source=lineage.values.Varchar(name)
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="tables_checked",
                                 source=lineage.values.List(
                                     [
@@ -203,22 +203,22 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="event_time_column",
                                 source=lineage.values.Varchar(
                                     tables_checked.list_all()[0].event_time.name
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="event_time",
-                                source=lineage.functions.DateBin(
+                                source=src.beehive.beeswax.lineage.functions.functions.DateBin(
                                     source=lineage.columns.Select(
                                         tables_checked.list_all()[0].event_time
                                     ),
                                     interval=granularity,
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="columns_checked",
                                 source=lineage.values.List(
                                     [
@@ -227,7 +227,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_result",
                                 source=result,
                             ),
@@ -236,10 +236,10 @@ class Check:
                     source=source,
                     primary_key=lineage.core.ColumnList(
                         [
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_name", source=lineage.values.Varchar(name)
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="tables_checked",
                                 source=lineage.values.List(
                                     [
@@ -248,7 +248,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="columns_checked",
                                 source=lineage.values.List(
                                     [
@@ -257,15 +257,15 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="event_time_column",
                                 source=lineage.values.Varchar(
                                     tables_checked.list_all()[0].event_time.name
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="event_time",
-                                source=lineage.functions.DateBin(
+                                source=src.beehive.beeswax.lineage.functions.functions.DateBin(
                                     source=lineage.columns.Select(
                                         tables_checked.list_all()[0].event_time
                                     ),
@@ -284,10 +284,10 @@ class Check:
                     name=rf"check_insert",
                     columns=lineage.core.ColumnList(
                         [
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_name", source=lineage.values.Varchar(name)
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="tables_checked",
                                 source=lineage.values.List(
                                     [
@@ -296,22 +296,22 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="event_time_column",
                                 source=lineage.values.Varchar(
                                     tables_checked.list_all()[0].event_time.name
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="event_time",
-                                source=lineage.functions.DateBin(
+                                source=src.beehive.beeswax.lineage.functions.functions.DateBin(
                                     source=lineage.columns.Select(
                                         tables_checked.list_all()[0].event_time
                                     ),
                                     interval=granularity,
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="entity_key",
                                 source=lineage.values.List(
                                     [
@@ -320,11 +320,11 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="entity_checked",
                                 source=lineage.values.List(
                                     [
-                                        lineage.functions.Cast(
+                                        src.beehive.beeswax.lineage.functions.functions.Cast(
                                             lineage.columns.Select(column),
                                             data_type=lineage.values.Datatype(
                                                 "VARCHAR"
@@ -334,7 +334,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="columns_checked",
                                 source=lineage.values.List(
                                     [
@@ -343,7 +343,7 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_result",
                                 source=result,
                             ),
@@ -351,10 +351,10 @@ class Check:
                     ),
                     primary_key=lineage.core.ColumnList(
                         [
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="check_name", source=lineage.values.Varchar(name)
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="tables_checked",
                                 source=lineage.values.List(
                                     [
@@ -363,26 +363,26 @@ class Check:
                                     ]
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="event_time_column",
                                 source=lineage.values.Varchar(
                                     tables_checked.list_all()[0].event_time.name
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="event_time",
-                                source=lineage.functions.DateBin(
+                                source=src.beehive.beeswax.lineage.functions.functions.DateBin(
                                     source=lineage.columns.Select(
                                         tables_checked.list_all()[0].event_time
                                     ),
                                     interval=granularity,
                                 ),
                             ),
-                            lineage.columns.Expand(
+                            lineage.columns.Core(
                                 name="entity_checked",
                                 source=lineage.values.List(
                                     [
-                                        lineage.functions.Cast(
+                                        src.beehive.beeswax.lineage.functions.functions.Cast(
                                             lineage.columns.Select(column),
                                             data_type=lineage.values.Datatype(
                                                 "VARCHAR"

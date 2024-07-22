@@ -4,8 +4,7 @@ from ....lineage import expressions as lineage_expressions
 from ....lineage import functions as lineage_functions
 from ....lineage import values as lineage_values
 from ....lineage import tables as lineage_tables
-from ....lineage import aggregates as lineage_aggregates
-from ....lineage import combinations as lineage_combinations
+from ....lineage import joins as lineage_combinations
 from ....lineage import operators as lineage_operators
 
 
@@ -15,7 +14,7 @@ def significant_figures(source, value):
             lineage.Condition(
                 checks=[
                     lineage_expressions.Is(
-                        left=lineage_functions.AbsoluteValue(source),
+                        left=lineage_functions.math.AbsoluteValue(source),
                         right=lineage_values.Null(),
                     ),
                 ]
@@ -23,7 +22,7 @@ def significant_figures(source, value):
             lineage.Condition(
                 checks=[
                     lineage_expressions.NotEqual(
-                        left=lineage_functions.AbsoluteValue(source),
+                        left=lineage_functions.math.AbsoluteValue(source),
                         right=lineage_values.Float(0),
                     ),
                 ],
@@ -31,14 +30,16 @@ def significant_figures(source, value):
         ],
         values=[
             lineage_values.Null(data_type=lineage_values.Datatype("INTEGER")),
-            lineage_functions.Round(
+            lineage_functions.math.Round(
                 source=source,
-                precision=lineage_functions.Cast(
-                    lineage_functions.Subtract(
-                        lineage_functions.Subtract(value, lineage_values.Integer(1)),
-                        lineage_functions.Floor(
-                            lineage_functions.Log10(
-                                lineage_functions.AbsoluteValue(source),
+                precision=lineage_functions.data_type.Cast(
+                    lineage_functions.math.Subtract(
+                        lineage_functions.math.Subtract(
+                            value, lineage_values.Integer(1)
+                        ),
+                        lineage_functions.math.Floor(
+                            lineage_functions.math.Log10(
+                                lineage_functions.math.AbsoluteValue(source),
                             )
                         ),
                     ),
@@ -51,6 +52,6 @@ def significant_figures(source, value):
 
 
 def log_ab(source, base):
-    return lineage_functions.Divide(
-        lineage_functions.Log10(source), lineage_functions.Log10(base)
+    return lineage_functions.math.Divide(
+        lineage_functions.math.Log10(source), lineage_functions.math.Log10(base)
     )

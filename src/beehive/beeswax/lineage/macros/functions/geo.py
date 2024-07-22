@@ -4,8 +4,7 @@ from ....lineage import expressions as lineage_expressions
 from ....lineage import functions as lineage_functions
 from ....lineage import values as lineage_values
 from ....lineage import tables as lineage_tables
-from ....lineage import aggregates as lineage_aggregates
-from ....lineage import combinations as lineage_combinations
+from ....lineage import joins as lineage_combinations
 from ....lineage import operators as lineage_operators
 import pandas as pd
 
@@ -28,27 +27,27 @@ def point_from_distance_bearing(
         print(origin.data_type.__dict__)
         raise ValueError("origin must be either FLOAT[] or GEOMETRY")
 
-    latitude = lineage_functions.Round(
-        lineage_functions.Degrees(
-            lineage_functions.ASin(
-                lineage_functions.Add(
-                    lineage_functions.Multiply(
-                        lineage_functions.Sin(
-                            lineage_functions.Radians(
+    latitude = lineage_functions.math.Round(
+        lineage_functions.math.Degrees(
+            lineage_functions.math.ASin(
+                lineage_functions.math.Add(
+                    lineage_functions.math.Multiply(
+                        lineage_functions.math.Sin(
+                            lineage_functions.math.Radians(
                                 lineage_functions.ListExtract(
                                     origin,
                                     lineage_values.List([lineage_values.Integer(1)]),
                                 )
                             )
                         ),
-                        lineage_functions.Cos(
-                            lineage_functions.Divide(distance, radius)
+                        lineage_functions.math.Cos(
+                            lineage_functions.math.Divide(distance, radius)
                         ),
                     ),
-                    lineage_functions.Multiply(
-                        lineage_functions.Multiply(
-                            lineage_functions.Cos(
-                                lineage_functions.Radians(
+                    lineage_functions.math.Multiply(
+                        lineage_functions.math.Multiply(
+                            lineage_functions.math.Cos(
+                                lineage_functions.math.Radians(
                                     lineage_functions.ListExtract(
                                         origin,
                                         lineage_values.List(
@@ -57,11 +56,13 @@ def point_from_distance_bearing(
                                     )
                                 )
                             ),
-                            lineage_functions.Sin(
-                                lineage_functions.Divide(distance, radius)
+                            lineage_functions.math.Sin(
+                                lineage_functions.math.Divide(distance, radius)
                             ),
                         ),
-                        lineage_functions.Cos(lineage_functions.Radians(bearing)),
+                        lineage_functions.math.Cos(
+                            lineage_functions.math.Radians(bearing)
+                        ),
                     ),
                 )
             )
@@ -69,43 +70,45 @@ def point_from_distance_bearing(
         lineage_values.Integer(6),
     )
 
-    longitude = lineage_functions.Round(
-        lineage_functions.Degrees(
-            lineage_functions.Add(
-                lineage_functions.Radians(
-                    lineage_functions.ListExtract(
+    longitude = lineage_functions.math.Round(
+        lineage_functions.math.Degrees(
+            lineage_functions.math.Add(
+                lineage_functions.math.Radians(
+                    lineage_functions.array.ListExtract(
                         origin, lineage_values.List([lineage_values.Integer(2)])
                     )
                 ),
-                lineage_functions.ATan2(
-                    lineage_functions.Multiply(
-                        lineage_functions.Multiply(
-                            lineage_functions.Sin(lineage_functions.Radians(bearing)),
-                            lineage_functions.Sin(
-                                lineage_functions.Divide(distance, radius)
+                lineage_functions.math.ATan2(
+                    lineage_functions.math.Multiply(
+                        lineage_functions.math.Multiply(
+                            lineage_functions.math.Sin(
+                                lineage_functions.math.Radians(bearing)
+                            ),
+                            lineage_functions.math.Sin(
+                                lineage_functions.math.Divide(distance, radius)
                             ),
                         ),
-                        lineage_functions.Cos(
-                            lineage_functions.Radians(
-                                lineage_functions.ListExtract(
+                        lineage_functions.math.Cos(
+                            lineage_functions.math.Radians(
+                                lineage_functions.array.ListExtract(
                                     origin,
                                     lineage_values.List([lineage_values.Integer(1)]),
                                 )
                             )
                         ),
                     ),
-                    lineage_functions.Subtract(
-                        lineage_functions.Cos(
-                            lineage_functions.Divide(distance, radius)
+                    lineage_functions.math.Subtract(
+                        lineage_functions.math.Cos(
+                            lineage_functions.math.Divide(distance, radius)
                         ),
-                        lineage_functions.Multiply(
-                            lineage_functions.Sin(
-                                lineage_functions.ListExtract(
+                        lineage_functions.math.Multiply(
+                            lineage_functions.math.Sin(
+                                lineage_functions.array.ListExtract(
                                     origin,
                                     lineage_values.List([lineage_values.Integer(1)]),
                                 )
                             ),
-                            lineage_functions.Cos(latitude),
+                            lineage_functions.math.Cos(latitude),
                         ),
                     ),
                 ),
@@ -118,9 +121,9 @@ def point_from_distance_bearing(
 
 
 def as_list(source):
-    return lineage_functions.Cast(
-        lineage_functions.RegExpExtractAll(
-            lineage_functions.GeoAsWKT(source), lineage_values.Varchar(r"[\d\.]+")
+    return lineage_functions.data_type.Cast(
+        lineage_functions.string.RegExpExtractAll(
+            lineage_functions.geo.AsWKT(source), lineage_values.Varchar(r"[\d\.]+")
         ),
         lineage_values.Datatype("FLOAT[]"),
     )

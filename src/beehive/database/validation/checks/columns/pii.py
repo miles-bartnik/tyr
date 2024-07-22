@@ -13,13 +13,13 @@ def count_is_email(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.functions.Sum(
+        result=lineage.functions.functions.Sum(
             lineage.core.CaseWhen(
                 conditions=[
                     lineage.core.Condition(
                         checks=[
                             lineage.expressions.Is(
-                                left=lineage.functions.RegExpMatch(
+                                left=lineage.functions.functions.RegExpMatch(
                                     source,
                                     r"\A[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z",
                                 ),
@@ -49,15 +49,15 @@ def proportion_is_email(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.functions.Divide(
-            left=lineage.functions.Cast(
+        result=lineage.functions.math.Divide(
+            left=lineage.functions.data_type.Cast(
                 count_is_email(
                     source=source, scope=scope, granularity=granularity
                 ).result,
                 lineage.values.Datatype("FLOAT"),
             ),
-            right=lineage.functions.Cast(
-                lineage.functions.Count(lineage.values.WildCard()),
+            right=lineage.functions.data_type.Cast(
+                lineage.functions.aggregate.Count(lineage.values.WildCard()),
                 lineage.values.Datatype("FLOAT"),
             ),
         ),

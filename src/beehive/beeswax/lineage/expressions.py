@@ -89,3 +89,8 @@ class And(lineage._Expression):
 class Or(lineage._Expression):
     def __init__(self, left, right):
         super().__init__(left=left, right=right, operator=operators.Or())
+
+
+class Between(lineage._Expression):
+    def __init__(self, left, right: And):
+        super().__init__(left=left, right=right, operator=operators._Between())

@@ -12,11 +12,6 @@ class Datatype(lineage._Value):
         super().__init__(value=value, data_type="DATATYPE")
 
 
-class Limit(lineage._Value):
-    def __init__(self, value):
-        super().__init__(value=value, data_type=Datatype("LIMIT"))
-
-
 class Interval(lineage._Value):
     def __init__(self, value: int, unit=lineage.units.core.Unit):
         super().__init__(value=value, data_type=Datatype("INTERVAL"), unit=unit)
@@ -52,7 +47,10 @@ class Subquery(lineage._Value):
         super().__init__(
             value=value,
             data_type=value.columns.list_all()[0].data_type,
+            unit=value.columns.list_all()[0].unit,
         )
+
+        self.name = rf"SUBQUERY - {id(self)}"
 
 
 class List(lineage._Value):
@@ -65,6 +63,8 @@ class List(lineage._Value):
             data_type=Datatype(rf"{values[0].data_type.name}[]"),
         )
 
+        self.name = rf"LIST - {id(self)}"
+
 
 class Struct(lineage._Value):
     def __init__(self, source_dict):
@@ -75,6 +75,8 @@ class Struct(lineage._Value):
             ),
         )
 
+        self.name = rf"STRUCT - {id(self)}"
+
 
 class WildCard(lineage._Value):
     def __init__(self):
@@ -82,6 +84,8 @@ class WildCard(lineage._Value):
             value=lineage_operators.WildCard,
             data_type=Datatype("WILDCARD"),
         )
+
+        self.name = "*"
 
 
 class Tuple(lineage._Value):
@@ -91,20 +95,28 @@ class Tuple(lineage._Value):
             data_type=Datatype(rf"{values[0].data_type.value}[]"),
         )
 
+        self.name = rf"TUPLE - {id(self)}"
+
 
 class Null(lineage._Value):
     def __init__(self, data_type=None):
         super().__init__(value=None, data_type=data_type)
+
+        self.name = rf"NULL"
 
 
 class GeoCoordinate(lineage._Value):
     def __init__(self, latitude, longitude):
         super().__init__(value=[latitude, longitude], data_type=Datatype("FLOAT[]"))
 
+        self.name = rf"GeoCoordinate ({latitude}, {longitude})"
+
 
 class JSON(lineage._Value):
     def __init__(self, source):
         super().__init__(value=source, data_type=Datatype("JSON"))
+
+        self.name = rf"JSON - {id(self)}"
 
 
 class Boolean(lineage._Value):

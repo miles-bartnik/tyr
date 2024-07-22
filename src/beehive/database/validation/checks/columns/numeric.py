@@ -13,7 +13,7 @@ def standard_deviation(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.aggregates.StandardDeviation(source),
+        result=lineage.functions.aggregate.StandardDeviation(source),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
         granularity=granularity,
@@ -31,7 +31,7 @@ def average(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.aggregates.Average(source),
+        result=lineage.functions.aggregate.Average(source),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
         granularity=granularity,
@@ -49,7 +49,7 @@ def minimum(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.aggregates.Minimum(source),
+        result=lineage.functions.aggregate.Minimum(source),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
         granularity=granularity,
@@ -67,7 +67,7 @@ def maximum(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.aggregates.Maximum(source),
+        result=lineage.functions.aggregate.Maximum(source),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
         granularity=granularity,
@@ -85,7 +85,7 @@ def interdecile_range(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.aggregates.Maximum(source),
+        result=lineage.functions.aggregate.Maximum(source),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
         granularity=granularity,

@@ -1,5 +1,4 @@
 import networkx as nx
-import re
 from ..beeswax import lineage
 import units
 
@@ -37,11 +36,23 @@ def core_column(item):
     G = add_node(G, item.source)
     G.add_edge(id(item.source), id(item))
 
-    G = add_node(G, item.current_table)
+    try:
+        G = add_node(G, item.current_table)
+    except:
+        print(item)
+        print(item.__dict__)
+        raise ValueError()
 
     G.add_edge(id(item.current_table), id(item))
 
     G = nx.compose_all([G, item_to_graph(item.source)])
+
+    return G
+
+
+def column_blank(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
 
     return G
 
@@ -92,6 +103,22 @@ def core_table(item):
             G = add_node(G, cte)
             G.add_edge(id(cte), id(item))
             G = nx.compose_all([G, item_to_graph(cte)])
+
+    return G
+
+
+def tables_subquery(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
+    G = add_node(G, item.source)
+    G.add_edge(id(item.source), id(item))
+    G = nx.compose_all([G, item_to_graph(item.source)])
+
+    for column in item.columns.list_all():
+        G = add_node(G, column)
+        G = add_node(G, column.source)
+        G.add_edge(id(column.source), id(column))
+        G = nx.compose_all([G, item_to_graph(column.source)])
 
     return G
 
@@ -243,44 +270,6 @@ def core_expression(item):
     return G
 
 
-def core_aggregate(item):
-    G = nx.DiGraph()
-    G.add_node(id(item), type=str(type(item)), base=str(type(item).__bases__[0]))
-
-    for i in range(len(item.args)):
-        G = add_node(
-            G,
-            item.args[i],
-        )
-        G.add_edge(id(item.args[i]), id(item))
-
-        G = nx.compose_all([G, item_to_graph(item.args[i])])
-
-    if not item.partition_by.is_empty:
-        for column in item.partition_by.list_all():
-            G = add_node(
-                G,
-                column,
-            )
-
-            G.add_edge(id(column), id(item), type=str(type(item.partition_by)))
-
-            G = nx.compose_all([G, item_to_graph(column)])
-
-    if item.order_by:
-        for column in item.order_by.columns.list_all():
-            G = add_node(
-                G,
-                column,
-            )
-
-            G.add_edge(id(column), id(item), type=str(type(item.order_by)))
-
-            G = nx.compose_all([G, item_to_graph(column)])
-
-    return G
-
-
 def core_value(item):
     G = nx.DiGraph()
 
@@ -321,7 +310,7 @@ def core_schema(item):
     return G
 
 
-def combinations_join_list(item):
+def joins_compound_join(item):
     G = nx.DiGraph()
     G = add_node(G, item)
 
@@ -333,7 +322,7 @@ def combinations_join_list(item):
     return G
 
 
-def combinations_join(item):
+def joins_join(item):
     G = nx.DiGraph()
     G = add_node(G, item)
 
@@ -350,13 +339,34 @@ def combinations_join(item):
     return G
 
 
-def combinations_union(item):
+def unions_union(item):
     G = nx.DiGraph()
     G = add_node(G, item)
 
-    for table in item.tables.list_all():
+    for table in item.source.list_all():
         G = add_node(G, table)
         G.add_edge(id(table), id(item))
+
+        G = nx.compose_all([G, item_to_graph(table)])
+
+    for column in item.columns.list_all():
+        G = add_node(G, column)
+        G.add_edge(id(item), id(column))
+
+        G = nx.compose_all([G, item_to_graph(column)])
+
+    return G
+
+
+def unions_union_column(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
+
+    for column in item.source.list_all():
+        G = add_node(G, column)
+        G.add_edge(id(column), id(item))
+
+        G = nx.compose_all([G, item_to_graph(column)])
 
     return G
 
@@ -404,6 +414,13 @@ def values_list(item):
     return G
 
 
+def values_boolean(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
+
+    return G
+
+
 def core_quantity(item):
     G = nx.DiGraph()
     G = add_node(G, item)
@@ -411,7 +428,76 @@ def core_quantity(item):
     return G
 
 
+# TRANSFORMATIONS
+def transformations_limit(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
+
+    G = add_node(G, item.source)
+    G.add_edge(id(item.source), id(item))
+
+    G = nx.compose_all([G, item_to_graph(item.source)])
+
+    return G
+
+
+def transformations_read_csv(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
+
+    G = add_node(G, item.source)
+    G.add_edge(id(item.source), id(item))
+
+    G = nx.compose_all([G, item_to_graph(item.source)])
+
+    return G
+
+
+# DATAFRAMES
+def dataframes_data_frame(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
+    G = add_node(G, item.source)
+    G.add_edge(id(item.source), id(item))
+
+    for column in item.columns.list_all():
+        G = add_node(G, column)
+        G.add_edge(id(item), id(column))
+
+    return G
+
+
+def dataframes_data_frame_column(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
+
+    G = add_node(G, item.source)
+
+    G.add_edge(id(item.source), id(item))
+
+    G = nx.compose_all([G, item_to_graph(item.source)])
+
+    return G
+
+
+def dataframes_lambda_function(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
+
+    for arg in item.args:
+        G = add_node(G, arg)
+        G.add_edge(id(arg), id(item))
+
+        G = nx.compose_all([G, item_to_graph(arg)])
+
+    return G
+
+
 def item_to_graph(item):
+    print("\n")
+    print(item)
+    print(item.__dict__)
+
     # SOURCE
 
     if type(item).__bases__[0] is lineage.core._SourceColumn:
@@ -426,8 +512,17 @@ def item_to_graph(item):
         if type(item) is lineage.columns.Select:
             G = core_column(item)
 
-        elif type(item) is lineage.columns.Expand:
+        elif type(item) is lineage.columns.Core:
             G = core_column(item)
+
+        elif type(item) is lineage.dataframes.LambdaOutput:
+            G = dataframes_data_frame_column(item)
+
+        elif type(item) is lineage.dataframes.DataFrameColumn:
+            G = dataframes_data_frame_column(item)
+
+    elif type(item) is lineage.columns.Blank:
+        G = column_blank(item)
 
     # VALUES
 
@@ -456,9 +551,6 @@ def item_to_graph(item):
         elif type(item) is lineage.values.Interval:
             G = values_interval(item)
 
-        elif type(item) is lineage.values.Limit:
-            G = core_value(item)
-
         elif type(item) is lineage.values.List:
             G = values_list(item)
 
@@ -473,6 +565,9 @@ def item_to_graph(item):
 
         elif type(item) is lineage.values.Struct:
             G = values_struct(item)
+
+        elif type(item) is lineage.values.Boolean:
+            G = values_boolean(item)
 
     # UNITS
 
@@ -489,36 +584,38 @@ def item_to_graph(item):
             G = core_table(item)
 
         elif type(item) is lineage.tables.Subquery:
-            G = core_table(item)
+            G = tables_subquery(item)
+
+        elif type(item) is lineage.tables.Union:
+            G = unions_union(item)
+
+        elif type(item) is lineage.dataframes.DataFrame:
+            G = dataframes_data_frame(item)
 
     # FUNCTIONS
 
     elif type(item).__bases__[0] is lineage.core._Function:
         if type(item) not in [
-            lineage.functions.ToInterval,
+            lineage.functions.data_type.ToInterval,
+            lineage.dataframes.LambdaFunction,
         ]:
             G = core_function(item)
-        elif type(item) is lineage.functions.ToInterval:
+        elif type(item) is lineage.functions.data_type.ToInterval:
             G = core_function(item)
 
-    # AGGREGATES
-
-    elif type(item).__bases__[0] is lineage.core._Aggregate:
-        G = core_aggregate(item)
+        elif type(item) is lineage.dataframes.LambdaFunction:
+            G = dataframes_lambda_function(item)
 
     # EXPRESSIONS
     elif type(item).__bases__[0] is lineage.core._Expression:
         G = core_expression(item)
 
-    # COMBINATIONS
-    elif type(item) is lineage.combinations.Join:
-        G = combinations_join(item)
+    # JOINS
+    elif type(item) is lineage.joins.Join:
+        G = joins_join(item)
 
-    elif type(item) is lineage.combinations.JoinList:
-        G = combinations_join_list(item)
-
-    elif type(item) is lineage.combinations.Union:
-        G = combinations_union(item)
+    elif type(item) is lineage.joins.CompoundJoin:
+        G = joins_compound_join(item)
 
     # CORE
 
@@ -528,6 +625,12 @@ def item_to_graph(item):
     elif type(item) is lineage.core.Condition:
         G = core_condition(item)
 
+    elif type(item) is lineage.transformations.Limit:
+        G = transformations_limit(item)
+
+    elif type(item) is lineage.transformations.ReadCSV:
+        G = transformations_read_csv(item)
+
     # elif type(item) is lineage.core.OrderBy:
     #
     #     G = core_order_by(item)
@@ -536,7 +639,13 @@ def item_to_graph(item):
     #
     #     G = datamodel_settings(item)
 
+    elif type(item) is lineage.schema.Schema:
+        G = core_schema(item)
+
     else:
         raise ValueError("COULD NOT PARSE - ", type(item))
 
-    return G
+    try:
+        return G
+    except:
+        print(rf"FAILED ON {str(type(item))}")

@@ -109,3 +109,8 @@ class _Not(lineage._Operator):
 class _Like(lineage._Operator):
     def __init__(self):
         super().__init__(name="LIKE")
+
+
+class _Between(lineage._Operator):
+    def __init__(self):
+        super().__init__(name="BETWEEN")

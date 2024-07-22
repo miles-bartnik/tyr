@@ -3,14 +3,13 @@ from ...lineage import core as lineage
 from ...lineage import values as lineage_values
 from ...lineage import functions as lineage_functions
 from ...lineage import columns as lineage_columns
-from ...lineage import aggregates as lineage_aggregates
 from ...lineage import expressions as lineage_expressions
 from ...lineage import tables as lineage_tables
 from ...lineage.macros import functions as macro_functions
 
 
 def source_transform(source_column: lineage_columns.Source):
-    column = lineage_functions.TryCast(
+    column = lineage_functions.data_type.TryCast(
         source=source_column,
         data_type=source_column.data_type,
     )
@@ -19,7 +18,7 @@ def source_transform(source_column: lineage_columns.Source):
         if (source_column.regex == "datetime") & (
             source_column.data_type.value == "TIMESTAMP"
         ):
-            column = lineage_functions.TryCast(
+            column = lineage_functions.data_type.TryCast(
                 source=source_column,
                 data_type=lineage_values.Datatype("TIMESTAMP"),
             )
@@ -28,8 +27,8 @@ def source_transform(source_column: lineage_columns.Source):
             source_column.data_type.value == "TIMESTAMP"
             and source_column.regex == "epoch_ms"
         ):
-            column = lineage_functions.EpochMSToTimestamp(
-                lineage_functions.TryCast(
+            column = lineage_functions.datetime.EpochMSToTimestamp(
+                lineage_functions.data_type.TryCast(
                     source=source_column,
                     data_type=lineage_values.Datatype("INTEGER"),
                 ),
@@ -38,15 +37,15 @@ def source_transform(source_column: lineage_columns.Source):
             source_column.data_type.value == "TIMESTAMP"
             and source_column.regex == "epoch_s"
         ):
-            column = lineage_functions.EpochToTimestamp(
-                lineage_functions.TryCast(
+            column = lineage_functions.datetime.EpochToTimestamp(
+                lineage_functions.data_type.TryCast(
                     source=source_column,
                     data_type=lineage_values.Datatype("INTEGER"),
                 ),
             )
         else:
-            column = lineage_functions.StringToTimestamp(
-                lineage_functions.TryCast(
+            column = lineage_functions.datetime.StringToTimestamp(
+                lineage_functions.data_type.TryCast(
                     source=source_column,
                     data_type=lineage_values.Datatype("VARCHAR"),
                 ),
@@ -57,8 +56,8 @@ def source_transform(source_column: lineage_columns.Source):
         if (source_column.regex == "datetime") & (
             source_column.data_type.value == "INTERVAL"
         ):
-            column = lineage_functions.ToInterval(
-                source=lineage_functions.TryCast(
+            column = lineage_functions.data_type.ToInterval(
+                source=lineage_functions.data_type.TryCast(
                     source=source_column,
                     data_type=lineage_values.Datatype("TIMESTAMP"),
                 ),
@@ -66,16 +65,16 @@ def source_transform(source_column: lineage_columns.Source):
             )
 
         elif source_column.data_type.value == "INTERVAL":
-            column = lineage_functions.DateDiff(
-                start=lineage_functions.StringToTimestamp(
-                    lineage_functions.TryCast(
+            column = lineage_functions.datetime.DateDiff(
+                start=lineage_functions.datetime.StringToTimestamp(
+                    lineage_functions.data_type.TryCast(
                         source=source_column,
                         data_type=lineage_values.Datatype("VARCHAR"),
                     ),
                     timestamp_format=lineage_values.Varchar(source_column.regex),
                 ),
-                end=lineage_functions.StringToTimestamp(
-                    lineage_functions.TryCast(
+                end=lineage_functions.datetime.StringToTimestamp(
+                    lineage_functions.data_type.TryCast(
                         source=source_column,
                         data_type=lineage_values.Datatype("VARCHAR"),
                     ),
@@ -86,16 +85,16 @@ def source_transform(source_column: lineage_columns.Source):
     elif (source_column.var_type == "timedelta") & (
         len(source_column.unit.sub_units) > 0
     ):
-        column = lineage_functions.ToInterval(
-            source=lineage_functions.TryCast(
+        column = lineage_functions.data_type.ToInterval(
+            source=lineage_functions.data_type.TryCast(
                 source_column, lineage_values.Datatype("INTEGER")
             ),
             unit=source_column.source_unit,
         )
 
     elif (source_column.regex != "") and (source_column.data_type.value == "VARCHAR"):
-        column = lineage_functions.RegExpExtract(
-            source=lineage_functions.TryCast(
+        column = lineage_functions.string.RegExpExtract(
+            source=lineage_functions.data_type.TryCast(
                 source=source_column,
                 data_type=lineage_values.Datatype("VARCHAR"),
             ),
@@ -103,13 +102,13 @@ def source_transform(source_column: lineage_columns.Source):
         )
 
     elif source_column.regex != "":
-        column = lineage_functions.TryCast(
-            source=lineage_functions.RegExpExtract(
-                source=lineage_functions.TryCast(
+        column = lineage_functions.data_type.TryCast(
+            source=lineage_functions.string.RegExpExtract(
+                source=lineage_functions.data_type.TryCast(
                     source=source_column,
                     data_type=lineage_values.Datatype("VARCHAR"),
                 ),
-                regex=source_column.regex,
+                regex=lineage_values.Varchar(source_column.regex),
             ),
             data_type=lineage_values.Datatype(source_column.data_type.value),
         )
@@ -124,7 +123,7 @@ def source_transform(source_column: lineage_columns.Source):
                 )
             ],
             values=[
-                lineage_functions.Error(
+                lineage_functions.utility.Error(
                     lineage_values.Varchar(
                         rf"NULL encountered in column: {source_column.name}"
                     )
@@ -146,14 +145,14 @@ def source_transform(source_column: lineage_columns.Source):
                 ),
             )
         elif source_column.column_metadata["precision"].iloc[0][-2:] == "dp":
-            column = lineage_functions.Round(
+            column = lineage_functions.math.Round(
                 column,
                 lineage_values.Integer(
                     int(source_column.column_metadata["precision"].iloc[0][:-2])
                 ),
             )
 
-    output = lineage_columns.Expand(
+    output = lineage_columns.Core(
         source=column,
         name=source_column.name,
     )

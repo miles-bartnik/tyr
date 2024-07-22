@@ -7,6 +7,8 @@ from ...lineage import tables as lineage_tables
 from ...lineage import columns as lineage_columns
 from ..macros import functions as macro_functions
 from ..macros import columns as macro_columns
+from ...lineage import transformations as lineage_transformations
+from ...lineage import values as lineage_values
 
 
 class SourceSettings(SchemaSettings):
@@ -37,6 +39,7 @@ class StagingSettings(SchemaSettings):
         substitutions: Dict = {},
         extensions: List[str] = [],
         connection: Dict = {"enable_progress_bar": True, "threads": 4},
+        filename_column: lineage_columns.Select = None,
     ) -> None:
         super().__init__(
             name=name,
@@ -44,6 +47,8 @@ class StagingSettings(SchemaSettings):
             extensions=extensions,
             connection=connection,
         )
+
+        self.filename_column = filename_column
 
 
 class Source(Schema):
@@ -100,9 +105,25 @@ class Source(Schema):
                         macro_columns.source_transform(column)
                         for column in source_file.columns.list_all()
                     ]
+                    + [
+                        lineage_columns.Blank(
+                            "filename",
+                            var_type="str",
+                            data_type=lineage_values.Datatype("VARCHAR"),
+                        )
+                    ]
                 ),
                 distinct=True,
-                source=source_file,
+                source=lineage_transformations.ReadCSV(
+                    source_file=source_file,
+                    union_by_name=lineage_values.Boolean(True),
+                    headers=lineage_values.Boolean(True),
+                    filename_column=lineage_columns.Blank(
+                        "filename",
+                        var_type="str",
+                        data_type=lineage_values.Datatype("VARCHAR"),
+                    ),
+                ),
             )
 
             if (
@@ -141,6 +162,10 @@ class Source(Schema):
 class Staging(Schema):
     def __init__(self, settings: SchemaSettings, source: Source) -> None:
         tables = []
+        exclude_names = []
+
+        if settings.filename_column:
+            exclude_names.append([settings.filename_column])
 
         for table in source.tables.list_all():
             source_table = lineage_tables.Select(
@@ -153,14 +178,18 @@ class Staging(Schema):
                     source=source_table,
                     columns=lineage.ColumnList(
                         [
-                            lineage_columns.Select(column)
+                            lineage_columns.Core(
+                                lineage_columns.Select(column), name=column.name
+                            )
                             for column in source_table.columns.list_all()
+                            if column.name not in exclude_names
                         ]
                     ),
                     primary_key=lineage.ColumnList(
                         [
                             lineage_columns.Select(column)
                             for column in source_table.primary_key.list_all()
+                            if column.name not in exclude_names
                         ]
                     ),
                     event_time=lineage_columns.Select(source_table.event_time),
@@ -172,14 +201,18 @@ class Staging(Schema):
                     source=source_table,
                     columns=lineage.ColumnList(
                         [
-                            lineage_columns.Select(column)
+                            lineage_columns.Core(
+                                lineage_columns.Select(column), name=column.name
+                            )
                             for column in source_table.columns.list_all()
+                            if column.name not in exclude_names
                         ]
                     ),
                     primary_key=lineage.ColumnList(
                         [
                             lineage_columns.Select(column)
                             for column in source_table.primary_key.list_all()
+                            if column.name not in exclude_names
                         ]
                     ),
                 )
@@ -204,7 +237,9 @@ class Merging(Schema):
                     source=staging_table,
                     columns=lineage.ColumnList(
                         [
-                            lineage_columns.Select(column)
+                            lineage_columns.Core(
+                                lineage_columns.Select(column), name=column.name
+                            )
                             for column in staging_table.columns.list_all()
                         ]
                     ),
@@ -223,7 +258,9 @@ class Merging(Schema):
                     source=staging_table,
                     columns=lineage.ColumnList(
                         [
-                            lineage_columns.Select(column)
+                            lineage_columns.Core(
+                                lineage_columns.Select(column), name=column.name
+                            )
                             for column in staging_table.columns.list_all()
                         ]
                     ),

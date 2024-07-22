@@ -13,7 +13,7 @@ def count(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.aggregates.Count(source),
+        result=lineage.functions.aggregate.Count(source),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
         granularity=granularity,
@@ -31,7 +31,7 @@ def count_distinct(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.aggregates.Count(source, distinct=True),
+        result=lineage.functions.aggregate.Count(source, distinct=True),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
         granularity=granularity,
@@ -49,7 +49,7 @@ def count_null(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.functions.Sum(
+        result=lineage.functions.aggregate.Sum(
             source=lineage.core.CaseWhen(
                 conditions=[
                     lineage.core.Condition(
@@ -82,16 +82,16 @@ def proportion_null(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.functions.Divide(
-            left=lineage.functions.Divide(
-                lineage.functions.Cast(
+        result=lineage.functions.math.Divide(
+            left=lineage.functions.math.Divide(
+                lineage.functions.data_type.Cast(
                     count_null(
                         source=source, scope=scope, granularity=granularity
                     ).result,
                     lineage.values.Datatype("FLOAT"),
                 )
             ),
-            right=lineage.functions.Count(lineage.values.WildCard()),
+            right=lineage.functions.aggregate.Count(lineage.values.WildCard()),
         ),
         scope=scope,
         source=lineage.tables.Select(source.current_table),

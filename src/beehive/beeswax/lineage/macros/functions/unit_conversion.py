@@ -3,37 +3,37 @@ import units
 
 
 def _fahrenheit_rankine(source):
-    return lineage.functions.Add(
+    return lineage.functions.math.Add(
         source._override_unit(units.core.Unit("°R^1")),
         lineage.values.Float(459.67, unit=units.core.Unit("°R^1")),
     )
 
 
 def _rankine_fahrenheit(source):
-    return lineage.functions.Subtract(
+    return lineage.functions.math.Subtract(
         source._override_unit(units.core.Unit("°F^1")),
         lineage.values.Float(459.67, units.core.Unit("°F^1")),
     )
 
 
 def _celcius_kelvin(source):
-    return lineage.functions.Add(
+    return lineage.functions.math.Add(
         source._override_unit(units.core.Unit("K^1")),
         lineage.values.Float(273.15, unit=units.core.Unit("K^1")),
     )
 
 
 def _kelvin_celcius(source):
-    return lineage.functions.Subtract(
+    return lineage.functions.math.Subtract(
         source._override_unit(units.core.Unit("°C^1")),
         lineage.values.Float(273.15, unit=units.core.Unit("°C^1")),
     )
 
 
 def _rankine_kelvin(source):
-    return lineage.functions.Multiply(
+    return lineage.functions.math.Multiply(
         source._override_unit(units.core.Unit("K^1")),
-        lineage.functions.Divide(
+        lineage.functions.math.Divide(
             lineage.values.Float(5, unit=units.core.Unit("K^1")),
             lineage.values.Float(9, unit=units.core.Unit("K^1")),
         ),
@@ -41,9 +41,9 @@ def _rankine_kelvin(source):
 
 
 def _kelvin_rankine(source):
-    return lineage.functions.Multiply(
+    return lineage.functions.math.Multiply(
         source._override_unit(units.core.Unit("°R^1")),
-        lineage.functions.Divide(
+        lineage.functions.math.Divide(
             lineage.values.Float(9, unit=units.core.Unit("°R^1")),
             lineage.values.Float(5, unit=units.core.Unit("°R^1")),
         ),
@@ -90,10 +90,10 @@ def convert_to_unit(source, unit: units.core.Unit):
         )
 
         if conversion_factor != 1:
-            return lineage.functions.Cast(
-                lineage.functions.Multiply(
+            return lineage.functions.data_type.Cast(
+                lineage.functions.math.Multiply(
                     left=source,
-                    right=lineage.functions.Cast(
+                    right=lineage.functions.data_type.Cast(
                         lineage.values.Float(
                             conversion_factor,
                             unit=units.core.Unit(
@@ -107,7 +107,7 @@ def convert_to_unit(source, unit: units.core.Unit):
             )
 
         else:
-            return lineage.functions.Cast(
+            return lineage.functions.data_type.Cast(
                 source,
                 source.data_type,
             )
@@ -130,10 +130,10 @@ def convert_to_si(source):
     elif source.unit.name == "K^1":
         return source
     else:
-        return lineage.functions.Cast(
-            lineage.functions.Multiply(
+        return lineage.functions.data_type.Cast(
+            lineage.functions.math.Multiply(
                 left=source,
-                right=lineage.functions.Cast(
+                right=lineage.functions.data_type.Cast(
                     lineage.values.Float(
                         conversion_factor,
                         unit=units.core.Unit(

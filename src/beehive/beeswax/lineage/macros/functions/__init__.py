@@ -1,1 +1,1 @@
-from . import interpolate, datetime, geo, unit_conversion, numeric
+from . import interpolate, datetime, geo, unit_conversion, numeric, aggregate

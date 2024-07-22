@@ -1,41 +1,9 @@
 from ..lineage import core as lineage
 from ..lineage import values as lineage_values
+from ..lineage import dataframes as lineage_dataframes
 import networkx as nx
 import pandas as pd
 import copy
-
-
-class Core(lineage._Column):
-    def __init__(
-        self,
-        source,
-        name,
-        data_type,
-        var_type,
-        on_null,
-        is_primary_key,
-        is_event_time,
-    ) -> None:
-        super().__init__(
-            source=source,
-            name=name,
-            data_type=data_type,
-            var_type=var_type,
-            on_null=on_null,
-            is_primary_key=is_primary_key,
-            is_event_time=is_event_time,
-        )
-
-    def __deepcopy__(self, memodict={}):
-        return Core(
-            source=self.source,
-            name=self.name,
-            data_type=self.data_type,
-            var_type=self.var_type,
-            on_null=self.on_null,
-            is_primary_key=self.is_primary_key,
-            is_event_time=self.is_event_time,
-        )
 
 
 class Source(lineage._SourceColumn):
@@ -54,7 +22,15 @@ class Select(lineage._Column):
         is_primary_key: bool = False,
         is_event_time: bool = False,
     ) -> None:
-        if type(source) not in [lineage._Column, Source, Select, Expand, Blank]:
+        if type(source) not in [
+            lineage._Column,
+            Source,
+            Select,
+            Core,
+            Blank,
+            lineage_dataframes.DataFrameColumn,
+            lineage_dataframes.LambdaOutput,
+        ]:
             raise ValueError("source must be lineage._Column or lineage.columns.Source")
 
         if alias:
@@ -84,9 +60,11 @@ class Select(lineage._Column):
             is_event_time=is_event_time,
         )
 
-        self.source_table = source.current_table
-        self.current_table = source.current_table
-        self.is_outer = False
+        try:
+            self.source_table = source.current_table
+            self.current_table = source.current_table
+        except:
+            print(self.__dict__)
 
     def __deepcopy__(self, memodict={}):
         return Select(source=self.source, alias=self.name)
@@ -107,7 +85,7 @@ class Select(lineage._Column):
         return self.name
 
 
-class Expand(lineage._Column):
+class Core(lineage._Column):
     def __init__(
         self,
         source,
@@ -117,17 +95,12 @@ class Expand(lineage._Column):
         is_primary_key=False,
         var_type: str = None,
     ) -> None:
-        if (
-            type(source).__bases__[0]
-            not in [
-                lineage._Value,
-                lineage._Function,
-                lineage._Aggregate,
-                lineage._Expression,
-            ]
-            and type(source) is not lineage.CaseWhen
-        ):
-            raise ValueError
+        if type(source).__bases__[0] not in [
+            lineage._Value,
+            lineage._Function,
+            lineage._Expression,
+        ] and type(source) not in [lineage.CaseWhen, Select]:
+            raise ValueError(rf"Cannot create Core from {str(type(source))}")
 
         if not var_type:
             var_type = source.var_type
@@ -143,7 +116,7 @@ class Expand(lineage._Column):
         )
 
     def __deepcopy__(self, memodict={}):
-        return Expand(
+        return Core(
             source=self.source,
             name=self.name,
             var_type=self.var_type,
@@ -164,6 +137,7 @@ class Blank(lineage._BlankColumn):
         unit: lineage.units.core.Unit = lineage.units.core.Unit(),
     ):
         self.name = name
+        self.current_table = None
 
         super().__init__(
             name=name,
@@ -189,7 +163,7 @@ class Blank(lineage._BlankColumn):
 
 def select_all(columns: lineage.ColumnList):
     select_columns = lineage.ColumnList(
-        [Select(column) for column in columns.list_all()]
+        [Core(name=column.name, source=Select(column)) for column in columns.list_all()]
     )
 
     return select_columns

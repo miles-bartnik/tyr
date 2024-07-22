@@ -66,3 +66,14 @@ class Schema:
         for table in self.tables.list_names():
             if table not in tables:
                 delattr(self.tables, table)
+
+    def _node_data(self):
+        return {
+            "label": self.settings.name,
+        }
+
+    def _outbound_edge_data(self):
+        return {}
+
+    def _inbound_edge_data(self):
+        return {}

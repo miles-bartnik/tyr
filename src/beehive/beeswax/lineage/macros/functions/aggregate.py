@@ -1,10 +1,10 @@
-from src.beehive.beeswax.lineage.macros.core import Macro
-from src.beehive.beeswax.lineage import core as lineage
-from src.beehive.beeswax.lineage import values as lineage_values
-from src.beehive.beeswax.lineage import functions as lineage_functions
-from src.beehive.beeswax.lineage import columns as lineage_columns
-from src.beehive.beeswax.lineage import expressions as lineage_expressions
-from src.beehive.beeswax.lineage import tables as lineage_tables
+from ....lineage.macros.core import Macro
+from ....lineage import core as lineage
+from ....lineage import values as lineage_values
+from ....lineage import functions as lineage_functions
+from ....lineage import columns as lineage_columns
+from ....lineage import expressions as lineage_expressions
+from ....lineage import tables as lineage_tables
 
 
 def conditional_proportion(condition: lineage.Condition):

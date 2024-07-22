@@ -1,5 +1,6 @@
 import duckdb
-import boto3
+import pandas as pd
+
 
 # Athena is currently fucked. AWS wrangler seems like a really shit package.
 
@@ -10,7 +11,9 @@ class Response:
         self.connection_type = connection_type
 
     def df(self):
-        if self.connection_type == "duckdb":
+        if type(self.response) is pd.DataFrame:
+            return self.response
+        elif self.connection_type == "duckdb":
             return self.response.df()
 
 
@@ -25,21 +28,27 @@ class Connection:
         else:
             self.connection = None
 
-    def execute(self, query: str):
-        if self.connection:
-            try:
-                return Response(self.connection.cursor().execute(query), self.syntax)
-            except:
-                print(
-                    rf"""
-                ERROR RUNNING FOLLOWING QUERY:
-                {query}
-                """
-                )
-                self.connection.cursor().execute(query)
+    def execute(self, query):
+        if type(query) is str:
+            if self.connection:
+                try:
+                    return Response(
+                        self.connection.cursor().execute(query), self.syntax
+                    )
+                except:
+                    print(
+                        rf"""
+                    ERROR RUNNING FOLLOWING QUERY:
+                    {query}
+                    """
+                    )
+                    self.connection.cursor().execute(query)
 
-        else:
-            raise AttributeError("No database connection defined")
+            else:
+                raise AttributeError("No database connection defined")
+
+        elif type(query) is pd.DataFrame:
+            return Response(query, self.syntax)
 
     def available_functions(self):
         if self.connection:

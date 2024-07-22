@@ -107,8 +107,11 @@ class _Column:
         self.on_null = on_null
         self.is_primary_key = is_primary_key
         self.is_event_time = is_event_time
-        self.is_outer = False
-        self.unit = source.unit
+
+        if type(source) is ColumnList:
+            self.unit = source.list_all()[0].unit
+        else:
+            self.unit = source.unit
 
     def _node_data(self):
         if self.data_type:
@@ -125,7 +128,7 @@ class _Column:
             var_type = ""
 
         return {
-            "label": rf"Expression ID: {id(self)}",
+            "label": self.name,
             "data_type": data_type,
             "var_type": var_type,
             "type": str(type(self)),
@@ -161,7 +164,6 @@ class _BlankColumn:
         self.on_null = on_null
         self.is_primary_key = is_primary_key
         self.is_event_time = is_event_time
-        self.is_outer = False
         self.unit = unit
         self.current_table = None
         self.source_table = None
@@ -181,7 +183,7 @@ class _BlankColumn:
             var_type = ""
 
         return {
-            "label": rf"Expression ID: {id(self)}",
+            "label": self.name,
             "data_type": data_type,
             "var_type": var_type,
             "type": str(type(self)),
@@ -309,6 +311,7 @@ class _Function:
         partition_by: PartitionBy = PartitionBy(ColumnList([])),
         order_by: OrderBy = OrderBy(columns=ColumnList([]), how=[]),
         unit: units.core.Unit = units.core.Unit(),
+        distinct: bool = False,
     ) -> None:
         self.name = name
         self.args = args
@@ -319,9 +322,7 @@ class _Function:
         self.is_primary_key = False
         self.is_event_time = False
         self.unit = unit
-
-        for arg in self.args:
-            setattr(arg, "is_outer", False)
+        self.distinct = distinct
 
     def _node_data(self):
         if self.data_type:
@@ -378,7 +379,6 @@ class _Value:
         self.name = value
         self.data_type = data_type
         self.var_type = var_type
-        self.is_outer = False
         self.unit = unit
 
     def _node_data(self):
@@ -395,8 +395,13 @@ class _Value:
         else:
             var_type = ""
 
+        if len(str(self.name)) > 25:
+            label = data_type
+        else:
+            label = self.name
+
         return {
-            "label": self.name,
+            "label": label,
             "data_type": data_type,
             "var_type": var_type,
             "type": str(type(self)),
@@ -481,15 +486,10 @@ class _SourceColumn:
 
 
 class _SourceFile:
-    def __init__(self, file_metadata: pd.DataFrame, columns: ColumnList) -> None:
-        self.dataset = file_metadata["dataset"].iloc[0]
-        self.file_regex = file_metadata["file_regex"].iloc[0]
-        self.name = file_metadata["file_regex"].iloc[0]
-
-        if file_metadata["delim"].iloc[0] == "c":
-            self.delim = ","
-        else:
-            self.delim = "\\" + file_metadata["delim"].iloc[0]
+    def __init__(self, dataset, file_regex, delim, columns: ColumnList) -> None:
+        self.dataset = dataset
+        self.file_regex = file_regex
+        self.name = file_regex
         self.columns = columns
 
         for column in self.columns.list_all():
@@ -562,11 +562,16 @@ class CaseWhen:
             self.on_null = "PASS"
 
     def _node_data(self):
+        if self.unit.name:
+            unit = self.unit.name
+        else:
+            unit = ""
+
         return {
             "label": rf"CaseWhen ID: {id(self)}",
             "type": str(type(self)),
             "base": str(type(self).__bases__[0]),
-            "unit": self.unit.name,
+            "unit": unit,
         }
 
     def _outbound_edge_data(self):
@@ -691,19 +696,15 @@ class _Table:
 
         for column in self.columns.list_all():
             setattr(column, "current_table", self)
-            setattr(column, "is_outer", True)
 
         for column in self.primary_key.list_all():
             setattr(column, "current_table", self)
-            setattr(column, "is_outer", False)
 
         for column in self.static_primary_key.list_all():
             setattr(column, "current_table", self)
-            setattr(column, "is_outer", False)
 
         if self.event_time:
             setattr(self.event_time, "current_table", self)
-            setattr(self.event_time, "is_outer", False)
 
     def _node_data(self):
         return {
@@ -722,7 +723,6 @@ class _Table:
 
     def add_column(self, column):
         setattr(column, "current_table", self)
-        setattr(column, "is_outer", True)
         self.columns.add(column)
 
     def add_columns(self, columns):
@@ -734,7 +734,6 @@ class _Table:
 
         for column in self.primary_key.list_all():
             setattr(column, "current_table", self)
-            setattr(column, "is_outer", False)
 
         if self.event_time:
             self.static_primary_key = ColumnList(
@@ -748,7 +747,6 @@ class _Table:
     def set_event_time(self, event_time):
         self.event_time = event_time
         setattr(self.event_time, "current_table", self)
-        setattr(self.event_time, "is_outer", False)
 
         if self.primary_key:
             self.static_primary_key = ColumnList(
@@ -818,53 +816,17 @@ class TableList:
         setattr(self, "is_empty", False)
 
 
-class _Aggregate:
-    def __init__(
-        self,
-        name: str,
-        args: List[Any],
-        data_type=None,
-        var_type: str = None,
-        distinct: bool = False,
-        partition_by: PartitionBy = PartitionBy(ColumnList([])),
-        order_by: OrderBy = OrderBy(columns=ColumnList([]), how=[]),
-        unit: units.core.Unit = units.core.Unit(),
-    ):
+class _Transformation:
+    def __init__(self, name, source, args):
         self.name = name
-        self.data_type = data_type
-        self.var_type = var_type
+        self.source = source
         self.args = args
-        self.distinct = distinct
-        self.partition_by = partition_by
-        self.order_by = order_by
-        self.is_primary_key = False
-        self.is_event_time = False
-        self.unit = unit
-
-        for arg in self.args:
-            setattr(arg, "is_outer", False)
 
     def _node_data(self):
-        if self.data_type:
-            if type(self.data_type) is str:
-                data_type = self.data_type
-            else:
-                data_type = self.data_type.name
-        else:
-            data_type = ""
-
-        if self.var_type:
-            var_type = self.var_type
-        else:
-            var_type = ""
-
         return {
             "label": self.name,
-            "data_type": data_type,
-            "var_type": var_type,
             "type": str(type(self)),
             "base": str(type(self).__bases__[0]),
-            "unit": self.unit.name,
         }
 
     def _outbound_edge_data(self):
@@ -872,11 +834,6 @@ class _Aggregate:
 
     def _inbound_edge_data(self):
         return {}
-
-
-class DataFrame:
-    def __init__(self, name: str):
-        self.name = name
 
 
 def init_file_metadata(
@@ -900,7 +857,7 @@ def init_file_metadata(
 
 def init_column_metadata(
     path: str = None,
-    file_metadata: pd.DataFrame = None,
+    file_metadata: pd.DataFrame = pd.DataFrame(),
 ):
     if not path:
         if not "configurations" in os.listdir(os.getcwd()):
@@ -929,7 +886,7 @@ def init_column_metadata(
         ]
     )
 
-    if file_metadata:
+    if not file_metadata.empty:
         for index, row in file_metadata.iterrows():
             file = [
                 "/".join(row["file_regex"].split("/")[:-1]) + "/" + file
@@ -960,30 +917,34 @@ def init_column_metadata(
 
             columns = df.columns.tolist()
 
-            column_metadata_df.append(
-                pd.DataFrame.from_records(
-                    [
-                        {
-                            "schema": row["schema"],
-                            "dataset": row["dataset"],
-                            "column_name": columns[i],
-                            "column_alias": None,
-                            "var_type": None,
-                            "data_type": None,
-                            "on_null": "PASS",
-                            "is_primary_key": False,
-                            "is_event_time": False,
-                            "filter_values": None,
-                            "on_filter": "PASS",
-                            "regex": None,
-                            "source_unit": None,
-                            "target_unit": None,
-                            "precision": None,
-                            "ordinal_position": i,
-                        }
-                        for i in range(len(columns))
-                    ]
-                )
+            column_metadata_df = pd.concat(
+                [
+                    column_metadata_df,
+                    pd.DataFrame.from_records(
+                        [
+                            {
+                                "schema": row["schema"],
+                                "dataset": row["dataset"],
+                                "column_name": columns[i],
+                                "column_alias": None,
+                                "var_type": None,
+                                "data_type": None,
+                                "on_null": "PASS",
+                                "is_primary_key": False,
+                                "is_event_time": False,
+                                "filter_values": None,
+                                "on_filter": "PASS",
+                                "regex": None,
+                                "source_unit": None,
+                                "target_unit": None,
+                                "precision": None,
+                                "ordinal_position": i,
+                            }
+                            for i in range(len(columns))
+                        ]
+                    ),
+                ],
+                ignore_index=True,
             )
 
     column_metadata_df.to_csv(path, sep="\t", header=True, index=False)

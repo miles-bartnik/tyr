@@ -1,16 +1,29 @@
 from ..lineage import core as lineage
 from ..lineage import columns as lineage_columns
 from ..lineage import values as lineage_values
-from ..lineage import combinations as lineage_combinations
+from ..lineage import joins as lineage_combinations
 from ..lineage import expressions as lineage_expressions
 from ..lineage import operators as lineage_operators
+from ..lineage import functions as lineage_functions
 import networkx as nx
 import pandas as pd
 
 
 class SourceFile(lineage._SourceFile):
     def __init__(self, file_metadata: pd.DataFrame, columns: lineage.ColumnList):
-        super().__init__(file_metadata=file_metadata, columns=columns)
+        delim = file_metadata["delim"].iloc[0]
+
+        if delim == "c":
+            self.delim = ","
+        else:
+            self.delim = "\\" + delim
+
+        super().__init__(
+            dataset=lineage_values.Varchar(file_metadata["dataset"].iloc[0]),
+            file_regex=lineage_values.Varchar(file_metadata["file_regex"].iloc[0]),
+            delim=lineage_values.Varchar(delim),
+            columns=columns,
+        )
 
 
 class Core(lineage._Table):
@@ -29,6 +42,14 @@ class Core(lineage._Table):
     ) -> None:
         if columns.is_empty:
             columns = lineage_columns.select_all(source.columns)
+
+        if not all(
+            [
+                type(column) in [lineage_columns.Core, lineage_columns.Blank]
+                for column in columns.list_all()
+            ]
+        ):
+            raise ValueError("All columns must be Core")
 
         if ctes:
             for table in ctes.list_all():
@@ -136,7 +157,7 @@ class Insert:
 
 class Subquery(lineage._Table):
     def __init__(self, source, name: str = None) -> None:
-        if type(source) not in [Core]:
+        if type(source) not in [Core, Union]:
             raise ValueError("Subquery source must be Core")
 
         if not name:
@@ -144,15 +165,79 @@ class Subquery(lineage._Table):
         else:
             name = name
 
+        if source.event_time:
+            event_time = lineage_columns.Select(source.event_time)
+        else:
+            event_time = None
+
         super().__init__(
             name=name,
-            columns=source.columns,
+            columns=lineage.ColumnList(
+                [
+                    lineage_columns.Core(
+                        source=lineage_columns.Select(column), name=column.name
+                    )
+                    for column in source.columns.list_all()
+                ]
+            ),
             source=source,
-            primary_key=source.primary_key,
-            event_time=source.event_time,
-            where_condition=source.where_condition,
-            group_by=source.group_by,
-            having_condition=source.having_condition,
+            primary_key=lineage.ColumnList(
+                [
+                    lineage_columns.Select(column)
+                    for column in source.primary_key.list_all()
+                ]
+            ),
+            event_time=event_time,
+        )
+
+
+class Union(lineage._Table):
+    def __init__(
+        self,
+        name: str,
+        tables: lineage.TableList,
+        columns: lineage.ColumnList = lineage.ColumnList([]),
+        primary_key: lineage.ColumnList = lineage.ColumnList([]),
+        event_time: lineage._Column = None,
+    ) -> None:
+        if not all(
+            [type(column) is lineage_columns.Core for column in columns.list_all()]
+        ):
+            raise ValueError("Columns must be lineage_columns.Expand")
+
+        if not all(
+            [type(column) is lineage_columns.Core for column in primary_key.list_all()]
+        ):
+            raise ValueError("Columns must be lineage_columns.Expand")
+
+        if columns.is_empty:
+            columns = lineage.ColumnList(
+                [
+                    lineage_columns.Core(
+                        name=column.name,
+                        source=lineage_functions.union.UnionColumn(
+                            [
+                                lineage_columns.Select(table.columns[column.name])
+                                for table in tables.list_all()
+                            ]
+                        ),
+                    )
+                    for column in tables.list_all()[0].columns.list_all()
+                    if all(
+                        [
+                            column.name in table.columns.list_names()
+                            for table in tables.list_all()
+                        ]
+                    )
+                ]
+            )
+
+        super().__init__(
+            name=name,
+            columns=columns,
+            source=tables,
+            primary_key=primary_key,
+            event_time=event_time,
         )
 
 

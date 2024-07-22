@@ -13,7 +13,7 @@ def array_length(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.aggregates.Count(source),
+        result=lineage.functions.aggregate.Count(source),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
     )

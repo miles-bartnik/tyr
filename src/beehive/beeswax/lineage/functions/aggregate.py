@@ -141,13 +141,21 @@ class Sum(lineage._Function):
 
 
 class Count(lineage._Function):
-    def __init__(self, source, distinct=False):
+    def __init__(
+        self,
+        source,
+        distinct=False,
+        partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
+        order_by: lineage.OrderBy = lineage.OrderBy(columns=lineage.ColumnList([])),
+    ):
         super().__init__(
             name="COUNT",
             args=[source],
             distinct=distinct,
             var_type=source.var_type,
             data_type=lineage_values.Datatype("INTEGER"),
+            partition_by=partition_by,
+            order_by=order_by,
         )
 
 
