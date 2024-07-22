@@ -1,9 +1,9 @@
-from ..lineage import core as lineage
-from ..lineage import values as lineage_values
+from ...lineage import core as lineage
+from ...lineage import values as lineage_values
 from typing import List, Any
 
 
-class Average(lineage._Aggregate):
+class Average(lineage._Function):
     def __init__(self, source):
         super().__init__(
             name="AVG",
@@ -14,7 +14,7 @@ class Average(lineage._Aggregate):
         )
 
 
-class Minimum(lineage._Aggregate):
+class Minimum(lineage._Function):
     def __init__(self, source):
         super().__init__(
             name="MIN",
@@ -25,7 +25,7 @@ class Minimum(lineage._Aggregate):
         )
 
 
-class First(lineage._Aggregate):
+class First(lineage._Function):
     def __init__(
         self,
         source,
@@ -43,7 +43,7 @@ class First(lineage._Aggregate):
         )
 
 
-class Last(lineage._Aggregate):
+class Last(lineage._Function):
     def __init__(
         self,
         source,
@@ -61,7 +61,7 @@ class Last(lineage._Aggregate):
         )
 
 
-class Maximum(lineage._Aggregate):
+class Maximum(lineage._Function):
     def __init__(
         self,
         source,
@@ -79,7 +79,7 @@ class Maximum(lineage._Aggregate):
         )
 
 
-class Array(lineage._Aggregate):
+class Array(lineage._Function):
     def __init__(self, source):
         super().__init__(
             name="ARRAY_AGG",
@@ -90,35 +90,35 @@ class Array(lineage._Aggregate):
         )
 
 
-class StandardDeviation(lineage._Aggregate):
+class StandardDeviation(lineage._Function):
     def __init__(self, source):
         self.var_type = source.var_type
         self.data_type = lineage_values.Datatype("FLOAT")
         super().__init__(name="STDDEV", args=[source], unit=source.unit)
 
 
-class PopulationStandardDeviation(lineage._Aggregate):
+class PopulationStandardDeviation(lineage._Function):
     def __init__(self, source):
         self.var_type = source.var_type
         self.data_type = lineage_values.Datatype("FLOAT")
         super().__init__(name="STDDEV_POP", args=[source], unit=source.unit)
 
 
-class SampleStandardDeviation(lineage._Aggregate):
+class SampleStandardDeviation(lineage._Function):
     def __init__(self, source):
         self.var_type = source.var_type
         self.data_type = lineage_values.Datatype("FLOAT")
         super().__init__(name="STDDEV_SAMP", args=[source], unit=source.unit)
 
 
-class PopulationVariance(lineage._Aggregate):
+class PopulationVariance(lineage._Function):
     def __init__(self, source):
         self.var_type = source.var_type
         self.data_type = lineage_values.Datatype("FLOAT")
         super().__init__(name="VAR_POP", args=[source], unit=source.unit)
 
 
-class SampleVariance(lineage._Aggregate):
+class SampleVariance(lineage._Function):
     def __init__(self, source):
         super().__init__(
             name="VAR_SAMP",
@@ -129,7 +129,7 @@ class SampleVariance(lineage._Aggregate):
         )
 
 
-class Sum(lineage._Aggregate):
+class Sum(lineage._Function):
     def __init__(self, source):
         super().__init__(
             name="SUM",
@@ -140,7 +140,7 @@ class Sum(lineage._Aggregate):
         )
 
 
-class Count(lineage._Aggregate):
+class Count(lineage._Function):
     def __init__(self, source, distinct=False):
         super().__init__(
             name="COUNT",
@@ -151,7 +151,7 @@ class Count(lineage._Aggregate):
         )
 
 
-class Correlation(lineage._Aggregate):
+class Correlation(lineage._Function):
     def __init__(self, y, x):
         super().__init__(
             name="CORR",
@@ -161,7 +161,7 @@ class Correlation(lineage._Aggregate):
         )
 
 
-class PopulationCovariance(lineage._Aggregate):
+class PopulationCovariance(lineage._Function):
     def __init__(self, y, x):
         super().__init__(
             name="COVAR_POP",
@@ -171,7 +171,7 @@ class PopulationCovariance(lineage._Aggregate):
         )
 
 
-class SampleCovariance(lineage._Aggregate):
+class SampleCovariance(lineage._Function):
     def __init__(self, y, x):
         super().__init__(
             name="COVAR_SAMP",
@@ -181,7 +181,7 @@ class SampleCovariance(lineage._Aggregate):
         )
 
 
-class AbsoluteMedian(lineage._Aggregate):
+class AbsoluteMedian(lineage._Function):
     def __init__(self, source):
         super().__init__(
             name="MAD",
@@ -192,7 +192,7 @@ class AbsoluteMedian(lineage._Aggregate):
         )
 
 
-class Median(lineage._Aggregate):
+class Median(lineage._Function):
     def __init__(self, source):
         super().__init__(
             name="MEDIAN",
