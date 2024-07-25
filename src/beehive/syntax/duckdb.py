@@ -369,6 +369,9 @@ def functions_list_extract(item, expand: bool = False):
 
         return base_sql
 
+    else:
+        raise ValueError
+
 
 def functions_json_extract(item, expand: bool = False):
     return rf"{item_to_query(item.args[0])}->{item_to_query(item.args[1])}"

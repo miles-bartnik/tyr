@@ -117,3 +117,13 @@ class StringExtract(lineage._Function):
             data_type=lineage_values.Datatype("VARCHAR"),
             var_type=source.var_type,
         )
+
+
+class Length(lineage._Function):
+    def __init__(self, source):
+        super().__init__(
+            args=[source],
+            name="LENGTH",
+            data_type=lineage_values.Datatype("INTEGER"),
+            var_type="numeric",
+        )

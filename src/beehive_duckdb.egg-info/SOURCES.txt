@@ -36,6 +36,7 @@ src/beehive/beeswax/lineage/macros/tables.py
 src/beehive/beeswax/lineage/macros/values.py
 src/beehive/beeswax/lineage/macros/functions/__init__.py
 src/beehive/beeswax/lineage/macros/functions/aggregate.py
+src/beehive/beeswax/lineage/macros/functions/colour.py
 src/beehive/beeswax/lineage/macros/functions/datetime.py
 src/beehive/beeswax/lineage/macros/functions/geo.py
 src/beehive/beeswax/lineage/macros/functions/interpolate.py

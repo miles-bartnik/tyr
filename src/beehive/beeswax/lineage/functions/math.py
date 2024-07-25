@@ -267,3 +267,23 @@ class AbsoluteValue(lineage._Function):
             data_type=source.data_type,
             var_type="numeric",
         )
+
+
+class Pi(lineage._Function):
+    def __init__(self):
+        super().__init__(
+            args=[],
+            name="PI",
+            data_type=lineage_values.Datatype("FLOAT"),
+            var_type="numeric",
+        )
+
+
+class Mod(lineage._Function):
+    def __init__(self, x, y):
+        super().__init__(
+            args=[x, y],
+            name="FMOD",
+            data_type=lineage_values.Datatype("DOUBLE"),
+            var_type="numeric",
+        )
