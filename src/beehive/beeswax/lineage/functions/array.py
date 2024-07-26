@@ -123,10 +123,11 @@ class Contains(lineage._Function):
     def __init__(
         self,
         source,
+        element
     ):
         super().__init__(
             name="LIST_CONTAINS",
-            args=[source],
+            args=[source, element],
             data_type=lineage_values.Datatype("BOOLEAN"),
             var_type=source.var_type,
         )
