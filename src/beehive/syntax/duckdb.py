@@ -98,9 +98,7 @@ def values_interval(item, expand: bool = False):
 
 
 def values_list(item, expand: bool = False):
-    base_sql = (
-        rf"""([{', '.join([item_to_query(val, expand) for val in item.value])}])"""
-    )
+    base_sql = rf"""[{', '.join([item_to_query(val, expand) for val in item.value])}]"""
 
     return base_sql
 
