@@ -1,5 +1,6 @@
 pyproject.toml
 src/__init__.py
+src/docs.py
 src/beehive/__init__.py
 src/beehive/interpreter.py
 src/beehive/beeswax/__init__.py
@@ -64,10 +65,6 @@ src/beehive/syntax/dataframes.py
 src/beehive/syntax/duckdb.py
 src/beehive/syntax/network.py
 src/beehive/syntax/translate.py
-src/beehive/utils/__init__.py
-src/beehive/utils/docs.py
-src/beehive/utils/geo.py
-src/beehive/utils/plots.py
 src/beehive_duckdb.egg-info/PKG-INFO
 src/beehive_duckdb.egg-info/SOURCES.txt
 src/beehive_duckdb.egg-info/dependency_links.txt

@@ -117,3 +117,16 @@ class Minimum(lineage._Function):
             data_type=lineage_values.Datatype(source.data_type.value.strip("[]")),
             var_type=source.var_type,
         )
+
+
+class Contains(lineage._Function):
+    def __init__(
+        self,
+        source,
+    ):
+        super().__init__(
+            name="LIST_CONTAINS",
+            args=[source],
+            data_type=lineage_values.Datatype("BOOLEAN"),
+            var_type=source.var_type,
+        )
