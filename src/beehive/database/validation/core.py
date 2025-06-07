@@ -83,5 +83,5 @@ def validate_schema(
                 check_list.extend()
 
     return pd.concat(
-        [conn.execute(interpreter.to_sql(check.check)).df() for check in check_list]
+        [conn.execute(interpreter.to_query_dict(check.check)).df() for check in check_list]
     )

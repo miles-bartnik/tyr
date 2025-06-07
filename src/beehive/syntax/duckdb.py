@@ -178,9 +178,7 @@ def tables_core(item):
         if type(item.source) in [lineage.core.RecordGenerator, lineage.core.RecordList]:
             base_sql += rf""" FROM ({item_to_query(item.source)}) {item.source.name}({', '.join([column for column in item.source.columns.list_names()])})"""
         elif type(item.source) is lineage.tables.Union:
-            base_sql += (
-                rf""" FROM ({item_to_query(item.source)}) AS {item.source.name}"""
-            )
+            base_sql += rf""" FROM ({item_to_query(item.source)}) AS {item.source.name}"""
         else:
             base_sql += rf""" FROM {item_to_query(item.source)}"""
 
@@ -283,9 +281,7 @@ def core_condition(item):
 
 
 def joins_join(item):
-    base_sql = (
-        rf"""{item_to_query(item.join_expression)} ON {item_to_query(item.condition)}"""
-    )
+    base_sql = rf"""{item_to_query(item.join_expression)} ON {item_to_query(item.condition)}"""
 
     return base_sql
 
@@ -350,9 +346,7 @@ def functions_row_number(item):
 
 
 def functions_to_interval(item):
-    base_sql = (
-        rf"{item_to_query(item.args[0])}*{item.name} '1' {item_to_query(item.args[1])}"
-    )
+    base_sql = rf"{item_to_query(item.args[0])}*{item.name} '1' {item_to_query(item.args[1])}"
 
     return base_sql
 
@@ -458,7 +452,9 @@ def unions_union(item):
 
 
 def transformations_limit(item):
-    base_sql = rf"{item_to_query(item.source)} LIMIT {item_to_query(item.args[0])}"
+    base_sql = (
+        rf"{item_to_query(item.source)} LIMIT {item_to_query(item.args[0])}"
+    )
 
     if item.args[1]:
         base_sql += rf" OFFSET {item_to_query(item.args[1])}"
