@@ -162,7 +162,7 @@ def create_tables(schema: Schema, c: Connection, skip_errors: bool = False):
 
     purge_schema(schema, c)
     c.execute(rf"CREATE SCHEMA {schema.settings.name}")
-    c.execute(interpreter.to_query_dict(schema.settings))
+    c.execute(interpreter.to_sql(schema.settings))
 
     for table in build_order:
         if skip_errors:
