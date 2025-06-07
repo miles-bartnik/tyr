@@ -3,7 +3,7 @@ from ..beeswax import lineage
 
 
 def item_to_dataframe(item, conn, interpreter):
-    df = conn.execute(interpreter.to_query_dict(item.source)).df()
+    df = conn.execute(interpreter.to_sql(item.source)).df()
 
     df = df[
         [

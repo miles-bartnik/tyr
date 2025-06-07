@@ -168,21 +168,21 @@ def create_tables(schema: Schema, c: Connection, skip_errors: bool = False):
         if skip_errors:
             try:
                 print(
-                    rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}; CREATE TABLE {schema.settings.name}.{table} AS {interpreter.to_query_dict(schema.tables[table])}"
+                    rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}; CREATE TABLE {schema.settings.name}.{table} AS {interpreter.to_sql(schema.tables[table])}"
                 )
 
                 c.execute(
-                    rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}; CREATE TABLE {schema.settings.name}.{table} AS {interpreter.to_query_dict(schema.tables[table])}"
+                    rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}; CREATE TABLE {schema.settings.name}.{table} AS {interpreter.to_sql(schema.tables[table])}"
                 )
             except:
                 print(rf"""Error encountered in creation of {table}""")
         else:
             print(
-                rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}; CREATE TABLE {schema.settings.name}.{table} AS {interpreter.to_query_dict(schema.tables[table])}"
+                rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}; CREATE TABLE {schema.settings.name}.{table} AS {interpreter.to_sql(schema.tables[table])}"
             )
 
             c.execute(
-                rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}; CREATE TABLE {schema.settings.name}.{table} AS {interpreter.to_query_dict(schema.tables[table])}"
+                rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}; CREATE TABLE {schema.settings.name}.{table} AS {interpreter.to_sql(schema.tables[table])}"
             )
     # Finish
 

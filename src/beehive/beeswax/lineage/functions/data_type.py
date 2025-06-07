@@ -48,7 +48,7 @@ class ToInterval(lineage._Function):
 
 class IntegerToHex(lineage._Function):
     def __init__(self, source):
-        if source.data_type.value is not "INTEGER":
+        if source.data_type.value != "INTEGER":
             raise ValueError("source must be INTEGER")
 
         super().__init__(
