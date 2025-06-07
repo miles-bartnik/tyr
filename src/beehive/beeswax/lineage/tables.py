@@ -49,7 +49,7 @@ class Core(lineage._Table):
                 for column in columns.list_all()
             ]
         ):
-            raise ValueError("All columns must be Core")
+            raise ValueError("All columns must be Core or Blank")
 
         if ctes:
             for table in ctes.list_all():

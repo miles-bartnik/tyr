@@ -69,20 +69,20 @@ class Select(lineage._Column):
     def __deepcopy__(self, memodict={}):
         return Select(source=self.source, alias=self.name)
 
-    def id(self):
-        if "current_table" in dir(self):
-            if self.current_table:
-                return rf"{self.current_table.id()}.{self.name}"
-            else:
-                pass
-
-        if "source_table" in dir(self):
-            if self.source_table:
-                return rf"{self.source_table.id()}.{self.name}"
-            else:
-                pass
-
-        return self.name
+    # def id(self):
+    #     if "current_table" in dir(self):
+    #         if self.current_table:
+    #             return rf"{self.current_table.id()}.{self.name}"
+    #         else:
+    #             pass
+    #
+    #     if "source_table" in dir(self):
+    #         if self.source_table:
+    #             return rf"{self.source_table.id()}.{self.name}"
+    #         else:
+    #             pass
+    #
+    #     return self.name
 
 
 class Core(lineage._Column):

@@ -11,9 +11,9 @@ class Interpreter:
     def __init__(self, connection: connections.Connection) -> None:
         self.connection = connection
 
-    def to_sql(self, item, expand: bool = False):
+    def to_query_dict(self, item, query_dict={}):
         return sqlparse.format(
-            interpreters[self.connection.syntax].item_to_query(item, expand),
+            interpreters[self.connection.syntax].item_to_query_dict(item, expand),
             reindent=True,
         )
 

@@ -8,7 +8,7 @@ from ...lineage import tables as lineage_tables
 from ...lineage.macros import functions as macro_functions
 
 
-def source_transform(source_column: lineage_columns.Source):
+def source_column_transform(source_column: lineage_columns.Source):
     column = lineage_functions.data_type.TryCast(
         source=source_column,
         data_type=source_column.data_type,
@@ -167,6 +167,15 @@ def source_transform(source_column: lineage_columns.Source):
     return output
 
 
+class SourceColumnTransform(Macro):
+    def __init__(self, source_column):
+        super().__init__(
+            name="SourceTransform",
+            function=source_column_transform,
+            args={"source_column": source_column},
+        )
+
+
 def blank_clone(source: lineage._Column):
     return lineage_columns.Blank(
         name=source.name,
@@ -177,11 +186,3 @@ def blank_clone(source: lineage._Column):
         is_event_time=source.is_event_time,
         unit=source.unit,
     )
-
-
-class SourceTransform(Macro):
-    def __init__(self, source_column: lineage_columns.Source):
-        super().__init__(
-            name=rf"SourceTransform", macro=source_transform(source_column)
-        )
-        self.args = [source_column]

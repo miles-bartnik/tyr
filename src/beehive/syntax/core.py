@@ -1,11 +1,17 @@
 from ..beeswax import lineage
 import units
+import time
 
 
 def selector(item):
+    # MACRO
+
+    if type(item).__bases__[0] is lineage.macros.core.Macro:
+        function_name = "macros_macro"
+
     # SOURCE
 
-    if type(item).__bases__[0] is lineage.core._SourceColumn:
+    elif type(item).__bases__[0] is lineage.core._SourceColumn:
         function_name = "source_column"
 
     elif type(item).__bases__[0] is lineage.core._SourceFile:
@@ -40,6 +46,9 @@ def selector(item):
 
         elif type(item) is lineage.values.Timestamp:
             function_name = "values_timestamp"
+
+        elif type(item) is lineage.values.Date:
+            function_name = "values_date"
 
         elif type(item) is lineage.values.WildCard:
             function_name = "values_wildcard"
@@ -167,7 +176,10 @@ def selector(item):
         function_name = "transformations_limit"
 
     elif type(item) is lineage.transformations.ReadCSV:
-        function_name = "transformations_read_csv"
+        function_name = "core_transformation"
+
+    elif type(item) is lineage.transformations.ReadGeoJson:
+        function_name = "core_transformation"
 
     # DATAFRAMES
     elif type(item) is lineage.dataframes.DataFrame:

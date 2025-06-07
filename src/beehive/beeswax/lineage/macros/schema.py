@@ -32,25 +32,6 @@ class SourceSettings(SchemaSettings):
         self.column_metadata = column_metadata.fillna("")
 
 
-class StagingSettings(SchemaSettings):
-    def __init__(
-        self,
-        name: str,
-        substitutions: Dict = {},
-        extensions: List[str] = [],
-        connection: Dict = {"enable_progress_bar": True, "threads": 4},
-        filename_column: lineage_columns.Select = None,
-    ) -> None:
-        super().__init__(
-            name=name,
-            substitutions=substitutions,
-            extensions=extensions,
-            connection=connection,
-        )
-
-        self.filename_column = filename_column
-
-
 class Source(Schema):
     def __init__(self, settings: SourceSettings) -> None:
         tables = []
@@ -98,32 +79,32 @@ class Source(Schema):
                 columns=source_file_columns,
             )
 
+            if (
+                file_metadata[file_metadata["dataset"] == dataset]["delim"].iloc[0]
+                == "geojson"
+            ):
+                source_transform = lineage_transformations.ReadGeoJson(
+                    source_file=source_file,
+                )
+            else:
+                source_transform = lineage_transformations.ReadCSV(
+                    source_file=source_file,
+                    union_by_name=lineage_values.Boolean(True),
+                    headers=lineage_values.Boolean(True),
+                )
+
             source_table = lineage_tables.Core(
                 name=rf"""{dataset}""",
                 columns=lineage.ColumnList(
                     [
-                        macro_columns.source_transform(column)
+                        macro_columns.SourceColumnTransform(column).macro
                         for column in source_file.columns.list_all()
                     ]
-                    + [
-                        lineage_columns.Blank(
-                            "filename",
-                            var_type="str",
-                            data_type=lineage_values.Datatype("VARCHAR"),
-                        )
-                    ]
                 ),
-                distinct=True,
-                source=lineage_transformations.ReadCSV(
-                    source_file=source_file,
-                    union_by_name=lineage_values.Boolean(True),
-                    headers=lineage_values.Boolean(True),
-                    filename_column=lineage_columns.Blank(
-                        "filename",
-                        var_type="str",
-                        data_type=lineage_values.Datatype("VARCHAR"),
-                    ),
-                ),
+                distinct=file_metadata[file_metadata["dataset"] == dataset][
+                    "distinct"
+                ].iloc[0],
+                source=source_transform,
             )
 
             if (
@@ -159,60 +140,73 @@ class Source(Schema):
         super().__init__(settings=settings, tables=lineage.TableList(tables))
 
 
+class StagingSettings(SchemaSettings):
+    def __init__(
+        self,
+        name: str,
+        substitutions: Dict = {},
+        extensions: List[str] = [],
+        connection: Dict = {"enable_progress_bar": True, "threads": 4},
+    ) -> None:
+        super().__init__(
+            name=name,
+            substitutions=substitutions,
+            extensions=extensions,
+            connection=connection,
+        )
+
+
 class Staging(Schema):
     def __init__(self, settings: SchemaSettings, source: Source) -> None:
         tables = []
         exclude_names = []
 
-        if settings.filename_column:
-            exclude_names.append([settings.filename_column])
-
         for table in source.tables.list_all():
-            source_table = lineage_tables.Select(
-                source=table,
-            )
-
-            if source_table.event_time:
+            if table.event_time:
                 staging_table = lineage_tables.Core(
                     name=table.name,
-                    source=source_table,
+                    source=lineage_tables.Select(table),
                     columns=lineage.ColumnList(
                         [
                             lineage_columns.Core(
                                 lineage_columns.Select(column), name=column.name
                             )
-                            for column in source_table.columns.list_all()
+                            for column in table.columns.list_all()
                             if column.name not in exclude_names
+                            and type(column) is not lineage_columns.Blank
                         ]
                     ),
                     primary_key=lineage.ColumnList(
                         [
                             lineage_columns.Select(column)
-                            for column in source_table.primary_key.list_all()
+                            for column in table.primary_key.list_all()
                             if column.name not in exclude_names
+                            and type(column) is not lineage_columns.Blank
                         ]
                     ),
-                    event_time=lineage_columns.Select(source_table.event_time),
+                    event_time=lineage_columns.Select(table.event_time),
                 )
 
             else:
                 staging_table = lineage_tables.Core(
                     name=table.name,
-                    source=source_table,
+                    source=lineage_tables.Select(table),
                     columns=lineage.ColumnList(
                         [
                             lineage_columns.Core(
                                 lineage_columns.Select(column), name=column.name
                             )
-                            for column in source_table.columns.list_all()
+                            for column in table.columns.list_all()
                             if column.name not in exclude_names
+                            and type(column) is not lineage_columns.Blank
                         ]
                     ),
                     primary_key=lineage.ColumnList(
                         [
                             lineage_columns.Select(column)
-                            for column in source_table.primary_key.list_all()
+                            for column in table.primary_key.list_all()
                             if column.name not in exclude_names
+                            and type(column) is not lineage_columns.Blank
                         ]
                     ),
                 )

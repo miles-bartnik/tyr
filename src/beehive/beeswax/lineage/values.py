@@ -22,6 +22,11 @@ class Timestamp(lineage._Value):
         super().__init__(value=value, data_type=Datatype("TIMESTAMP"))
 
 
+class Date(lineage._Value):
+    def __init__(self, value):
+        super().__init__(value=value, data_type=Datatype("DATE"))
+
+
 class Integer(lineage._Value):
     def __init__(self, value):
         super().__init__(value=value, data_type=Datatype("INTEGER"))

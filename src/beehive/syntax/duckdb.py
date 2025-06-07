@@ -127,6 +127,12 @@ def values_timestamp(item, expand: bool = False):
     return base_sql
 
 
+def values_date(item, expand: bool = False):
+    base_sql = rf"""DATE'{item.value}'"""
+
+    return base_sql
+
+
 def values_datatype(item, expand: bool = False):
     base_sql = rf"""{item.value}"""
 
@@ -456,8 +462,14 @@ def transformations_limit(item, expand: bool = False):
     return base_sql
 
 
-def transformations_read_csv(item, expand: bool = False):
-    base_sql = rf"""READ_CSV({item_to_query(item.source.file_regex)}, {','.join([key + "=" + item_to_query(item.args[key]) for key in item.args.keys()])})"""
+def core_transformation(item, expand: bool = False):
+    base_sql = rf"""{item.name}({item_to_query(item.source.file_regex)}"""
+
+    if item.args.keys():
+        base_sql += rf""", {','.join([key + "=" + item_to_query(item.args[key]) for key in item.args.keys()])}"""
+
+    base_sql += ")"
+
     return base_sql
 
 
@@ -478,6 +490,11 @@ def dataframes_data_frame_column(item, expand):
 
 def dataframes_lambda_output(item, expand):
     return rf"""{item.name}"""
+
+
+# MACRO
+def macros_macro(item, expand):
+    return item_to_query(item.macro)
 
 
 def item_to_query(item, expand: bool = False):

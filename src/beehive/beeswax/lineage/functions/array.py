@@ -120,11 +120,7 @@ class Minimum(lineage._Function):
 
 
 class Contains(lineage._Function):
-    def __init__(
-        self,
-        source,
-        element
-    ):
+    def __init__(self, source, element):
         super().__init__(
             name="LIST_CONTAINS",
             args=[source, element],

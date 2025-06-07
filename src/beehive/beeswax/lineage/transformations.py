@@ -20,21 +20,28 @@ class ReadCSV(lineage._Transformation):
         source_file: lineage._SourceFile,
         union_by_name: lineage_values.Boolean = lineage_values.Boolean(False),
         headers: lineage_values.Boolean = lineage_values.Boolean(False),
-        filename_column: lineage_columns.Blank = None,
     ):
-        if filename_column:
-            is_filename = lineage_values.Boolean(True)
-        else:
-            is_filename = lineage_values.Boolean(False)
-
         super().__init__(
             name="READ_CSV",
             source=source_file,
             args={
                 "union_by_name": union_by_name,
                 "header": headers,
-                "filename": is_filename,
             },
         )
 
-        self.filename_column = filename_column
+        self.columns = source_file.columns
+
+
+class ReadGeoJson(lineage._Transformation):
+    def __init__(
+        self,
+        source_file: lineage._SourceFile,
+    ):
+        super().__init__(
+            name="ST_READ",
+            source=source_file,
+            args={},
+        )
+
+        self.columns = source_file.columns

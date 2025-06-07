@@ -1,5 +1,6 @@
 import pandas as pd
 
+from .core import Macro
 from ...lineage import core as lineage
 from ...lineage import values as lineage_values
 from ...lineage import functions as lineage_functions
@@ -578,6 +579,28 @@ def event_time_interval_transform(
     return table
 
 
+class EventTimeIntervalTransform(Macro):
+    def __init__(
+        self,
+        source,
+        interval,
+        max_n_intervals: int = 2047,
+        interpolation_function=interpolate.linear,
+        columns_to_interpolate: lineage.ColumnList = lineage.ColumnList([]),
+    ):
+        super().__init__(
+            name="EventTimeTransform",
+            function=event_time_interval_transform,
+            args={
+                "source": source,
+                "interval": interval,
+                "max_n_intervals": max_n_intervals,
+                "interpolation_function": interpolation_function,
+                "columns_to_interpolate": columns_to_interpolate,
+            },
+        )
+
+
 def mapping(mapping_df: pd.DataFrame, columns: lineage.ColumnList):
     mapping_df = mapping_df.astype(object).where(mapping_df.notna(), None).dropna()
 
@@ -729,3 +752,12 @@ def forward_fill(source):
     )
 
     return source_forward_filled
+
+
+class ForwardFilled(Macro):
+    def __init__(self, source):
+        super().__init__(
+            name="ForwardFilled",
+            function=forward_fill,
+            args={"source": source},
+        )

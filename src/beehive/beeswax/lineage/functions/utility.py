@@ -9,3 +9,8 @@ import pandas as pd
 class Error(lineage._Function):
     def __init__(self, message: lineage_values.Varchar):
         super().__init__(args=[message], name="ERROR")
+
+
+class Coalesce(lineage._Function):
+    def __init__(self, args: TypingList[Any]):
+        super().__init__(args=args, name="COALESCE")

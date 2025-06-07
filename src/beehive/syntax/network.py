@@ -36,14 +36,13 @@ def core_column(item):
     G = add_node(G, item.source)
     G.add_edge(id(item.source), id(item))
 
-    try:
+    if "current_table" in dir(item):
         G = add_node(G, item.current_table)
-    except:
-        print(item)
-        print(item.__dict__)
-        raise ValueError()
+        G.add_edge(id(item.current_table), id(item))
 
-    G.add_edge(id(item.current_table), id(item))
+    elif "source_table" in dir(item):
+        G = add_node(G, item.source_table)
+        G.add_edge(id(item.source_table), id(item))
 
     G = nx.compose_all([G, item_to_graph(item.source)])
 
@@ -119,6 +118,13 @@ def tables_subquery(item):
         G = add_node(G, column.source)
         G.add_edge(id(column.source), id(column))
         G = nx.compose_all([G, item_to_graph(column.source)])
+
+    return G
+
+
+def tables_from_records(item):
+    G = nx.DiGraph()
+    G = add_node(G, item)
 
     return G
 
@@ -441,7 +447,7 @@ def transformations_limit(item):
     return G
 
 
-def transformations_read_csv(item):
+def core_transformation(item):
     G = nx.DiGraph()
     G = add_node(G, item)
 
@@ -493,14 +499,21 @@ def dataframes_lambda_function(item):
     return G
 
 
+# MACRO
+
+
+def macros_macro(item):
+    G = nx.DiGraph()
+
+
 def item_to_graph(item):
-    print("\n")
-    print(item)
-    print(item.__dict__)
+    # MACRO
+    if type(item).__bases__[0] is lineage.macros.core.Macro:
+        G = macros_macro(item)
 
     # SOURCE
 
-    if type(item).__bases__[0] is lineage.core._SourceColumn:
+    elif type(item).__bases__[0] is lineage.core._SourceColumn:
         G = source_column(item)
 
     elif type(item).__bases__[0] is lineage.core._SourceFile:
@@ -592,6 +605,9 @@ def item_to_graph(item):
         elif type(item) is lineage.dataframes.DataFrame:
             G = dataframes_data_frame(item)
 
+        elif type(item) is lineage.tables.FromRecords:
+            G = tables_from_records(item)
+
     # FUNCTIONS
 
     elif type(item).__bases__[0] is lineage.core._Function:
@@ -629,7 +645,10 @@ def item_to_graph(item):
         G = transformations_limit(item)
 
     elif type(item) is lineage.transformations.ReadCSV:
-        G = transformations_read_csv(item)
+        G = core_transformation(item)
+
+    elif type(item) is lineage.transformations.ReadGeoJson:
+        G = core_transformation(item)
 
     # elif type(item) is lineage.core.OrderBy:
     #

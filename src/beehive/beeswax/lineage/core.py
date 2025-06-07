@@ -489,8 +489,9 @@ class _SourceFile:
     def __init__(self, dataset, file_regex, delim, columns: ColumnList) -> None:
         self.dataset = dataset
         self.file_regex = file_regex
-        self.name = file_regex
+        self.name = file_regex.value
         self.columns = columns
+        self.delim = delim
 
         for column in self.columns.list_all():
             setattr(column, "current_table", self)
@@ -498,9 +499,9 @@ class _SourceFile:
     def _node_data(self):
         return {
             "label": self.name,
-            "data_type": self.file_regex,
-            "dataset": self.dataset,
-            "delim": self.delim,
+            "data_type": self.file_regex.value,
+            "dataset": self.dataset.value,
+            "delim": self.delim.value,
             "type": str(type(self)),
             "base": str(type(self).__bases__[0]),
         }
