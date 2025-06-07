@@ -13,7 +13,7 @@ class Interpreter:
 
     def to_sql(self, item):
         return sqlparse.format(
-            interpreters[self.connection.syntax].item_to_query(item),
+            interpreters[self.connection.syntax].item_to_query(item, expand),
             reindent=True,
         )
 
