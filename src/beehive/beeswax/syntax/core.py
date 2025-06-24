@@ -1,4 +1,4 @@
-from ..beeswax import lineage
+from src.beehive.beeswax import lineage
 import units
 import time
 

@@ -1,1 +1,1 @@
-from . import database, syntax, interpreter, beeswax
+from .beeswax import syntax

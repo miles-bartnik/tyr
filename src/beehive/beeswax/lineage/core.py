@@ -7,7 +7,9 @@ import pandas as pd
 import networkx as nx
 import re
 import units
+from ..interpreter import Interpreter
 
+_beeswax_duckdb = Interpreter()
 
 class _Operator:
     """

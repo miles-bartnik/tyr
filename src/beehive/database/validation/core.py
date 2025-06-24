@@ -1,10 +1,9 @@
 from ..connections import Connection
-from ...interpreter import Interpreter
+from src.beehive.beeswax.interpreter import Interpreter
 import pandas as pd
 from ...beeswax import lineage
 from .checks import columns as column_checks
 from .checks import tables as table_checks
-from .checks import core as core_checks
 
 
 def validate_schema(

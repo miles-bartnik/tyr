@@ -1,11 +1,10 @@
 import numpy as np
 import pandas as pd
 import re
-import logging
 import logging.handlers
 from pythonjsonlogger import jsonlogger
 from .connections import Connection
-from ..interpreter import Interpreter
+from src.beehive.beeswax.interpreter import Interpreter
 from ..beeswax.lineage.schema import Schema
 from ..beeswax import lineage
 

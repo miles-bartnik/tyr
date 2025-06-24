@@ -1,5 +1,5 @@
 import networkx as nx
-from ..beeswax import lineage
+from src.beehive.beeswax import lineage
 import units
 
 
@@ -44,8 +44,6 @@ def core_column(item):
         G = add_node(G, item.source_table)
         G.add_edge(id(item.source_table), id(item))
 
-    G = nx.compose_all([G, item_to_graph(item.source)])
-
     return G
 
 
@@ -72,8 +70,6 @@ def core_table(item):
             id(column),
         )
 
-        G = nx.compose_all([G] + [item_to_graph(column)])
-
     if item.where_condition:
         G.add_node(
             id(item.where_condition),
@@ -82,7 +78,6 @@ def core_table(item):
             base=str(type(item.where_condition).__bases__[0]),
         )
         G.add_edge(id(item.where_condition), id(item))
-        G = nx.compose_all([G, item_to_graph(item.where_condition)])
 
     if (item.having_condition) and (item.group_by):
         G.add_node(
@@ -92,16 +87,11 @@ def core_table(item):
             base=str(type(item.having_condition).__bases__[0]),
         )
         G.add_edge(id(item.having_condition), id(item))
-        G = nx.compose_all([G, item_to_graph(item.having_condition)])
-
-    if item.source:
-        G = nx.compose_all([G, item_to_graph(item.source)])
 
     if not item.ctes.is_empty:
         for cte in item.ctes.list_all():
             G = add_node(G, cte)
             G.add_edge(id(cte), id(item))
-            G = nx.compose_all([G, item_to_graph(cte)])
 
     return G
 
@@ -111,13 +101,11 @@ def tables_subquery(item):
     G = add_node(G, item)
     G = add_node(G, item.source)
     G.add_edge(id(item.source), id(item))
-    G = nx.compose_all([G, item_to_graph(item.source)])
 
     for column in item.columns.list_all():
         G = add_node(G, column)
         G = add_node(G, column.source)
         G.add_edge(id(column.source), id(column))
-        G = nx.compose_all([G, item_to_graph(column.source)])
 
     return G
 
@@ -159,10 +147,6 @@ def core_case_when(item):
     G.add_edge(id(item.conditions[0]), id(item.values[0]))
     G.add_edge(id(item.conditions[0]), id(item))
 
-    G = nx.compose_all(
-        [G, item_to_graph(item.conditions[0]), item_to_graph(item.values[0])]
-    )
-
     for i in range(1, len(item.conditions)):
         G = add_node(G, item.conditions[i])
         G = add_node(G, item.values[i])
@@ -170,17 +154,12 @@ def core_case_when(item):
         G.add_edge(id(item.conditions[i]), id(item))
         G.add_edge(id(item.conditions[i - 1]), id(item.conditions[i]))
 
-        G = nx.compose_all(
-            [G, item_to_graph(item.conditions[i]), item_to_graph(item.values[i])]
-        )
 
     if item.else_value:
         G = add_node(G, item.else_value)
 
         G.add_edge(id(item.conditions[-1]), id(item.else_value))
         G.add_edge(id(item.else_value), id(item))
-
-        G = nx.compose_all([G, item_to_graph(item.else_value)])
 
     return G
 
@@ -218,8 +197,6 @@ def core_condition(item):
         )
         G.add_edge(id(item.checks[0]), id(item))
 
-    G = nx.compose_all([G] + [item_to_graph(check) for check in item.checks])
-
     return G
 
 
@@ -231,23 +208,17 @@ def core_function(item):
         G = add_node(G, arg)
         G.add_edge(id(arg), id(item))
 
-        G = nx.compose_all([G, item_to_graph(arg)])
-
     if not item.partition_by.is_empty:
         for column in item.partition_by.list_all():
             G = add_node(G, column)
 
             G.add_edge(id(column), id(item), type=str(type(item.partition_by)))
 
-            G = nx.compose_all([G, item_to_graph(column)])
-
     if not item.order_by.columns.is_empty:
         for column in item.order_by.columns.list_all():
             G = add_node(G, column)
 
             G.add_edge(id(column), id(item), type=str(type(item.order_by)))
-
-            G = nx.compose_all([G, item_to_graph(column)])
 
     return G
 
@@ -270,8 +241,6 @@ def core_expression(item):
 
     G.add_edge(id(item.left), id(item))
     G.add_edge(id(item.right), id(item))
-
-    G = nx.compose_all([G, item_to_graph(item.left), item_to_graph(item.right)])
 
     return G
 
@@ -311,8 +280,6 @@ def core_schema(item):
 
         G.add_edge(id(item), id(table))
 
-        G = nx.compose_all([G, item_to_graph(table)])
-
     return G
 
 
@@ -323,7 +290,6 @@ def joins_compound_join(item):
     for join in item.joins:
         G = add_node(G, join)
         G.add_edge(id(join), id(item))
-        G = nx.compose_all([G, item_to_graph(join)])
 
     return G
 
@@ -338,10 +304,6 @@ def joins_join(item):
     G = add_node(G, item.condition)
     G.add_edge(id(item.condition), id(item))
 
-    G = nx.compose_all(
-        [G, item_to_graph(item.join_expression), item_to_graph(item.condition)]
-    )
-
     return G
 
 
@@ -353,13 +315,9 @@ def unions_union(item):
         G = add_node(G, table)
         G.add_edge(id(table), id(item))
 
-        G = nx.compose_all([G, item_to_graph(table)])
-
     for column in item.columns.list_all():
         G = add_node(G, column)
         G.add_edge(id(item), id(column))
-
-        G = nx.compose_all([G, item_to_graph(column)])
 
     return G
 
@@ -371,8 +329,6 @@ def unions_union_column(item):
     for column in item.source.list_all():
         G = add_node(G, column)
         G.add_edge(id(column), id(item))
-
-        G = nx.compose_all([G, item_to_graph(column)])
 
     return G
 
@@ -401,7 +357,6 @@ def values_subquery(item):
     G = add_node(G, item.value)
 
     G.add_edge(id(item.value), id(item))
-    G = nx.compose_all([G, item_to_graph(item.value)])
 
     return G
 
@@ -442,8 +397,6 @@ def transformations_limit(item):
     G = add_node(G, item.source)
     G.add_edge(id(item.source), id(item))
 
-    G = nx.compose_all([G, item_to_graph(item.source)])
-
     return G
 
 
@@ -453,8 +406,6 @@ def core_transformation(item):
 
     G = add_node(G, item.source)
     G.add_edge(id(item.source), id(item))
-
-    G = nx.compose_all([G, item_to_graph(item.source)])
 
     return G
 
@@ -481,8 +432,6 @@ def dataframes_data_frame_column(item):
 
     G.add_edge(id(item.source), id(item))
 
-    G = nx.compose_all([G, item_to_graph(item.source)])
-
     return G
 
 
@@ -493,8 +442,6 @@ def dataframes_lambda_function(item):
     for arg in item.args:
         G = add_node(G, arg)
         G.add_edge(id(arg), id(item))
-
-        G = nx.compose_all([G, item_to_graph(arg)])
 
     return G
 

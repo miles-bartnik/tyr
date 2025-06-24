@@ -1,5 +1,4 @@
 import sqlparse
-from ..beeswax import lineage
 from .core import selector
 
 
@@ -56,9 +55,9 @@ def column_select(item):
 
 
 def columns_core(item):
-    base_sql = rf"{item_to_query(item.source)}"
+    base_sql = rf"{item.source.sql}"
 
-    if {item_to_query(item.source)} != item.name:
+    if {item.source.sql} != item.name:
         base_sql += rf" AS {item.name}"
 
     return base_sql
@@ -92,25 +91,25 @@ def values_wildcard(item):
 
 
 def values_interval(item):
-    base_sql = rf"INTERVAL '{item.value}' {item_to_query(item.unit)}"
+    base_sql = rf"INTERVAL '{item.value}' {item.unit.sql}"
 
     return base_sql
 
 
 def values_list(item):
-    base_sql = rf"""[{', '.join([item_to_query(val) for val in item.value])}]"""
+    base_sql = rf"""[{', '.join([val.sql for val in item.value])}]"""
 
     return base_sql
 
 
 def values_tuple(item):
-    base_sql = rf"""({', '.join([item_to_query(val) for val in item.value])})"""
+    base_sql = rf"""({', '.join([val.sql for val in item.value])})"""
 
     return base_sql
 
 
 def values_subquery(item):
-    base_sql = rf"""({item_to_query(item.value)})"""
+    base_sql = rf"""({item.value.sql})"""
 
     return base_sql
 
@@ -161,44 +160,44 @@ def tables_core(item):
         """ + ", ".join(
             [
                 (
-                    rf"""{table.name} AS ({item_to_query(table)})"""
-                    if type(table) is lineage.tables.Core
-                    else rf"""{table.name} AS {item_to_query(table)}"""
+                    rf"""{table.name} AS ({table.sql})"""
+                    if "lineage.tables.Core" in str(type(table))
+                    else rf"""{table.name} AS {table.sql}"""
                 )
                 for table in item.ctes.list_all()
                 if table not in item.source.ctes.list_all()
             ]
         )
 
-        base_sql += rf""" SELECT {"DISTINCT" if item.distinct else ""} {', '.join([item_to_query(column) for column in item.columns.list_all()])}"""
+        base_sql += rf""" SELECT {"DISTINCT" if item.distinct else ""} {', '.join([column.sql for column in item.columns.list_all()])}"""
     else:
-        base_sql = rf"""SELECT {"DISTINCT" if item.distinct else ""} {', '.join([item_to_query(column) for column in item.columns.list_all()])}"""
+        base_sql = rf"""SELECT {"DISTINCT" if item.distinct else ""} {', '.join([column.sql for column in item.columns.list_all()])}"""
 
     if item.source:
-        if type(item.source) in [lineage.core.RecordGenerator, lineage.core.RecordList]:
-            base_sql += rf""" FROM ({item_to_query(item.source)}) {item.source.name}({', '.join([column for column in item.source.columns.list_names()])})"""
-        elif type(item.source) is lineage.tables.Union:
-            base_sql += rf""" FROM ({item_to_query(item.source)}) AS {item.source.name}"""
+        if any(["lineage.core.RecordGenerator" in str(type(item.source)), "lineage.core.RecordList" in str(type(item.source))]):
+            base_sql += rf""" FROM ({item.source.sql}) {item.source.name}({', '.join([column for column in item.source.columns.list_names()])})"""
+        elif "lineage.tables.Union" in str(type(item.source)):
+            base_sql += rf""" FROM ({item.source.sql}) AS {item.source.name}"""
         else:
-            base_sql += rf""" FROM {item_to_query(item.source)}"""
+            base_sql += rf""" FROM {item.source.sql}"""
 
     if item.where_condition:
-        base_sql += rf""" WHERE {item_to_query(item.where_condition)}"""
+        base_sql += rf""" WHERE {item.where_condition.sql}"""
 
     if (item.group_by) and not (item.primary_key.is_empty):
-        base_sql += rf""" GROUP BY {', '.join([item_to_query(lineage.columns.Select(column.source)) if type(column) is not lineage.columns.Core else item_to_query(column.source) for column in item.primary_key.list_all()])}"""
+        base_sql += rf""" GROUP BY {', '.join([column.source.sql if not "lineage.columns.Core" in str(type(column)) else column.sql for column in item.primary_key.list_all()])}"""
 
         if item.having_condition:
-            base_sql += rf""" HAVING {item_to_query(item.having_condition)}"""
+            base_sql += rf""" HAVING {item.having_condition.sql}"""
 
     return base_sql
 
 
 def tables_subquery(item):
     if item.name:
-        base_sql = rf"""({item_to_query(item.source)}) AS {item.name}"""
+        base_sql = rf"""({item.source.sql}) AS {item.name}"""
     else:
-        base_sql = rf"""({item_to_query(item.source)})"""
+        base_sql = rf"""({item.source.sql})"""
 
     return base_sql
 
@@ -216,23 +215,23 @@ def tables_select(item):
 
 
 def tables_temp(item):
-    base_sql = rf"""CREATE TEMP TABLE {item.name} ({', '.join([column.name + " " + item_to_query(column.data_type) for column in item.columns.list_all()])}); INSERT INTO {item.name} ({item_to_query(item.source)}); SELECT * FROM {item.name}"""
+    base_sql = rf"""CREATE TEMP TABLE {item.name} ({', '.join([column.name + " " + column.data_type for column in item.columns.list_all()])}); INSERT INTO {item.name} ({item.source.sql}); SELECT * FROM {item.name}"""
 
     return base_sql
 
 
 def tables_from_records(item):
-    base_sql = rf"""SELECT * FROM ({item_to_query(item.source)})"""
+    base_sql = rf"""SELECT * FROM ({item.source.sql})"""
 
     return base_sql
 
 
 # CORE
 def core_case_when(item):
-    base_sql = rf"""CASE WHEN {" WHEN ".join([item_to_query(item.conditions[i]) + " THEN " + item_to_query(item.values[i]) for i in range(len(item.conditions))])}"""
+    base_sql = rf"""CASE WHEN {" WHEN ".join([item.conditions[i].sql + " THEN " + item.values[i].sql for i in range(len(item.conditions))])}"""
 
     if item.else_value:
-        base_sql += rf""" ELSE {item_to_query(item.else_value)}"""
+        base_sql += rf""" ELSE {item.else_value.sql}"""
 
     base_sql += rf""" END"""
 
@@ -246,13 +245,13 @@ def core_operator(item):
 
 
 def core_order_by(item):
-    base_sql = rf"""ORDER BY {', '.join([item_to_query(item.columns.list_all()[i]) + " " + item_to_query(item.how[i]) for i in range(len(item.columns.list_all()))])}"""
+    base_sql = rf"""ORDER BY {', '.join([item.columns.list_all()[i].sql + " " + item.how[i].sql for i in range(len(item.columns.list_all()))])}"""
 
     return base_sql
 
 
 def core_expression(item):
-    base_sql = rf"""{item_to_query(item.left)} {item_to_query(item.operator)} {item_to_query(item.right)}"""
+    base_sql = rf"""{item.left.sql} {item.operator.sql} {item.right.sql}"""
 
     return base_sql
 
@@ -264,12 +263,12 @@ def core_insert(item):
 
 
 def core_condition(item):
-    base_sql = item_to_query(item.checks[0])
+    base_sql = item.checks[0].sql
 
     if len(item.checks) > 1:
         base_sql += " " + " ".join(
             [
-                rf"""{item_to_query(item.link_operators[i])} {item_to_query(item.checks[i + 1])}"""
+                rf"""{item.link_operators[i].sql} {item.checks[i + 1].sql}"""
                 for i in range(len(item.link_operators))
             ]
         )
@@ -281,20 +280,20 @@ def core_condition(item):
 
 
 def joins_join(item):
-    base_sql = rf"""{item_to_query(item.join_expression)} ON {item_to_query(item.condition)}"""
+    base_sql = rf"""{item.join_expression.sql} ON {item.condition.sql}"""
 
     return base_sql
 
 
 def joins_compound_join(item):
-    base_sql = rf"""{item_to_query(item.joins[0])}""" + " ".join(
+    base_sql = rf"""{item.joins[0].sql}""" + " ".join(
         [
             " "
-            + item_to_query(join.join_expression.operator)
+            + join.join_expression.operator.sql
             + " "
-            + item_to_query(join.join_expression.right)
+            + join.join_expression.right.sql
             + " ON "
-            + item_to_query(join.condition)
+            + join.condition.sql
             for join in item.joins[1:]
         ]
     )
@@ -303,7 +302,7 @@ def joins_compound_join(item):
 
 
 def values_struct(item):
-    base_sql = rf"""{{{', '.join(["'"+ list(item.value.keys())[i] +"':" + item_to_query(item.value[list(item.value.keys())[i]]) for i in range(len(list(item.value.keys())))])}}}"""
+    base_sql = rf"""{{{', '.join(["'" + list(item.value.keys())[i] +"':" + item.value[list(item.value.keys())[i]].sql for i in range(len(list(item.value.keys())))])}}}"""
 
     return base_sql
 
@@ -312,30 +311,30 @@ def values_struct(item):
 
 
 def core_function(item):
-    base_sql = rf"""{item.name}({"DISTINCT " if item.distinct else ""}{', '.join([item_to_query(arg) if type(item) is not lineage.columns.Select else f"{item.current_table.name}.{item.name}" for arg in item.args])})"""
+    base_sql = rf"""{item.name}({"DISTINCT " if item.distinct else ""}{', '.join([arg.sql if "lineage.columns.Select" not in str(type(item)) else f"{item.current_table.name}.{item.name}" for arg in item.args])})"""
 
     if not item.partition_by.is_empty:
-        base_sql += rf""" OVER (PARTITION BY {', '.join([item_to_query(partition) for partition in item.partition_by.list_all()])}"""
+        base_sql += rf""" OVER (PARTITION BY {', '.join([partition.sql for partition in item.partition_by.list_all()])}"""
 
         if not item.order_by.columns.is_empty:
-            base_sql += rf" {item_to_query(item.order_by)}"
+            base_sql += rf" {item.order_by.sql}"
 
         base_sql += rf""")"""
 
     elif not item.order_by.columns.is_empty:
-        base_sql += rf""" OVER ({item_to_query(item.order_by)})"""
+        base_sql += rf""" OVER ({item.order_by.sql})"""
 
     return base_sql
 
 
 def functions_row_number(item):
-    base_sql = rf"""{item.name}({', '.join([item_to_query(arg) if type(item) is not lineage.columns.Select else f"{item.current_table.name}.{item.name}" for arg in item.args])})"""
+    base_sql = rf"""{item.name}({', '.join([arg.sql if "lineage.columns.Select" not in  str(type(item)) else f"{item.current_table.name}.{item.name}" for arg in item.args])})"""
 
     if not item.partition_by.is_empty:
-        base_sql += rf""" OVER (PARTITION BY {', '.join([item_to_query(partition) for partition in item.partition_by.list_all()])}"""
+        base_sql += rf""" OVER (PARTITION BY {', '.join([partition.sql for partition in item.partition_by.list_all()])}"""
 
         if not item.order_by.columns.is_empty:
-            base_sql += rf" {item_to_query(item.order_by)}"
+            base_sql += rf" {item.order_by.sql}"
 
         base_sql += rf""")"""
 
@@ -346,7 +345,7 @@ def functions_row_number(item):
 
 
 def functions_to_interval(item):
-    base_sql = rf"{item_to_query(item.args[0])}*{item.name} '1' {item_to_query(item.args[1])}"
+    base_sql = rf"{item.args[0].sql}*{item.name} '1' {item.args[1].sql}"
 
     return base_sql
 
@@ -354,9 +353,8 @@ def functions_to_interval(item):
 def functions_list_extract(item):
     groups = []
 
-    if type(item.args[1]) is lineage.values.List and item_to_query(
-        item.args[1].data_type
-    ) in ["INTEGER[]", "INT[]"]:
+    if "lineage.values.List" not in str(type(item.args[1])) and item.args[1].data_type.sql in ["INTEGER[]", "INT[]"]:
+
         values = [value.value for value in item.args[1].value]
 
         for i in range(len(values)):
@@ -369,7 +367,7 @@ def functions_list_extract(item):
             else:
                 groups.append([values[i]])
 
-        base_sql = rf"{'+'.join([item_to_query(item.args[0]) + '[' + str(min(x)) + ':' + str(max(x)) + ']' if min(x) != max(x) else item_to_query(item.args[0]) + '[' + str(max(x)) + ']' for x in groups])}"
+        base_sql = rf"{'+'.join([item.args[0].sql + '[' + str(min(x)) + ':' + str(max(x)) + ']' if min(x) != max(x) else item.args[0].sql + '[' + str(max(x)) + ']' for x in groups])}"
 
         return base_sql
 
@@ -378,7 +376,7 @@ def functions_list_extract(item):
 
 
 def functions_json_extract(item):
-    return rf"{item_to_query(item.args[0])}->{item_to_query(item.args[1])}"
+    return rf"{item.args[0].sql}->{item.args[1].sql}"
 
 
 def core_unit(item):
@@ -388,20 +386,20 @@ def core_unit(item):
 def core_record(item):
     return (
         rf"""("""
-        + ", ".join([item_to_query(item.values[i]) for i in range(len(item.values))])
+        + ", ".join([item.values[i].sql for i in range(len(item.values))])
         + rf""")"""
     )
 
 
 def core_record_list(item):
-    return rf"""SELECT * FROM VALUES {', '.join([item_to_query(record) for record in item.records])} {item.name}({', '.join([column for column in item.columns.list_names()])})"""
+    return rf"""SELECT * FROM VALUES {', '.join([record.sql for record in item.records])} {item.name}({', '.join([column for column in item.columns.list_names()])})"""
 
 
 def core_record_generator(item):
     base_sql = "SELECT * FROM VALUES "
 
     for record in item.generator:
-        base_sql += item_to_query(record) + ", "
+        base_sql += record.sql + ", "
 
     return (
         base_sql.rstrip(", ")
@@ -413,7 +411,7 @@ def core_record_generator(item):
 
 
 def unions_union(item):
-    column_sql = rf"""SELECT {"DISTINCT" if item.distinct else ""} {', '.join([item_to_query(column) for column in item.columns.list_all()])}"""
+    column_sql = rf"""SELECT {"DISTINCT" if item.distinct else ""} {', '.join([column.sql for column in item.columns.list_all()])}"""
 
     if not item.ctes.is_empty:
         base_sql = rf"""
@@ -421,9 +419,9 @@ def unions_union(item):
         """ + ", ".join(
             [
                 (
-                    rf"""{table.name} AS ({item_to_query(table)})"""
-                    if type(table) is lineage.tables.Core
-                    else rf"""{table.name} AS {item_to_query(table)}"""
+                    rf"""{table.name} AS ({table.sql})"""
+                    if "lineage.table.Core" not in str(type(table))
+                    else rf"""{table.name} AS {table.sql}"""
                 )
                 for table in item.ctes.list_all()
                 if table not in item.source.ctes.list_all()
@@ -434,16 +432,16 @@ def unions_union(item):
     else:
         base_sql = rf"""{column_sql}"""
 
-    base_sql += rf""" FROM {' UNION BY NAME '.join(['(' + item_to_query(table) + ')' if type(table) not in [lineage.tables.Select, lineage.tables.Subquery] else "SELECT  *  FROM " + item_to_query(table) if type(table) is lineage.tables.Select else "(" + item_to_query(table.source) + ")" if type(table) is lineage.tables.Subquery else item_to_query(table) for table in item.source.list_all()])}"""
+    base_sql += rf""" FROM {' UNION BY NAME '.join(['(' + table.sql + ')' if not any(["lineage.tables.Select" in str(type(table)), "lineage.tables.Subquery" in str(type(table))]) else "SELECT  *  FROM " + table.sql if type(table) is lineage.tables.Select else "(" + table.source.sql + ")" if type(table) is lineage.tables.Subquery else table.sql for table in item.source.list_all()])}"""
 
     if item.where_condition:
-        base_sql += rf""" WHERE {item_to_query(item.where_condition)}"""
+        base_sql += rf""" WHERE {item.where_condition.sql}"""
 
     if (item.group_by) and not (item.primary_key.is_empty):
-        base_sql += rf""" GROUP BY {', '.join([item_to_query(lineage.columns.Select(column.source)) if type(column) is not lineage.columns.Core else item_to_query(column.source) for column in item.primary_key.list_all()])}"""
+        base_sql += rf""" GROUP BY {', '.join([column.source.sql if "lineage.columns.Core" not in str(type(column)) else column.sql for column in item.primary_key.list_all()])}"""
 
         if item.having_condition:
-            base_sql += rf""" HAVING {item_to_query(item.having_condition)}"""
+            base_sql += rf""" HAVING {item.having_condition.sql}"""
 
     return base_sql
 
@@ -453,20 +451,20 @@ def unions_union(item):
 
 def transformations_limit(item):
     base_sql = (
-        rf"{item_to_query(item.source)} LIMIT {item_to_query(item.args[0])}"
+        rf"{item.source.sql} LIMIT {item.args[0].sql}"
     )
 
     if item.args[1]:
-        base_sql += rf" OFFSET {item_to_query(item.args[1])}"
+        base_sql += rf" OFFSET {item.args[1].sql}"
 
     return base_sql
 
 
 def core_transformation(item):
-    base_sql = rf"""{item.name}({item_to_query(item.source.file_regex)}"""
+    base_sql = rf"""{item.name}({item.source.file_regex.sql}"""
 
     if item.args.keys():
-        base_sql += rf""", {','.join([key + "=" + item_to_query(item.args[key]) for key in item.args.keys()])}"""
+        base_sql += rf""", {','.join([key + "=" + item.args[key].sql for key in item.args.keys()])}"""
 
     base_sql += ")"
 
@@ -494,10 +492,11 @@ def dataframes_lambda_output(item):
 
 # MACRO
 def macros_macro(item):
-    return item_to_query(item.macro)
+    return item.macro.sql
 
 
-def item_to_query(item):
+def item_to_sql(item):
+
     if not globals()[selector(item)](item):
         print(item)
         print(type(item))

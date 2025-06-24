@@ -655,6 +655,7 @@ def date_vector_table(start_time, n_records: int, interval):
 
 
 def forward_fill(source):
+
     source_grouped = lineage_tables.Core(
         name=rf"{source.name}_grouped",
         source=lineage_tables.Select(source),
