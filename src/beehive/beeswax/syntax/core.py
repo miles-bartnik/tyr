@@ -1,197 +1,195 @@
-from src.beehive.beeswax import lineage
 import units
 import time
 
 
 def selector(item):
-    # MACRO
-
-    if type(item).__bases__[0] is lineage.macros.core.Macro:
-        function_name = "macros_macro"
-
     # SOURCE
 
-    elif type(item).__bases__[0] is lineage.core._SourceColumn:
+    if "lineage.core._SourceColumn" in str(type(item).__bases__[0]):
         function_name = "source_column"
 
-    elif type(item).__bases__[0] is lineage.core._SourceFile:
+    elif "lineage.core._SourceFile" in str(type(item).__bases__[0]):
         function_name = "source_file"
 
-    elif type(item).__bases__[0] is lineage.core._BlankColumn:
+    elif "lineage.core._BlankColumn" in str(type(item).__bases__[0]):
         function_name = "columns_blank"
 
     # COLUMNS
 
-    elif type(item).__bases__[0] is lineage.core._Column:
-        if type(item) is lineage.columns.Select:
+    elif "lineage.core._Column" in str(type(item).__bases__[0]):
+        if "lineage.columns.Select" in str(type(item)):
             function_name = "column_select"
 
-        elif type(item) is lineage.columns.Core:
+        elif "lineage.columns.Core" in str(type(item)):
             function_name = "columns_core"
 
-        elif type(item) is lineage.columns.Blank:
+        elif "lineage.columns.Blank" in str(type(item)):
             function_name = "columns_blank"
 
     # VALUES
 
-    elif type(item).__bases__[0] is lineage.core._Value:
-        if type(item) is lineage.values.Varchar:
+    elif "lineage.core._Value" in str(type(item).__bases__[0]):
+        if "lineage.values.Varchar" in str(type(item)):
             function_name = "values_varchar"
 
-        elif type(item) is lineage.values.Integer:
+        elif "lineage.values.Integer" in str(type(item)):
             function_name = "values_integer"
 
-        elif type(item) is lineage.values.Float:
+        elif "lineage.values.Float" in str(type(item)):
             function_name = "values_float"
 
-        elif type(item) is lineage.values.Timestamp:
+        elif "lineage.values.Timestamp" in str(type(item)):
             function_name = "values_timestamp"
 
-        elif type(item) is lineage.values.Date:
+        elif "lineage.values.Date" in str(type(item)):
             function_name = "values_date"
 
-        elif type(item) is lineage.values.WildCard:
+        elif "lineage.values.WildCard" in str(type(item)):
             function_name = "values_wildcard"
 
-        elif type(item) is lineage.values.Subquery:
+        elif "lineage.values.Subquery" in str(type(item)):
             function_name = "values_subquery"
 
-        elif type(item) is lineage.values.Null:
+        elif "lineage.values.Null" in str(type(item)):
             function_name = "values_null"
 
-        elif type(item) is lineage.values.Interval:
+        elif "lineage.values.Interval" in str(type(item)):
             function_name = "values_interval"
 
-        elif type(item) is lineage.values.List:
+        elif "lineage.values.List" in str(type(item)):
             function_name = "values_list"
 
-        elif type(item) is lineage.values.GeoCoordinate:
+        elif "lineage.values.GeoCoordinate" in str(type(item)):
             function_name = "values_list"
 
-        elif type(item) is lineage.values.Datatype:
+        elif "lineage.values.Datatype" in str(type(item)):
             function_name = "values_datatype"
 
-        elif type(item) is lineage.values.Tuple:
+        elif "lineage.values.Tuple" in str(type(item)):
             function_name = "values_tuple"
 
-        elif type(item) is lineage.values.Boolean:
+        elif "lineage.values.Boolean" in str(type(item)):
             function_name = "values_boolean"
 
-        elif type(item) is lineage.values.Struct:
+        elif "lineage.values.Struct" in str(type(item)):
             function_name = "values_struct"
 
     # UNITS
 
-    elif type(item) is units.core.Unit:
+    elif str(type(item)) is units.core.Unit:
         function_name = "core_unit"
 
     # TABLES
 
-    elif type(item).__bases__[0] is lineage.core._Table:
-        if type(item) is lineage.tables.Core:
+    elif "lineage.core._Table" in str(type(item).__bases__[0]):
+        if "lineage.tables.Core" in str(type(item)):
             function_name = "tables_core"
 
-        elif type(item) is lineage.tables.Select:
+        elif "lineage.tables.Select" in str(type(item)):
             function_name = "tables_select"
 
-        elif type(item) is lineage.tables.Subquery:
+        elif "lineage.tables.Subquery" in str(type(item)):
             function_name = "tables_subquery"
 
-        elif type(item) is lineage.tables.Temp:
+        elif "lineage.tables.Temp" in str(type(item)):
             function_name = "tables_temp"
 
-        elif type(item) is lineage.tables.FromRecords:
+        elif "lineage.tables.FromRecords" in str(type(item)):
             function_name = "tables_from_records"
 
-        elif type(item) is lineage.tables.Union:
+        elif "lineage.tables.Union" in str(type(item)):
             function_name = "unions_union"
 
     # FUNCTIONS
 
-    elif type(item).__bases__[0] is lineage.core._Function:
-        if type(item) not in [
-            lineage.functions.data_type.ToInterval,
-            lineage.functions.array.ListExtract,
-            lineage.functions.json.JSONExtract,
-            lineage.functions.window.RowNumber,
-            lineage.functions.union.UnionColumn,
-            lineage.functions.string.StringExtract,
-        ]:
+    elif "lineage.core._Function" in str(type(item).__bases__[0]):
+        if not any(
+            [
+                bh_type in str(type(item))
+                for bh_type in [
+                    "lineage.functions.data_type.ToInterval",
+                    "lineage.functions.array.ListExtract",
+                    "lineage.functions.json.JSONExtract",
+                    "lineage.functions.window.RowNumber",
+                    "lineage.functions.union.UnionColumn",
+                    "lineage.functions.string.StringExtract",
+                ]
+            ]
+        ):
             function_name = "core_function"
-        elif type(item) is lineage.functions.data_type.ToInterval:
+        elif "lineage.functions.data_type.ToInterval" in str(type(item)):
             function_name = "functions_to_interval"
-        elif type(item) is lineage.functions.array.ListExtract:
+        elif "lineage.functions.array.ListExtract" in str(type(item)):
             function_name = "functions_list_extract"
-        elif type(item) is lineage.functions.json.JSONExtract:
+        elif "lineage.functions.json.JSONExtract" in str(type(item)):
             function_name = "functions_json_extract"
-        elif type(item) is lineage.functions.window.RowNumber:
+        elif "lineage.functions.window.RowNumber" in str(type(item)):
             function_name = "functions_row_number"
-        elif type(item) is lineage.functions.union.UnionColumn:
+        elif "lineage.functions.union.UnionColumn" in str(type(item)):
             function_name = "unions_union_column"
-        elif type(item) is lineage.functions.string.StringExtract:
+        elif "lineage.functions.string.StringExtract" in str(type(item)):
             function_name = "functions_list_extract"
 
     # EXPRESSIONS
-    elif type(item).__bases__[0] is lineage.core._Expression:
+    elif "lineage.core._Expression" in str(type(item).__bases__[0]):
         function_name = "core_expression"
 
     # OPERATORS
-    elif type(item).__bases__[0] is lineage.core._Operator:
+    elif "lineage.core._Operator" in str(type(item).__bases__[0]):
         function_name = "core_operator"
 
     # JOINS
-    elif type(item) is lineage.joins.Join:
+    elif "lineage.joins.Join" in str(type(item)):
         function_name = "joins_join"
 
-    elif type(item) is lineage.joins.CompoundJoin:
+    elif "lineage.joins.CompoundJoin" in str(type(item)):
         function_name = "joins_compound_join"
 
     # CORE
-    elif type(item) is lineage.core.CaseWhen:
+    elif "lineage.core.CaseWhen" in str(type(item)):
         function_name = "core_case_when"
 
-    elif type(item) is lineage.core.Condition:
+    elif "lineage.core.Condition" in str(type(item)):
         function_name = "core_condition"
 
-    elif type(item) is lineage.core.OrderBy:
+    elif "lineage.core.OrderBy" in str(type(item)):
         function_name = "core_order_by"
 
-    elif (
-        type(item).__bases__[0] is lineage.schema.SchemaSettings
-        or type(item) is lineage.schema.SchemaSettings
-    ):
+    elif "lineage.schema.SchemaSettings" in str(
+        type(item).__bases__[0]
+    ) or "lineage.schema.SchemaSettings" in str(type(item)):
         function_name = "schema_settings"
 
-    elif type(item) is lineage.core.Record:
+    elif "lineage.core.Record" in str(type(item)):
         function_name = "core_record"
 
-    elif type(item) is lineage.core.RecordList:
+    elif "lineage.core.RecordList" in str(type(item)):
         function_name = "core_record_list"
 
-    elif type(item) is lineage.core.RecordGenerator:
+    elif "lineage.core.RecordGenerator" in str(type(item)):
         function_name = "core_record_generator"
 
     # TRANSFORMATIONS
-    elif type(item) is lineage.transformations.Limit:
+    elif "lineage.transformations.Limit" in str(type(item)):
         function_name = "transformations_limit"
 
-    elif type(item) is lineage.transformations.ReadCSV:
+    elif "lineage.transformations.ReadCSV" in str(type(item)):
         function_name = "core_transformation"
 
-    elif type(item) is lineage.transformations.ReadGeoJson:
+    elif "lineage.transformations.ReadGeoJson" in str(type(item)):
         function_name = "core_transformation"
 
     # DATAFRAMES
-    elif type(item) is lineage.dataframes.DataFrame:
-        function = "dataframes_data_frame"
+    elif "lineage.dataframes.DataFrame" in str(type(item)):
+        function_name = "dataframes_data_frame"
 
-    elif type(item) is lineage.dataframes.DataFrameColumn:
-        function = "dataframes_data_frame_column"
+    elif "lineage.dataframes.DataFrameColumn" in str(type(item)):
+        function_name = "dataframes_data_frame_column"
 
-    elif type(item) is lineage.dataframes.LambdaOutput:
-        function = "dataframes_lambda_output"
+    elif "lineage.dataframes.LambdaOutput" in str(type(item)):
+        function_name = "dataframes_lambda_output"
 
     else:
-        raise ValueError("COULD NOT PARSE - ", type(item))
+        raise ValueError("COULD NOT PARSE - ", str(type(item)))
 
     return function_name

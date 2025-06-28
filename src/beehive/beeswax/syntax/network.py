@@ -1,5 +1,4 @@
 import networkx as nx
-from src.beehive.beeswax import lineage
 import units
 
 
@@ -153,7 +152,6 @@ def core_case_when(item):
 
         G.add_edge(id(item.conditions[i]), id(item))
         G.add_edge(id(item.conditions[i - 1]), id(item.conditions[i]))
-
 
     if item.else_value:
         G = add_node(G, item.else_value)
@@ -455,78 +453,78 @@ def macros_macro(item):
 
 def item_to_graph(item):
     # MACRO
-    if type(item).__bases__[0] is lineage.macros.core.Macro:
+    if "lineage.macros.core.Macro" in type(item).__bases__[0]:
         G = macros_macro(item)
 
     # SOURCE
 
-    elif type(item).__bases__[0] is lineage.core._SourceColumn:
+    elif "lineage.core._SourceColumn" in type(item).__bases__[0]:
         G = source_column(item)
 
-    elif type(item).__bases__[0] is lineage.core._SourceFile:
+    elif "lineage.core._SourceFile" in type(item).__bases__[0]:
         G = source_file(item)
 
     # COLUMNS
 
-    elif type(item).__bases__[0] is lineage.core._Column:
-        if type(item) is lineage.columns.Select:
+    elif "lineage.core._Column" in type(item).__bases__[0]:
+        if "lineage.columns.Select" in type(item):
             G = core_column(item)
 
-        elif type(item) is lineage.columns.Core:
+        elif "lineage.columns.Core" in type(item):
             G = core_column(item)
 
-        elif type(item) is lineage.dataframes.LambdaOutput:
+        elif "lineage.dataframes.LambdaOutput" in type(item):
             G = dataframes_data_frame_column(item)
 
-        elif type(item) is lineage.dataframes.DataFrameColumn:
+        elif "lineage.dataframes.DataFrameColumn" in type(item):
             G = dataframes_data_frame_column(item)
 
-    elif type(item) is lineage.columns.Blank:
+    elif "lineage.columns.Blank" in type(item):
         G = column_blank(item)
 
     # VALUES
 
-    elif type(item).__bases__[0] is lineage.core._Value:
-        if type(item) is lineage.values.Varchar:
+    elif "lineage.core._Value" in type(item).__bases__[0]:
+        if "lineage.values.Varchar" in type(item):
             G = core_value(item)
 
-        elif type(item) is lineage.values.Integer:
+        elif "lineage.values.Integer" in type(item):
             G = core_value(item)
 
-        elif type(item) is lineage.values.Float:
+        elif "lineage.values.Float" in type(item):
             G = core_value(item)
 
-        elif type(item) is lineage.values.Timestamp:
+        elif "lineage.values.Timestamp" in type(item):
             G = core_value(item)
 
-        elif type(item) is lineage.values.WildCard:
+        elif "lineage.values.WildCard" in type(item):
             G = core_value(item)
 
-        elif type(item) is lineage.values.Subquery:
+        elif "lineage.values.Subquery" in type(item):
             G = values_subquery(item)
 
-        elif type(item) is lineage.values.Null:
+        elif "lineage.values.Null" in type(item):
             G = core_value(item)
 
-        elif type(item) is lineage.values.Interval:
+        elif "lineage.values.Interval" in type(item):
             G = values_interval(item)
 
-        elif type(item) is lineage.values.List:
+        elif "lineage.values.List" in type(item):
             G = values_list(item)
 
-        elif type(item) is lineage.values.GeoCoordinate:
+        elif "lineage.values.GeoCoordinate" in type(item):
             G = values_list(item)
 
-        elif type(item) is lineage.values.Datatype:
+        elif "lineage.values.Datatype" in type(item):
             G = core_value(item)
 
-        elif type(item) is lineage.values.Tuple:
+        elif "lineage.values.Tuple" in type(item):
             G = core_value(item)
 
-        elif type(item) is lineage.values.Struct:
+        elif "lineage.values.Struct" in type(item):
             G = values_struct(item)
 
-        elif type(item) is lineage.values.Boolean:
+        elif "lineage.values.Boolean" in type(item):
             G = values_boolean(item)
 
     # UNITS
@@ -536,76 +534,76 @@ def item_to_graph(item):
 
     # TABLES
 
-    elif type(item).__bases__[0] is lineage.core._Table:
-        if type(item) is lineage.tables.Core:
+    elif "lineage.core._Table" in type(item).__bases__[0]:
+        if "lineage.tables.Core" in type(item):
             G = core_table(item)
 
-        elif type(item) is lineage.tables.Select:
+        elif "lineage.tables.Select" in type(item):
             G = core_table(item)
 
-        elif type(item) is lineage.tables.Subquery:
+        elif "lineage.tables.Subquery" in type(item):
             G = tables_subquery(item)
 
-        elif type(item) is lineage.tables.Union:
+        elif "lineage.tables.Union" in type(item):
             G = unions_union(item)
 
-        elif type(item) is lineage.dataframes.DataFrame:
+        elif "lineage.dataframes.DataFrame" in type(item):
             G = dataframes_data_frame(item)
 
-        elif type(item) is lineage.tables.FromRecords:
+        elif "lineage.tables.FromRecords" in type(item):
             G = tables_from_records(item)
 
     # FUNCTIONS
 
-    elif type(item).__bases__[0] is lineage.core._Function:
+    elif "lineage.core._Function" in type(item).__bases__[0]:
         if type(item) not in [
             lineage.functions.data_type.ToInterval,
             lineage.dataframes.LambdaFunction,
         ]:
             G = core_function(item)
-        elif type(item) is lineage.functions.data_type.ToInterval:
+        elif "lineage.functions.data_type.ToInterval" in type(item):
             G = core_function(item)
 
-        elif type(item) is lineage.dataframes.LambdaFunction:
+        elif "lineage.dataframes.LambdaFunction" in type(item):
             G = dataframes_lambda_function(item)
 
     # EXPRESSIONS
-    elif type(item).__bases__[0] is lineage.core._Expression:
+    elif "lineage.core._Expression" in type(item).__bases__[0]:
         G = core_expression(item)
 
     # JOINS
-    elif type(item) is lineage.joins.Join:
+    elif "lineage.joins.Join" in type(item):
         G = joins_join(item)
 
-    elif type(item) is lineage.joins.CompoundJoin:
+    elif "lineage.joins.CompoundJoin" in type(item):
         G = joins_compound_join(item)
 
     # CORE
 
-    elif type(item) is lineage.core.CaseWhen:
+    elif "lineage.core.CaseWhen" in type(item):
         G = core_case_when(item)
 
-    elif type(item) is lineage.core.Condition:
+    elif "lineage.core.Condition" in type(item):
         G = core_condition(item)
 
-    elif type(item) is lineage.transformations.Limit:
+    elif "lineage.transformations.Limit" in type(item):
         G = transformations_limit(item)
 
-    elif type(item) is lineage.transformations.ReadCSV:
+    elif "lineage.transformations.ReadCSV" in type(item):
         G = core_transformation(item)
 
-    elif type(item) is lineage.transformations.ReadGeoJson:
+    elif "lineage.transformations.ReadGeoJson" in type(item):
         G = core_transformation(item)
 
-    # elif type(item) is lineage.core.OrderBy:
+    # elif "lineage.core.OrderBy" in type(item):
     #
     #     G = core_order_by(item)
     #
-    # elif type(item).__bases__[0] is lineage.datamodels.DataModelSettings:
+    # elif "lineage.datamodels.DataModelSettings" in type(item).__bases__[0]:
     #
     #     G = datamodel_settings(item)
 
-    elif type(item) is lineage.schema.Schema:
+    elif "lineage.schema.Schema" in type(item):
         G = core_schema(item)
 
     else:

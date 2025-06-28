@@ -31,12 +31,12 @@ def source_column(item):
 
 
 def source_file(item):
-    if item.file_regex.split(".")[-1] == "geojson":
-        base_sql = rf""" st_read('{item.file_regex}')"""
-    elif "*" in item.file_regex:
-        base_sql = rf""" read_csv_auto('{item.file_regex}', delim='{item.delim}', header=True, union_by_name=True)"""
+    if item.file_regex.value.split(".")[-1] == "geojson":
+        base_sql = rf""" st_read('{item.file_regex.value}')"""
+    elif "*" in item.file_regex.value:
+        base_sql = rf""" read_csv_auto('{item.file_regex.value}', delim='{item.delim}', header=True, union_by_name=True)"""
     else:
-        base_sql = rf""" read_csv_auto('{item.file_regex}', delim='{item.delim}', header=True)"""
+        base_sql = rf""" read_csv_auto('{item.file_regex.value}', delim='{item.delim}', header=True)"""
 
     return base_sql
 
@@ -91,7 +91,9 @@ def values_wildcard(item):
 
 
 def values_interval(item):
-    base_sql = rf"INTERVAL '{item.value}' {item.unit.sql}"
+    base_sql = (
+        rf"INTERVAL '{item.value}' {item.unit.sub_units.iloc[0].base_unit_name.upper()}"
+    )
 
     return base_sql
 
@@ -174,7 +176,12 @@ def tables_core(item):
         base_sql = rf"""SELECT {"DISTINCT" if item.distinct else ""} {', '.join([column.sql for column in item.columns.list_all()])}"""
 
     if item.source:
-        if any(["lineage.core.RecordGenerator" in str(type(item.source)), "lineage.core.RecordList" in str(type(item.source))]):
+        if any(
+            [
+                "lineage.core.RecordGenerator" in str(type(item.source)),
+                "lineage.core.RecordList" in str(type(item.source)),
+            ]
+        ):
             base_sql += rf""" FROM ({item.source.sql}) {item.source.name}({', '.join([column for column in item.source.columns.list_names()])})"""
         elif "lineage.tables.Union" in str(type(item.source)):
             base_sql += rf""" FROM ({item.source.sql}) AS {item.source.name}"""
@@ -345,7 +352,7 @@ def functions_row_number(item):
 
 
 def functions_to_interval(item):
-    base_sql = rf"{item.args[0].sql}*{item.name} '1' {item.args[1].sql}"
+    base_sql = rf"{item.args[0].sql}*{item.name} '1' {item.args[1].sub_units.iloc[0].base_unit_name.upper()}"
 
     return base_sql
 
@@ -353,8 +360,9 @@ def functions_to_interval(item):
 def functions_list_extract(item):
     groups = []
 
-    if "lineage.values.List" not in str(type(item.args[1])) and item.args[1].data_type.sql in ["INTEGER[]", "INT[]"]:
-
+    if "lineage.values.List" not in str(type(item.args[1])) and item.args[
+        1
+    ].data_type.sql in ["INTEGER[]", "INT[]"]:
         values = [value.value for value in item.args[1].value]
 
         for i in range(len(values)):
@@ -432,7 +440,7 @@ def unions_union(item):
     else:
         base_sql = rf"""{column_sql}"""
 
-    base_sql += rf""" FROM {' UNION BY NAME '.join(['(' + table.sql + ')' if not any(["lineage.tables.Select" in str(type(table)), "lineage.tables.Subquery" in str(type(table))]) else "SELECT  *  FROM " + table.sql if type(table) is lineage.tables.Select else "(" + table.source.sql + ")" if type(table) is lineage.tables.Subquery else table.sql for table in item.source.list_all()])}"""
+    base_sql += rf""" FROM {' UNION BY NAME '.join(['(' + table.sql + ')' if not any(["lineage.tables.Select" in str(type(table)), "lineage.tables.Subquery" in str(type(table))]) else "SELECT  *  FROM " + table.sql if "lineage.tables.Select" in str(type(table)) else "(" + table.source.sql + ")" if "lineage.tables.Subquery" in str(type(table)) else table.sql for table in item.source.list_all()])}"""
 
     if item.where_condition:
         base_sql += rf""" WHERE {item.where_condition.sql}"""
@@ -450,9 +458,7 @@ def unions_union(item):
 
 
 def transformations_limit(item):
-    base_sql = (
-        rf"{item.source.sql} LIMIT {item.args[0].sql}"
-    )
+    base_sql = rf"{item.source.sql} LIMIT {item.args[0].sql}"
 
     if item.args[1]:
         base_sql += rf" OFFSET {item.args[1].sql}"
@@ -490,13 +496,7 @@ def dataframes_lambda_output(item):
     return rf"""{item.name}"""
 
 
-# MACRO
-def macros_macro(item):
-    return item.macro.sql
-
-
 def item_to_sql(item):
-
     if not globals()[selector(item)](item):
         print(item)
         print(type(item))

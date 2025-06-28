@@ -8,8 +8,10 @@ import networkx as nx
 import re
 import units
 from ..interpreter import Interpreter
+import uuid
 
-_beeswax_duckdb = Interpreter()
+_interpreters = {"beeswax_duckdb": Interpreter()}
+
 
 class _Operator:
     """
@@ -20,6 +22,7 @@ class _Operator:
 
     def __init__(self, name: str) -> None:
         self.name = name
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {
@@ -65,6 +68,8 @@ class _Expression:
         self.is_primary_key = is_primary_key
         self.is_event_time = is_event_time
 
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
+
     def _node_data(self):
         return {
             "label": rf"Expression ID: {id(self)}",
@@ -109,11 +114,14 @@ class _Column:
         self.on_null = on_null
         self.is_primary_key = is_primary_key
         self.is_event_time = is_event_time
+        self.current_table = None
 
         if type(source) is ColumnList:
             self.unit = source.list_all()[0].unit
         else:
             self.unit = source.unit
+
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         if self.data_type:
@@ -169,6 +177,8 @@ class _BlankColumn:
         self.unit = unit
         self.current_table = None
         self.source_table = None
+
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         if self.data_type:
@@ -278,6 +288,7 @@ class OrderBy:
 
         self.columns = columns
         self.how = how
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
 
 class PartitionBy(ColumnList):
@@ -325,6 +336,7 @@ class _Function:
         self.is_event_time = False
         self.unit = unit
         self.distinct = distinct
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         if self.data_type:
@@ -382,6 +394,7 @@ class _Value:
         self.data_type = data_type
         self.var_type = var_type
         self.unit = unit
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         if self.data_type:
@@ -452,6 +465,7 @@ class _SourceColumn:
         self.unit = self.source_unit
 
         self.column_metadata = column_metadata
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         if self.data_type:
@@ -497,6 +511,7 @@ class _SourceFile:
 
         for column in self.columns.list_all():
             setattr(column, "current_table", self)
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {
@@ -526,6 +541,7 @@ class Condition:
             raise ValueError(
                 rf"len(link_operators)!=len(checks)-1 : {len(link_operators)}!={len(checks)-1}"
             )
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {
@@ -563,6 +579,7 @@ class CaseWhen:
             self.on_null = "WARN"
         else:
             self.on_null = "PASS"
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         if self.unit.name:
@@ -588,6 +605,7 @@ class Record:
     def __init__(self, values: dict):
         self.values = list(values.values())
         self.columns = ColumnList(values.keys())
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {"type": str(type(self))}
@@ -615,6 +633,7 @@ class RecordList:
         self.name = name
         self.records = records
         self.columns = self.records[0].columns
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {"type": str(type(self))}
@@ -640,6 +659,7 @@ class RecordGenerator:
         for column in self.columns.list_all():
             setattr(column, "source_table", None)
             setattr(column, "current_table", None)
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {"type": str(type(self))}
@@ -699,15 +719,23 @@ class _Table:
 
         for column in self.columns.list_all():
             setattr(column, "current_table", self)
+            setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
 
         for column in self.primary_key.list_all():
             setattr(column, "current_table", self)
+            setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
 
         for column in self.static_primary_key.list_all():
             setattr(column, "current_table", self)
+            setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
 
         if self.event_time:
             setattr(self.event_time, "current_table", self)
+            setattr(
+                event_time, "sql", _interpreters["beeswax_duckdb"].to_sql(event_time)
+            )
+
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {
@@ -727,16 +755,21 @@ class _Table:
     def add_column(self, column):
         setattr(column, "current_table", self)
         self.columns.add(column)
+        setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def add_columns(self, columns):
         for column in columns.list_all():
             self.add_column(column)
+            setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def set_primary_key(self, primary_key: ColumnList):
         self.primary_key = primary_key
 
         for column in self.primary_key.list_all():
             setattr(column, "current_table", self)
+            setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
 
         if self.event_time:
             self.static_primary_key = ColumnList(
@@ -746,10 +779,12 @@ class _Table:
                     if column.name != self.event_time.name
                 ]
             )
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def set_event_time(self, event_time):
         self.event_time = event_time
         setattr(self.event_time, "current_table", self)
+        setattr(event_time, "sql", _interpreters["beeswax_duckdb"].to_sql(event_time))
 
         if self.primary_key:
             self.static_primary_key = ColumnList(
@@ -762,6 +797,7 @@ class _Table:
 
         else:
             self.primary_key = self.event_time
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
 
 class TableList:
@@ -824,6 +860,7 @@ class _Transformation:
         self.name = name
         self.source = source
         self.args = args
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {

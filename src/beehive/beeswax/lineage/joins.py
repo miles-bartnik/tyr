@@ -37,6 +37,7 @@ class Join:
         right_ctes = self.join_expression.right.ctes.list_all()
 
         self.ctes = lineage.TableList(left_ctes + right_ctes)
+        self.sql = lineage._interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {"type": str(type(self))}
@@ -72,6 +73,7 @@ class CompoundJoin:
             for cte in join.ctes.list_all():
                 if cte.name not in self.ctes.list_names():
                     self.ctes.add(cte)
+        self.sql = lineage._interpreters["beeswax_duckdb"].to_sql(self)
 
     def _node_data(self):
         return {"type": str(type(self))}

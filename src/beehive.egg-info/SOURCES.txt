@@ -2,14 +2,12 @@ pyproject.toml
 src/__init__.py
 src/docs.py
 src/beehive/__init__.py
-src/beehive/interpreter.py
 src/beehive.egg-info/PKG-INFO
 src/beehive.egg-info/SOURCES.txt
 src/beehive.egg-info/dependency_links.txt
 src/beehive.egg-info/top_level.txt
 src/beehive/beeswax/__init__.py
-src/beehive/beeswax/interface/__init__.py
-src/beehive/beeswax/interface/core.py
+src/beehive/beeswax/interpreter.py
 src/beehive/beeswax/lineage/__init__.py
 src/beehive/beeswax/lineage/columns.py
 src/beehive/beeswax/lineage/core.py
@@ -47,6 +45,11 @@ src/beehive/beeswax/lineage/macros/functions/geo.py
 src/beehive/beeswax/lineage/macros/functions/interpolate.py
 src/beehive/beeswax/lineage/macros/functions/numeric.py
 src/beehive/beeswax/lineage/macros/functions/unit_conversion.py
+src/beehive/beeswax/syntax/__init__.py
+src/beehive/beeswax/syntax/core.py
+src/beehive/beeswax/syntax/duckdb.py
+src/beehive/beeswax/syntax/network.py
+src/beehive/beeswax/syntax/translate.py
 src/beehive/database/__init__.py
 src/beehive/database/connections.py
 src/beehive/database/core.py
@@ -63,9 +66,3 @@ src/beehive/database/validation/checks/columns/numeric.py
 src/beehive/database/validation/checks/columns/pii.py
 src/beehive/database/validation/checks/tables/__init__.py
 src/beehive/database/validation/checks/tables/core.py
-src/beehive/syntax/__init__.py
-src/beehive/syntax/core.py
-src/beehive/syntax/dataframes.py
-src/beehive/syntax/duckdb.py
-src/beehive/syntax/network.py
-src/beehive/syntax/translate.py

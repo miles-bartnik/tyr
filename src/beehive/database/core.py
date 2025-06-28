@@ -4,7 +4,7 @@ import re
 import logging.handlers
 from pythonjsonlogger import jsonlogger
 from .connections import Connection
-from src.beehive.beeswax.interpreter import Interpreter
+from ..beeswax.interpreter import Interpreter
 from ..beeswax.lineage.schema import Schema
 from ..beeswax import lineage
 

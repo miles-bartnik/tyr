@@ -1,5 +1,5 @@
 from ..connections import Connection
-from src.beehive.beeswax.interpreter import Interpreter
+from ...beeswax.interpreter import Interpreter
 import pandas as pd
 from ...beeswax import lineage
 from .checks import columns as column_checks
