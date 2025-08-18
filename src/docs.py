@@ -1,16 +1,14 @@
 import re
 import os
 import json
-from ..database import *
-
 
 def format():
     for filename in os.listdir(
-        os.path.expanduser(rf"~/olympus/docs/_build/html/pages/")
+        os.path.expanduser(rf"~/tyr/docs/_build/html/pages/")
     ):
         if ".html" in filename:
             with open(
-                os.path.expanduser(rf"~/olympus/docs/_build/html/pages/") + filename,
+                os.path.expanduser(rf"~/tyr/docs/_build/html/pages/") + filename,
                 "r+",
             ) as f:
                 page = f.read()
