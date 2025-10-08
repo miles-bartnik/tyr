@@ -57,9 +57,7 @@ def proportion_is_email(
                 lineage.values.Datatype("FLOAT"),
             ),
             right=lineage.functions.data_type.Cast(
-                lineage.functions.aggregate.Count(
-                    lineage.values.WildCard()
-                ),
+                lineage.functions.aggregate.Count(lineage.values.WildCard()),
                 lineage.values.Datatype("FLOAT"),
             ),
         ),

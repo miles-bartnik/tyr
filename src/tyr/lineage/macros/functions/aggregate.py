@@ -5,7 +5,7 @@ from ... import functions as lineage_functions
 
 def conditional_proportion(condition: lineage.Condition):
     return lineage_functions.math.Divide(
-        left=tyr.lineage.functions.data_type.Cast(
+        left=lineage_functions.data_type.Cast(
             source=lineage_functions.aggregate.Sum(
                 lineage.CaseWhen(
                     conditions=[condition],
@@ -15,7 +15,7 @@ def conditional_proportion(condition: lineage.Condition):
             ),
             data_type=lineage_values.Datatype("FLOAT"),
         ),
-        right=tyr.lineage.functions.data_type.Cast(
+        right=lineage_functions.data_type.Cast(
             source=lineage_functions.aggregate.Count(source=lineage_values.WildCard()),
             data_type=lineage_values.Datatype("FLOAT"),
         ),
@@ -24,11 +24,11 @@ def conditional_proportion(condition: lineage.Condition):
 
 def distinct_proportion(source):
     return lineage_functions.math.Divide(
-        left=tyr.lineage.functions.data_type.Cast(
+        left=lineage_functions.data_type.Cast(
             source=lineage_functions.aggregate.Count(distinct=True, source=source),
             data_type=lineage_values.Datatype("FLOAT"),
         ),
-        right=tyr.lineage.functions.data_type.Cast(
+        right=lineage_functions.data_type.Cast(
             source=lineage_functions.aggregate.Count(source=source),
             data_type=lineage_values.Datatype("FLOAT"),
         ),

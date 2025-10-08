@@ -3,14 +3,13 @@ import units
 from ..core import Check
 from tyr import lineage
 
+
 def primary_key_completeness(
     source: lineage.core._Table, scope: str, granularity: lineage.values.Interval = None
 ):
-    result = (
-        lineage.macros.functions.aggregate.distinct_proportion(
-            source=lineage.values.Tuple(
-                values=lineage.macros.columns.select_all(source.primary_key).list_all()
-            )
+    result = lineage.macros.functions.aggregate.distinct_proportion(
+        source=lineage.values.Tuple(
+            values=lineage.macros.columns.select_all(source.primary_key).list_columns()
         )
     )
 

@@ -1,8 +1,9 @@
 from ..core import TableList, _interpreters
+from ..tables import Core
 import pickle
 import os
 import pandas as pd
-import yaml
+import rustworkx as rx
 from typing import Dict, List
 
 
@@ -14,6 +15,7 @@ class _SchemaSettings:
     :param substitutions: Dict - String substitutions to make in sql strings e.g. {'%run_id%':'abcdef_123456'}
     :param extensions: List[str] - List of extensions to install e.g. ['spatial']
     :param connection: Dict - Connection settings e.g. {"enable_progress_bar": True, "threads": 4}
+    :param configuration: Dict - Any additional settings used by the tables within the datamodel e.g. {"min_datetime": '2025-01-01'}
     """
 
     def __init__(
@@ -22,11 +24,13 @@ class _SchemaSettings:
         substitutions: Dict = {},
         extensions: List[str] = [],
         connection: Dict = {"enable_progress_bar": True, "threads": 4},
+        configuration: Dict = {},
     ) -> None:
         self.name = name
         self.substitutions = substitutions
         self.extensions = extensions
         self.connection = connection
+        self.configuration = configuration
         self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
 
@@ -51,12 +55,17 @@ class _Schema:
             "base": str(type(self).__bases__[0]),
         }
 
-        for table in self.tables.list_all():
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
+
+        for table in self.tables.list_tables():
             setattr(table, "schema", self)
             setattr(
                 table, "_node_data", table._node_data | {"schema": self.settings.name}
             )
+            graph.add_child(0, table._node_data, {})
 
+        self.graph = graph
         self._outbound_edge_data = {}
         self._inbound_edge_data = {}
 
@@ -72,6 +81,24 @@ class _Schema:
             rf"{output_directory.rstrip('/')}/{self.settings.name}.pkl", "wb"
         ) as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
+    def add_table(self, table: Core, override: bool = False):
+        setattr(table, "schema", self)
+        try:
+            self.tables.add(table, override=override)
+        except:
+            setattr(table, "schema", None)
+            self.tables.add(table, override=override)
+
+    def add_tables(self, tables: TableList, override: bool = False):
+        if not tables.is_empty:
+            for table in tables.list_tables():
+                setattr(table, "schema", self)
+                try:
+                    self.tables.add(table, override=override)
+                except:
+                    setattr(table, "schema", None)
+                    self.tables.add(table, override=override)
 
     def drop_tables(self, tables: List[str] = [], force=False):
         if not tables:

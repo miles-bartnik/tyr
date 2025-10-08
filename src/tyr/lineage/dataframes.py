@@ -1,4 +1,4 @@
-import units.core
+import units
 
 from ..lineage import core as lineage
 import typing
@@ -76,7 +76,7 @@ class DataFrame(lineage._Table):
         if any(
             [
                 type(column) not in [DataFrameColumn, LambdaOutput]
-                for column in columns.list_all()
+                for column in columns.list_columns()
             ]
         ):
             raise ValueError(

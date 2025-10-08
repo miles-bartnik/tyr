@@ -114,3 +114,14 @@ class Length(lineage._Function):
             var_type="numeric",
             macro_group=macro_group,
         )
+
+
+class Character(lineage._Function):
+    def __init__(self, value: lineage_values.Integer, macro_group: str = ""):
+        super().__init__(
+            args=[value],
+            name="CHR",
+            data_type=lineage_values.Datatype("VARCHAR"),
+            var_type="string",
+            macro_group=macro_group,
+        )

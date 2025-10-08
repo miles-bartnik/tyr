@@ -30,15 +30,13 @@ def normalize_column_name(column: str):
 
 
 def get_build_order(schema: _Schema):
-    spider = lineage.core.Spider()
-
     print("Retrieving build order...")
 
     build_order = pd.DataFrame(
         columns=["table"] + schema.tables.list_names()
     ).set_index("table")
 
-    for table in schema.tables.list_all():
+    for table in schema.tables.list_tables():
         print(table.name)
 
         records = {"table": table.name}
@@ -57,29 +55,27 @@ def get_build_order(schema: _Schema):
     build_order = build_order.set_index("table")
 
     print("ITERATING THROUGH SCHEMA")
-    for table in schema.tables.list_all():
+    for table in schema.tables.list_tables():
         print(table.name)
 
         print(
             [
                 node
-                for node in list(spider.item_to_graph(table).nodes(data=True))
-                if node[1]["type"] in [str(lineage.tables.Select)]
+                for node in table.graph.nodes()
+                if node["type"] in [str(lineage.tables.Select)]
             ]
         )
 
         try:
             for node in [
                 node
-                for node in list(spider.item_to_graph(table).nodes(data=True))
-                if node[1]["type"] in [str(lineage.tables.Select)]
+                for node in table.graph.nodes()
+                if node["type"] in [str(lineage.tables.Select)]
             ]:
                 print(node)
                 build_order.loc[node[0], table.name] = 1
         except:
-            for node in [
-                node[1] for node in list(spider.item_to_graph(table).nodes(data=True))
-            ]:
+            for node in table.graph.nodes():
                 print(node)
 
     build_order = build_order[build_order.sum().sort_values().index.tolist()].reindex(

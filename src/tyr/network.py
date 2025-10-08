@@ -1,6 +1,6 @@
-import networkx as nx
 import units
 import itertools
+import rustworkx as rx
 
 
 def add_node(G, item):
@@ -12,64 +12,90 @@ def add_node(G, item):
     return G
 
 
+def add_edge(G, start, end, edge_data: dict = {}):
+    G = add_edge(G, start, end)
+
+    return G
+
+
+def compose_all(graphs: list):
+    return compose_all(graphs)
+
+
+def has_path(G, start, end):
+    return nx.has_path(G, start, end)
+
+
+def shortest_path_length(G, start, end):
+    return nx.shortest_path_length(G, start, end)
+
+
+def all_simple_paths(G, start, end):
+    return nx.all_simple_paths(G, start, end)
+
+
+def dag_longest_path_length(G, start, end):
+    return nx.dag_longest_path_length(G, start, end)
+
+
 def source_column(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     return G
 
 
 def source_file(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     return G
 
 
 def core_column(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
     G = add_node(G, item.source)
-    G.add_edge(id(item.source), id(item))
-    G = nx.compose_all([G, item_to_graph(item.source)])
+    G = add_edge(G, item.source, item)
+    G = compose_all([G, item_to_graph(item.source)])
 
     if "current_table" in dir(item):
         G = add_node(G, item.current_table)
-        G.add_edge(id(item.current_table), id(item))
+        G = add_edge(G, item.current_table, item)
 
     elif "source_table" in dir(item):
         G = add_node(G, item.source_table)
-        G.add_edge(id(item.source_table), id(item))
+        G = add_edge(G, item.source_table, item)
 
     return G
 
 
 def column_wild_card(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
     G = add_node(G, item.current_table)
-    G.add_edge(id(item.current_table), id(item))
+    G = add_edge(G, item.current_table, item)
 
     return G
 
 
 def column_blank(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     return G
 
 
 def core_table(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     if item.source:
         G = add_node(G, item.source)
-        G.add_edge(id(item.source), id(item))
-        G = nx.compose_all([G, item_to_graph(item.source)])
+        G = add_edge(G, item.source, item)
+        G = compose_all([G, item_to_graph(item.source)])
 
-    for column in item.columns.list_all():
+    for column in item.columns.list_columns():
         G = add_node(G, column)
 
         G.add_edge(
@@ -77,7 +103,7 @@ def core_table(item):
             id(column),
         )
 
-        G = nx.compose_all([G, item_to_graph(column)])
+        G = compose_all([G, item_to_graph(column)])
 
     if item.where_condition:
         G.add_node(
@@ -86,8 +112,8 @@ def core_table(item):
             type=str(type(item.where_condition)),
             base=str(type(item.where_condition).__bases__[0]),
         )
-        G.add_edge(id(item.where_condition), id(item))
-        G = nx.compose_all([G, item_to_graph(item.where_condition)])
+        G = add_edge(G, item.where_condition, item)
+        G = compose_all([G, item_to_graph(item.where_condition)])
 
     if (item.having_condition) and (item.group_by):
         G.add_node(
@@ -96,43 +122,43 @@ def core_table(item):
             type=str(type(item.having_condition)),
             base=str(type(item.having_condition).__bases__[0]),
         )
-        G.add_edge(id(item.having_condition), id(item))
-        G = nx.compose_all([G, item_to_graph(item.having_condition)])
+        G = add_edge(G, item.having_condition, item)
+        G = compose_all([G, item_to_graph(item.having_condition)])
 
     if not item.ctes.is_empty:
-        for cte in item.ctes.list_all():
+        for cte in item.ctes.list_tables():
             G = add_node(G, cte)
-            G.add_edge(id(cte), id(item))
-            G = nx.compose_all([G, item_to_graph(cte)])
+            G = add_edge(G, cte, item)
+            G = compose_all([G, item_to_graph(cte)])
 
     return G
 
 
 def tables_subquery(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
     G = add_node(G, item.source)
-    G.add_edge(id(item.source), id(item))
-    G = nx.compose_all([G, item_to_graph(item.source)])
+    G = add_edge(G, item.source, item)
+    G = compose_all([G, item_to_graph(item.source)])
 
-    for column in item.columns.list_all():
+    for column in item.columns.list_columns():
         G = add_node(G, column)
         G = add_node(G, column.source)
-        G.add_edge(id(column.source), id(column))
-        G = nx.compose_all([G, item_to_graph(column.source)])
+        G = add_edge(G, column.source, column)
+        G = compose_all([G, item_to_graph(column.source)])
 
     return G
 
 
 def tables_from_records(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     return G
 
 
 def core_case_when(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
     # G.add_node(
     #     id(item),
@@ -158,16 +184,16 @@ def core_case_when(item):
     #     item.values[0]
     # ).items():
     #     G.nodes[(id(item.values[0]))][key] = value
-    G.add_edge(id(item.conditions[0]), id(item.values[0]))
-    G.add_edge(id(item.conditions[0]), id(item))
+    G = add_edge(G, item.conditions[0], item.values[0])
+    G = add_edge(G, item.conditions[0], item)
 
     for i in range(1, len(item.conditions)):
         G = add_node(G, item.conditions[i])
         G = add_node(G, item.values[i])
 
-        G.add_edge(id(item.conditions[i]), id(item))
-        G.add_edge(id(item.conditions[i - 1]), id(item.conditions[i]))
-        G = nx.compose_all(
+        G = add_edge(G, item.conditions[i], item)
+        G = add_edge(G, item.conditions[i - 1], item.conditions[i])
+        G = compose_all(
             [
                 G,
                 item_to_graph(item.conditions[i]),
@@ -178,15 +204,15 @@ def core_case_when(item):
     if item.else_value:
         G = add_node(G, item.else_value)
 
-        G.add_edge(id(item.conditions[-1]), id(item.else_value))
-        G.add_edge(id(item.else_value), id(item))
-        G = nx.compose_all([G, item_to_graph(item.else_value)])
+        G = add_edge(G, item.conditions[-1], item.else_value)
+        G = add_edge(G, item.else_value, item)
+        G = compose_all([G, item_to_graph(item.else_value)])
 
     return G
 
 
 def core_condition(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(
         G,
         item,
@@ -207,11 +233,11 @@ def core_condition(item):
                 item.link_operators[i],
             )
 
-            G.add_edge(id(item.checks[i]), id(item.link_operators[i]))
-            G.add_edge(id(item.checks[i + 1]), id(item.link_operators[i]))
-            G.add_edge(id(item.link_operators[i]), id(item))
+            G = add_edge(G, item.checks[i], item.link_operators[i])
+            G = add_edge(G, item.checks[i + 1], item.link_operators[i])
+            G = add_edge(G, item.link_operators[i], item)
 
-            G = nx.compose_all(
+            G = compose_all(
                 [G, item_to_graph(item.checks[i]), item_to_graph(item.checks[i + 1])]
             )
 
@@ -220,76 +246,55 @@ def core_condition(item):
             G,
             item.checks[0],
         )
-        G.add_edge(id(item.checks[0]), id(item))
+        G = add_edge(G, item.checks[0], item)
 
-        G = nx.compose_all([G, item_to_graph(item.checks[0])])
+        G = compose_all([G, item_to_graph(item.checks[0])])
 
     return G
 
 
 def core_function(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     for arg in item.args:
         G = add_node(G, arg)
-        G.add_edge(id(arg), id(item))
-        G = nx.compose_all([G, item_to_graph(arg)])
+        G = add_edge(G, arg, item)
+        G = compose_all([G, item_to_graph(arg)])
 
     if not item.partition_by.is_empty:
-        for column in item.partition_by.list_all():
+        for column in item.partition_by.list_columns():
             G = add_node(G, column)
 
-            G.add_edge(id(column), id(item), type=str(type(item.partition_by)))
-            G = nx.compose_all([G, item_to_graph(column)])
+            G = add_edge(
+                G, column, item, edge_data={"type": str(type(item.partition_by))}
+            )
+            G = compose_all([G, item_to_graph(column)])
 
     if not item.order_by.columns.is_empty:
-        for column in item.order_by.columns.list_all():
+        for column in item.order_by.columns.list_columns():
             G = add_node(G, column)
 
-            G.add_edge(id(column), id(item), type=str(type(item.order_by)))
-            G = nx.compose_all([G, item_to_graph(column)])
+            G = add_edge(G, column, item, edge_data={"type": str(type(item.order_by))})
+            G = compose_all([G, item_to_graph(column)])
 
     return G
 
 
 def functions_source_wild_to_staging_column(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(
         G,
         item,
     )
     G = add_node(G, item.args[0])
-    G.add_edge(id(item.args[0]), id(item))
-
-    return G
-
-
-def core_expression(item):
-    G = nx.DiGraph()
-    G = add_node(
-        G,
-        item,
-    )
-
-    G = add_node(
-        G,
-        item.left,
-    )
-    G = add_node(
-        G,
-        item.right,
-    )
-
-    G.add_edge(id(item.left), id(item))
-    G.add_edge(id(item.right), id(item))
-    G = nx.compose_all([G, item_to_graph(item.left), item_to_graph(item.right)])
+    G = add_edge(G, item.args[0], item)
 
     return G
 
 
 def core_value(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
 
     if not item.data_type:
         data_type = ""
@@ -312,108 +317,108 @@ def core_value(item):
 
 
 def core_schema(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(
         G,
         item,
     )
 
-    for table in item.tables.list_all():
+    for table in item.tables.list_tables():
         G = add_node(G, table)
 
-        G.add_edge(id(item), id(table))
-        G = nx.compose_all([G, item_to_graph(table)])
+        G = add_edge(G, item, table)
+        G = compose_all([G, item_to_graph(table)])
 
     return G
 
 
 def joins_compound_join(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     for join in item.joins:
         G = add_node(G, join)
-        G.add_edge(id(join), id(item))
-        G = nx.compose_all([G, item_to_graph(join)])
+        G = add_edge(G, join, item)
+        G = compose_all([G, item_to_graph(join)])
 
     return G
 
 
 def joins_join(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     G = add_node(G, item.join_expression)
-    G.add_edge(id(item.join_expression), id(item))
-    G = nx.compose_all([G, item_to_graph(item.join_expression)])
+    G = add_edge(G, item.join_expression, item)
+    G = compose_all([G, item_to_graph(item.join_expression)])
 
     G = add_node(G, item.condition)
-    G.add_edge(id(item.condition), id(item))
-    G = nx.compose_all([G, item_to_graph(item.condition)])
+    G = add_edge(G, item.condition, item)
+    G = compose_all([G, item_to_graph(item.condition)])
 
     return G
 
 
 def unions_union(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
-    for table in item.source.list_all():
+    for table in item.source.list_columns():
         G = add_node(G, table)
-        G.add_edge(id(table), id(item))
-        G = nx.compose_all([G, item_to_graph(table)])
+        G = add_edge(G, table, item)
+        G = compose_all([G, item_to_graph(table)])
 
-    for column in item.columns.list_all():
+    for column in item.columns.list_columns():
         G = add_node(G, column)
-        G.add_edge(id(item), id(column))
-        G = nx.compose_all([G, item_to_graph(column)])
+        G = add_edge(G, item, column)
+        G = compose_all([G, item_to_graph(column)])
 
     return G
 
 
 def unions_union_column(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
-    for column in item.source.list_all():
+    for column in item.source.list_columns():
         G = add_node(G, column)
-        G.add_edge(id(column), id(item))
-        G = nx.compose_all([G, item_to_graph(column)])
+        G = add_edge(G, column, item)
+        G = compose_all([G, item_to_graph(column)])
 
     return G
 
 
 def values_struct(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     for value in item.values:
         G = add_node(G, value)
-        G.add_edge(id(value), id(item))
-        G = nx.compose_all([G, item_to_graph(value)])
+        G = add_edge(G, value, item)
+        G = compose_all([G, item_to_graph(value)])
 
     return G
 
 
 def values_interval(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     return G
 
 
 def values_subquery(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
     G = add_node(G, item.value)
 
-    G.add_edge(id(item.value), id(item))
+    G = add_edge(G, item.value, item)
 
     return G
 
 
 def values_list(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     for i in range(len(item.value)):
@@ -422,20 +427,20 @@ def values_list(item):
             item.value[i],
         )
         G.add_edge(id(item.value[i]), id(item), index=i)
-        G = nx.compose_all([G, item_to_graph(item.value[i])])
+        G = compose_all([G, item_to_graph(item.value[i])])
 
     return G
 
 
 def values_boolean(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     return G
 
 
 def core_quantity(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     return G
@@ -443,59 +448,59 @@ def core_quantity(item):
 
 # TRANSFORMATIONS
 def transformations_limit(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     G = add_node(G, item.source)
-    G.add_edge(id(item.source), id(item))
-    G = nx.compose_all([G, item_to_graph(item.source)])
+    G = add_edge(G, item.source, item)
+    G = compose_all([G, item_to_graph(item.source)])
 
     return G
 
 
 def core_transformation(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     G = add_node(G, item.source)
-    G.add_edge(id(item.source), id(item))
-    G = nx.compose_all([G, item_to_graph(item.source)])
+    G = add_edge(G, item.source, item)
+    G = compose_all([G, item_to_graph(item.source)])
 
     return G
 
 
 # DATAFRAMES
 def dataframes_data_frame(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
     G = add_node(G, item.source)
-    G.add_edge(id(item.source), id(item))
+    G = add_edge(G, item.source, item)
 
-    for column in item.columns.list_all():
+    for column in item.columns.list_columns():
         G = add_node(G, column)
-        G.add_edge(id(item), id(column))
+        G = add_edge(G, item, column)
 
     return G
 
 
 def dataframes_data_frame_column(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     G = add_node(G, item.source)
 
-    G.add_edge(id(item.source), id(item))
+    G = add_edge(G, item.source, item)
 
     return G
 
 
 def dataframes_lambda_function(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     G = add_node(G, item)
 
     for arg in item.args:
         G = add_node(G, arg)
-        G.add_edge(id(arg), id(item))
+        G = add_edge(G, arg, item)
 
     return G
 
@@ -504,14 +509,14 @@ def dataframes_lambda_function(item):
 
 
 def macros_macro(item):
-    G = nx.DiGraph()
+    G = rx.PyDiGraph()
     add_node(G, item)
-    G = nx.compose_all([G, item_to_graph(item.macro)])
-    G.add_edge(id(item), id(item.macro))
+    G = compose_all([G, item_to_graph(item.macro)])
+    G = add_edge(G, item, item.macro)
 
     for arg in item.args:
-        G = nx.compose_all([G, item_to_graph(arg)])
-        G.add_edge(id(item), id(arg))
+        G = compose_all([G, item_to_graph(arg)])
+        G = add_edge(G, item, arg)
 
     return G
 
@@ -594,7 +599,7 @@ def item_to_graph(item):
     # UNITS
 
     elif type(item) is units.core.Unit:
-        G = nx.DiGraph()
+        G = rx.PyDiGraph()
 
     # TABLES
 
@@ -692,9 +697,9 @@ def item_to_graph(item):
 
 class Spider:
     def __init__(self):
-        self.networkx_version = rf"""networkx=={nx.__version__}"""
+        self.rustworkx_version = rx.__version__
 
-    def connect_schema(self, graph: nx.DiGraph):
+    def connect_schema(self, graph: rx.PyDiGraph):
         schema_nodes = [
             {"node": node} | data
             for node, data in graph.nodes(data=True)
@@ -724,23 +729,23 @@ class Spider:
             ]
 
             for table in s1_tables:
-                if nx.has_path(graph, s1["node"], table["node"]) and nx.has_path(
+                if has_path(graph, s1["node"], table["node"]) and has_path(
                     graph, s2["node"], table["node"]
                 ):
-                    if nx.shortest_path_length(
+                    if shortest_path_length(
                         graph, s1["node"], table["node"]
-                    ) > nx.shortest_path_length(graph, s2["node"], table["node"]):
+                    ) > shortest_path_length(graph, s2["node"], table["node"]):
                         graph.add_edge(s1["node"], s2["node"])
                     else:
                         graph.add_edge(s2["node"], s1["node"])
 
             for table in s2_tables:
-                if nx.has_path(graph, s1["node"], table["node"]) and nx.has_path(
+                if has_path(graph, s1["node"], table["node"]) and has_path(
                     graph, s2["node"], table["node"]
                 ):
-                    if nx.shortest_path_length(
+                    if shortest_path_length(
                         graph, s1["node"], table["node"]
-                    ) > nx.shortest_path_length(graph, s2["node"], table["node"]):
+                    ) > shortest_path_length(graph, s2["node"], table["node"]):
                         graph.add_edge(s1["node"], s2["node"])
                     else:
                         graph.add_edge(s2["node"], s1["node"])
@@ -749,11 +754,11 @@ class Spider:
             s1 = pair[0]
             s2 = pair[1]
 
-            if len(list(nx.all_simple_paths(graph, s1["node"], s2["node"]))) > 1:
-                if nx.dag_longest_path_length(graph, s1["node"], s2["node"]) > 1:
+            if len(list(all_simple_paths(graph, s1["node"], s2["node"]))) > 1:
+                if dag_longest_path_length(graph, s1["node"], s2["node"]) > 1:
                     graph.remove_edge(s1["node"], s2["node"])
-            elif len(list(nx.all_simple_paths(graph, s2["node"], s1["node"]))) > 1:
-                if nx.dag_longest_path_length(graph, s2["node"], s1["node"]) > 1:
+            elif len(list(all_simple_paths(graph, s2["node"], s1["node"]))) > 1:
+                if dag_longest_path_length(graph, s2["node"], s1["node"]) > 1:
                     graph.remove_edge(s2["node"], s1["node"])
             else:
                 pass

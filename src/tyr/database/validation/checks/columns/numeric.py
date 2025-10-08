@@ -13,9 +13,7 @@ def standard_deviation(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.functions.aggregate.StandardDeviation(
-            source
-        ),
+        result=lineage.functions.aggregate.StandardDeviation(source),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
         granularity=granularity,

@@ -1,8 +1,14 @@
 from ..lineage import core as lineage
 from ..lineage import columns as lineage_columns
+from ..lineage import functions as lineage_functions
 
 
 class Core(lineage._Table):
+
+    """
+
+    """
+
     def __init__(
         self,
         name,
@@ -18,13 +24,18 @@ class Core(lineage._Table):
         macro_group: str = "",
     ) -> None:
         if not all(
-            [isinstance(column, lineage._Column) for column in columns.list_all()]
+            [isinstance(column, lineage._Column) for column in columns.list_columns()]
         ):
-            print([rf"{column.name} - {type(column)}" for column in columns.list_all()])
+            print(
+                [
+                    rf"{column.name} - {type(column)}"
+                    for column in columns.list_columns()
+                ]
+            )
             raise ValueError("All columns must be Core, Blank, or WildCard")
 
         if ctes:
-            for table in ctes.list_all():
+            for table in ctes.list_tables():
                 if type(table) not in [Core, Select]:
                     print(table.__dict__)
                     raise ValueError("cte must be either Core or Select")
@@ -77,13 +88,13 @@ class Select(lineage._Table):
                 columns=lineage.ColumnList(
                     [
                         lineage_columns.Select(column)
-                        for column in source.columns.list_all()
+                        for column in source.columns.list_columns()
                     ]
                 ),
                 primary_key=lineage.ColumnList(
                     [
                         lineage_columns.Select(column)
-                        for column in source.primary_key.list_all()
+                        for column in source.primary_key.list_columns()
                     ]
                 ),
                 event_time=lineage_columns.Select(source.event_time),
@@ -97,13 +108,13 @@ class Select(lineage._Table):
                 columns=lineage.ColumnList(
                     [
                         lineage_columns.Select(column)
-                        for column in source.columns.list_all()
+                        for column in source.columns.list_columns()
                     ]
                 ),
                 primary_key=lineage.ColumnList(
                     [
                         lineage_columns.Select(column)
-                        for column in source.primary_key.list_all()
+                        for column in source.primary_key.list_columns()
                     ]
                 ),
                 source=source,
@@ -191,14 +202,14 @@ class Subquery(lineage._Table):
                     lineage_columns.Core(
                         source=lineage_columns.Select(column), name=column.name
                     )
-                    for column in source.columns.list_all()
+                    for column in source.columns.list_columns()
                 ]
             ),
             source=source,
             primary_key=lineage.ColumnList(
                 [
                     lineage_columns.Select(column)
-                    for column in source.primary_key.list_all()
+                    for column in source.primary_key.list_columns()
                 ]
             ),
             event_time=event_time,
@@ -217,12 +228,15 @@ class Union(lineage._Table):
         macro_group: str = "",
     ) -> None:
         if not all(
-            [type(column) is lineage_columns.Core for column in columns.list_all()]
+            [type(column) is lineage_columns.Core for column in columns.list_columns()]
         ):
             raise ValueError("Columns must be lineage_columns.Expand")
 
         if not all(
-            [type(column) is lineage_columns.Core for column in primary_key.list_all()]
+            [
+                type(column) is lineage_columns.Core
+                for column in primary_key.list_columns()
+            ]
         ):
             raise ValueError("Columns must be lineage_columns.Expand")
 
@@ -231,18 +245,18 @@ class Union(lineage._Table):
                 [
                     lineage_columns.Core(
                         name=column.name,
-                        source=tyr.lineage.functions.union.UnionColumn(
+                        source=lineage_functions.union.UnionColumn(
                             [
                                 lineage_columns.Select(table.columns[column.name])
-                                for table in tables.list_all()
+                                for table in tables.list_tables()
                             ]
                         ),
                     )
-                    for column in tables.list_all()[0].columns.list_all()
+                    for column in tables.list_tables()[0].columns.list_columns()
                     if all(
                         [
                             column.name in table.columns.list_names()
-                            for table in tables.list_all()
+                            for table in tables.list_tables()
                         ]
                     )
                 ]

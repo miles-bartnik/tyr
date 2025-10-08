@@ -10,6 +10,7 @@ import json
 from typing import List
 import os
 import re
+import rustworkx as rx
 
 _interpreters = {"beeswax_duckdb": Interpreter()}
 
@@ -57,8 +58,17 @@ class ColumnMetadata:
         self.var_type = str(column_metadata["var_type"])
         self.data_type = Datatype(str(column_metadata["data_type"]))
         self.source_unit = Unit(str(column_metadata["source_unit"]))
-        self.target_unit = Unit(str(column_metadata["target_unit"]))
+        if column_metadata["target_unit"]:
+            self.target_unit = Unit(str(column_metadata["target_unit"]))
+        else:
+            self.target_unit = Unit(str(column_metadata["source_unit"]))
         self.precision = str(column_metadata["precision"])
+        if column_metadata["scale_factor"]:
+            self.scale_factor = float(column_metadata["scale_factor"])
+        elif self.var_type == "numeric":
+            self.scale_factor = 1
+        else:
+            self.scale_factor = None
         self.filter_values = json.loads(column_metadata["filter_values"])
         self.on_filter = str(column_metadata["on_filter"])
         self.on_null = str(column_metadata["on_null"])
@@ -68,6 +78,12 @@ class ColumnMetadata:
         self.ordinal_position = int(column_metadata["ordinal_position"])
         self.schema = str(column_metadata["schema"])
 
+    def __getitem__(self, item):
+        if isinstance(item, list):
+            return [getattr(self, value) for value in item]
+        else:
+            return getattr(self, item)
+
 
 class FileMetadata:
     def __init__(self, file_metadata: pd.Series):
@@ -76,6 +92,12 @@ class FileMetadata:
         self.delim = str(file_metadata["delim"])
         self.distinct = bool(file_metadata["distinct"])
         self.schema = str(file_metadata["schema"])
+
+    def __getitem__(self, item):
+        if isinstance(item, list):
+            return [getattr(self, value) for value in item]
+        else:
+            return getattr(self, item)
 
 
 class SourceFile:
@@ -101,11 +123,9 @@ class SourceFile:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
-
-    def _inbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
+        self.graph = graph
 
 
 class SourceSettings(_SchemaSettings):
@@ -190,7 +210,18 @@ def init_column_metadata(
     )
 
     if not file_metadata.empty:
-        for row in file_metadata.iter_rows(named=True):
+        for index, row in file_metadata.iterrows():
+            if not [
+                "/".join(row["file_regex"].split("/")[:-1]) + "/" + file
+                for file in os.listdir("/".join(row["file_regex"].split("/")[:-1]))
+                if re.search(
+                    row["file_regex"].replace(".", "\.").replace("*", ".*"),
+                    "/".join(row["file_regex"].split("/")[:-1]) + "/" + file,
+                )
+            ]:
+                print(rf"""Nothing found for - {row['file_regex']}""")
+                return column_metadata_df
+
             file = [
                 "/".join(row["file_regex"].split("/")[:-1]) + "/" + file
                 for file in os.listdir("/".join(row["file_regex"].split("/")[:-1]))

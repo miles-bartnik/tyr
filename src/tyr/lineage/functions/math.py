@@ -1,3 +1,5 @@
+import warnings
+
 from ...lineage import core as lineage
 from ...lineage import values as lineage_values
 
@@ -20,7 +22,7 @@ class Divide(lineage._Function):
             name="DIVIDE",
             args=[left, right],
             data_type=data_type,
-            unit=lineage.units.core.Unit(left.unit.name + right.unit.reciprocal().name),
+            unit=lineage.units.core.divide(left.unit, right.unit),
             macro_group=macro_group,
         )
 
@@ -47,7 +49,7 @@ class Multiply(lineage._Function):
             name="MULTIPLY",
             args=[left, right],
             data_type=data_type,
-            unit=lineage.units.core.Unit(left.unit.name + right.unit.name),
+            unit=lineage.units.core.multiply(left.unit, right.unit),
             macro_group=macro_group,
         )
 
@@ -70,30 +72,11 @@ class Add(lineage._Function):
         else:
             data_type = lineage_values.Datatype("FLOAT")
 
-        if (left.unit.sub_units.empty) and (right.unit.sub_units.empty):
-            unit = lineage.units.core.Unit()
-        elif left.unit.sub_units.empty:
-            raise AttributeError(
-                rf"Units are not the same: left: {left.unit.name}, right: {right.unit.name}"
-            )
-        elif right.unit.sub_units.empty:
-            raise AttributeError(
-                rf"Units are not the same: left: {left.unit.name}, right: {right.unit.name}"
-            )
-        elif left.unit.sub_units.sort(["exponent", "symbol"]).equals(
-            right.unit.sub_units.sort(["exponent", "symbol"])
-        ):
-            unit = left.unit
-        else:
-            raise AttributeError(
-                rf"Units are not the same: left: {left.unit.name}, right: {right.unit.name}"
-            )
-
         super().__init__(
             name="ADD",
             args=[left, right],
             data_type=lineage_values.Datatype("FLOAT"),
-            unit=unit,
+            unit=lineage.units.core.add_subtract(left.unit, right.unit),
             macro_group=macro_group,
         )
 
@@ -116,30 +99,11 @@ class Subtract(lineage._Function):
         else:
             data_type = lineage_values.Datatype("FLOAT")
 
-        if (left.unit.sub_units.empty) and (right.unit.sub_units.empty):
-            unit = lineage.units.core.Unit()
-        elif left.unit.sub_units.empty:
-            raise AttributeError(
-                rf"Units are not the same: left: {left.unit.name}, right: {right.unit.name}"
-            )
-        elif right.unit.sub_units.empty:
-            raise AttributeError(
-                rf"Units are not the same: left: {left.unit.name}, right: {right.unit.name}"
-            )
-        elif left.unit.sub_units.sort(["exponent", "symbol"]).equals(
-            right.unit.sub_units.sort(["exponent", "symbol"])
-        ):
-            unit = left.unit
-        else:
-            raise AttributeError(
-                rf"Units are not the same: left: {left.unit.name}, right: {right.unit.name}"
-            )
-
         super().__init__(
             name="SUBTRACT",
             args=[left, right],
             data_type=lineage_values.Datatype("FLOAT"),
-            unit=unit,
+            unit=lineage.units.core.add_subtract(left.unit, right.unit),
             macro_group=macro_group,
         )
 
@@ -151,13 +115,32 @@ class Exponent(lineage._Function):
         exponent,
         macro_group: str = "",
     ):
-        super().__init__(
-            name="POW",
-            args=[source, exponent],
-            data_type=lineage_values.Datatype("FLOAT"),
-            unit=source.unit,
-            macro_group=macro_group,
-        )
+        if any(
+            [
+                isinstance(exponent, lineage_values.Integer),
+                isinstance(exponent, lineage_values.Float),
+            ]
+        ):
+            super().__init__(
+                name="POW",
+                args=[source, exponent],
+                data_type=lineage_values.Datatype("FLOAT"),
+                unit=lineage.units.core.exponent(source.unit, exponent.value),
+                macro_group=macro_group,
+            )
+
+        else:
+            warnings.warn(
+                "Variable exponents applied to a vector will not produce a consistent unit. Defaulting to source unit"
+            )
+
+            super().__init__(
+                name="POW",
+                args=[source, exponent],
+                data_type=lineage_values.Datatype("FLOAT"),
+                unit=source.unit,
+                macro_group=macro_group,
+            )
 
 
 class Sin(lineage._Function):
@@ -268,6 +251,7 @@ class Floor(lineage._Function):
             data_type=lineage_values.Datatype("INTEGER"),
             var_type="numeric",
             macro_group=macro_group,
+            unit=source.unit,
         )
 
 

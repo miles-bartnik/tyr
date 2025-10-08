@@ -12,12 +12,13 @@ from .columns import staging_column_transform, select_all
 
 def event_time_interval_transform(
     source,
+    name: str,
     interval,
     max_n_intervals: int = 2047,
     interpolation_function=interpolate.linear,
     columns_to_interpolate: lineage.ColumnList = lineage.ColumnList([]),
 ):
-    macro_group = rf"EventTimeIntervalTransform - {id(source)} - {interval.sql}"
+    macro_group = rf"EventTimeIntervalTransform:{name} - {id(source)} - {interval.sql}"
 
     if not (source.event_time and source.primary_key):
         raise ValueError(rf"""Source table has no event_time or primary_key defined""")
@@ -36,7 +37,7 @@ def event_time_interval_transform(
         name=rf"{source.name}_base",
         source=source,
         columns=lineage.ColumnList(
-            select_all(source).list_all()
+            select_all(source).list_columns()
             + [
                 lineage_columns.Core(
                     source=lineage_functions.window.Lag(
@@ -47,7 +48,7 @@ def event_time_interval_transform(
                                     lineage_columns.Select(
                                         column, macro_group=macro_group
                                     )
-                                    for column in source.static_primary_key.list_all()
+                                    for column in source.static_primary_key.list_columns()
                                 ]
                             )
                         ),
@@ -73,7 +74,7 @@ def event_time_interval_transform(
         primary_key=lineage.ColumnList(
             [
                 lineage_columns.Select(column, macro_group=macro_group)
-                for column in source.primary_key.list_all()
+                for column in source.primary_key.list_columns()
             ]
         ),
     )
@@ -306,7 +307,7 @@ def event_time_interval_transform(
                             )
                         ],
                         values=[
-                            tyr.lineage.functions.array.Range(
+                            lineage_functions.array.Range(
                                 start=lineage_functions.datetime.DateBin(
                                     source=lineage_columns.Select(
                                         base.event_time, macro_group=macro_group
@@ -372,7 +373,7 @@ def event_time_interval_transform(
         primary_key=lineage.ColumnList(
             [
                 lineage_columns.Select(column, macro_group=macro_group)
-                for column in base.primary_key.list_all()
+                for column in base.primary_key.list_columns()
             ]
         ),
         event_time=lineage_columns.Select(base.event_time, macro_group=macro_group),
@@ -390,11 +391,11 @@ def event_time_interval_transform(
                     source=lineage_columns.Select(column, macro_group=macro_group),
                     macro_group=macro_group,
                 )
-                for column in date_arrays.primary_key.list_all()
+                for column in date_arrays.primary_key.list_columns()
             ]
             + [
                 lineage_columns.Core(
-                    source=tyr.lineage.functions.array.Unnest(
+                    source=lineage_functions.array.Unnest(
                         source=lineage_columns.Select(
                             date_arrays.columns.date_array, macro_group=macro_group
                         ),
@@ -408,7 +409,7 @@ def event_time_interval_transform(
         primary_key=lineage.ColumnList(
             [
                 lineage_columns.Select(column, macro_group=macro_group)
-                for column in date_arrays.primary_key.list_all()
+                for column in date_arrays.primary_key.list_columns()
             ]
         ),
         event_time=lineage_columns.Select(
@@ -436,11 +437,11 @@ def event_time_interval_transform(
                         ),
                         macro_group=macro_group,
                     )
-                    for column in right.primary_key.list_all()
+                    for column in right.primary_key.list_columns()
                 ],
                 link_operators=[
                     lineage_operators.And(macro_group=macro_group)
-                    for i in range(len(right.primary_key.list_all()) - 1)
+                    for i in range(len(right.primary_key.list_columns()) - 1)
                 ],
             ),
         ),
@@ -451,7 +452,7 @@ def event_time_interval_transform(
                     source=lineage_columns.Select(column, macro_group=macro_group),
                     macro_group=macro_group,
                 )
-                for column in left.columns.list_all()
+                for column in left.columns.list_columns()
             ]
             + [
                 lineage_columns.Core(
@@ -462,7 +463,7 @@ def event_time_interval_transform(
                                     lineage_columns.Select(
                                         column, macro_group=macro_group
                                     )
-                                    for column in left.static_primary_key.list_all()
+                                    for column in left.static_primary_key.list_columns()
                                 ]
                                 + [
                                     lineage_columns.Select(
@@ -492,7 +493,7 @@ def event_time_interval_transform(
         primary_key=lineage.ColumnList(
             [
                 lineage_columns.Select(column, macro_group=macro_group)
-                for column in left.primary_key.list_all()
+                for column in left.primary_key.list_columns()
             ]
         ),
         event_time=lineage_columns.Select(left.event_time, macro_group=macro_group),
@@ -517,7 +518,7 @@ def event_time_interval_transform(
         primary_key=lineage.ColumnList(
             [
                 lineage_columns.Select(column, macro_group=macro_group)
-                for column in max_row_number_source.primary_key.list_all()
+                for column in max_row_number_source.primary_key.list_columns()
             ]
         ),
         event_time=lineage_columns.Select(
@@ -530,7 +531,7 @@ def event_time_interval_transform(
                     source=lineage_columns.Select(column, macro_group=macro_group),
                     macro_group=macro_group,
                 )
-                for column in max_row_number_source.primary_key.list_all()
+                for column in max_row_number_source.primary_key.list_columns()
             ]
             + [
                 lineage_columns.Core(
@@ -582,11 +583,11 @@ def event_time_interval_transform(
                                 ),
                                 macro_group=macro_group,
                             )
-                            for column in base.primary_key.list_all()
+                            for column in base.primary_key.list_columns()
                         ],
                         link_operators=[
                             lineage_operators.And(macro_group=macro_group)
-                            for i in range(len(base.primary_key.list_all()) - 1)
+                            for i in range(len(base.primary_key.list_columns()) - 1)
                         ],
                     ),
                     macro_group=macro_group,
@@ -614,12 +615,12 @@ def event_time_interval_transform(
                                 ),
                                 macro_group=macro_group,
                             )
-                            for column in row_number_assigned.primary_key.list_all()
+                            for column in row_number_assigned.primary_key.list_columns()
                         ],
                         link_operators=[
                             lineage_operators.And(macro_group=macro_group)
                             for i in range(
-                                len(row_number_assigned.primary_key.list_all()) - 1
+                                len(row_number_assigned.primary_key.list_columns()) - 1
                             )
                         ],
                         macro_group=macro_group,
@@ -635,7 +636,7 @@ def event_time_interval_transform(
                     source=lineage_columns.Select(column, macro_group=macro_group),
                     macro_group=macro_group,
                 )
-                for column in row_number_assigned.static_primary_key.list_all()
+                for column in row_number_assigned.static_primary_key.list_columns()
             ]
             + [
                 lineage_columns.Core(
@@ -656,7 +657,7 @@ def event_time_interval_transform(
                     source=lineage_columns.Select(column, macro_group=macro_group),
                     macro_group=macro_group,
                 )
-                for column in base.columns.list_all()
+                for column in base.columns.list_columns()
                 if column.name[:4] != "lag_"
                 and column.name not in base.primary_key.list_names()
             ]
@@ -683,7 +684,7 @@ def event_time_interval_transform(
         primary_key=lineage.ColumnList(
             [
                 lineage_columns.Select(column, macro_group=macro_group)
-                for column in base.static_primary_key.list_all()
+                for column in base.static_primary_key.list_columns()
             ]
             + [
                 lineage_columns.Select(
@@ -699,7 +700,7 @@ def event_time_interval_transform(
     )
 
     table = lineage_tables.Core(
-        name=rf"{source.name}_date_dim",
+        name=name,
         ctes=lineage.TableList(
             [
                 base,
@@ -718,7 +719,7 @@ def event_time_interval_transform(
                     source=lineage_columns.Select(column),
                     macro_group=macro_group,
                 )
-                for column in transformed.columns.list_all()
+                for column in transformed.columns.list_columns()
             ]
         ),
         event_time=lineage_columns.Select(
@@ -727,7 +728,7 @@ def event_time_interval_transform(
         primary_key=lineage.ColumnList(
             [
                 lineage_columns.Select(column, macro_group=macro_group)
-                for column in transformed.primary_key.list_all()
+                for column in transformed.primary_key.list_columns()
             ]
         ),
     )
@@ -735,17 +736,19 @@ def event_time_interval_transform(
     return table
 
 
-def date_vector_table(start_time, n_records: int, interval):
-    macro_group = rf"DateVector - {start_time.sql} - {str(n_records)} - {interval.sql}"
+def date_vector_table(name: str, start_time, n_records: int, interval):
+    macro_group = (
+        rf"DateVector:{name} - {start_time.sql} - {str(n_records)} - {interval.sql}"
+    )
 
     return lineage_tables.Core(
-        name="date_vector",
+        name=name,
         source=lineage.RecordList(
             name="date_vector",
             records=[
                 lineage.Record(
                     {
-                        lineage_columns.Blank(
+                        lineage_columns.Record(
                             name="date",
                             var_type="timestamp",
                             data_type=lineage_values.Datatype(
@@ -793,7 +796,7 @@ def forward_fill(source):
                     source=lineage_columns.Select(column, macro_group=macro_group),
                     macro_group=macro_group,
                 )
-                for column in source.columns.list_all()
+                for column in source.columns.list_columns()
             ]
             + [
                 lineage_columns.Core(
@@ -805,7 +808,7 @@ def forward_fill(source):
                                     lineage_columns.Select(
                                         column, macro_group=macro_group
                                     )
-                                    for column in source.static_primary_key.list_all()
+                                    for column in source.static_primary_key.list_columns()
                                 ]
                             )
                         ),
@@ -824,14 +827,14 @@ def forward_fill(source):
                     macro_group=macro_group,
                     name=rf"{column.name}_count",
                 )
-                for column in source.columns.list_all()
+                for column in source.columns.list_columns()
                 if column.name not in source.primary_key.list_names()
             ]
         ),
         primary_key=lineage.ColumnList(
             [
                 lineage_columns.Select(column, macro_group=macro_group)
-                for column in source.primary_key.list_all()
+                for column in source.primary_key.list_columns()
             ]
         ),
         event_time=lineage_columns.Select(source.event_time, macro_group=macro_group),
@@ -840,7 +843,7 @@ def forward_fill(source):
     source_forward_filled = lineage_tables.Core(
         name=rf"{source.name}_forward_filled",
         ctes=lineage.TableList(
-            [table for table in source_grouped.ctes.list_all()]
+            [table for table in source_grouped.ctes.list_tables()]
             + [
                 source_grouped,
             ]
@@ -852,7 +855,7 @@ def forward_fill(source):
                     source=lineage_columns.Select(column, macro_group=macro_group),
                     macro_group=macro_group,
                 )
-                for column in source_grouped.primary_key.list_all()
+                for column in source_grouped.primary_key.list_columns()
             ]
             + [
                 lineage_columns.Core(
@@ -864,7 +867,7 @@ def forward_fill(source):
                             lineage.ColumnList(
                                 [
                                     lineage_columns.Select(spk, macro_group=macro_group)
-                                    for spk in source_grouped.static_primary_key.list_all()
+                                    for spk in source_grouped.static_primary_key.list_columns()
                                 ]
                                 + [
                                     lineage_columns.Select(
@@ -879,7 +882,7 @@ def forward_fill(source):
                     name=column.name,
                     macro_group=macro_group,
                 )
-                for column in source_grouped.columns.list_all()
+                for column in source_grouped.columns.list_columns()
                 if column.name
                 in [
                     column
@@ -895,7 +898,7 @@ def forward_fill(source):
         primary_key=lineage.ColumnList(
             [
                 lineage_columns.Select(column, macro_group=macro_group)
-                for column in source_grouped.primary_key.list_all()
+                for column in source_grouped.primary_key.list_columns()
             ]
         ),
         macro_group=macro_group,
@@ -904,7 +907,7 @@ def forward_fill(source):
     return source_forward_filled
 
 
-def staging_table_transform(source: lineage_tables.Core):
+def staging_table_transform(source: lineage_tables.Core, settings=None):
     macro_group = rf"StagingTableTransform - {id(source)}"
 
     expected_column_metadata = source.source.expected_column_metadata
@@ -916,11 +919,69 @@ def staging_table_transform(source: lineage_tables.Core):
         raise ValueError("More than 1 event_time defined")
     elif len(event_time) == 1:
         event_time = staging_column_transform(
-            source_column=source.columns.list_all()[0],
+            source_column=source.columns.list_columns()[0],
             column_metadata=event_time[0],
         )
     else:
         event_time = None
+
+    checks = []
+
+    if (
+        event_time
+        and settings.configuration["min_event_time"]
+        and settings.configuration["max_event_time"]
+    ):
+        checks.append(
+            lineage_expressions.Between(
+                left=event_time,
+                right=lineage_expressions.And(
+                    lineage_values.Timestamp(
+                        settings.configuration["min_event_time"].strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        )
+                    ),
+                    lineage_values.Timestamp(
+                        settings.configuration["max_event_time"].strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        )
+                    ),
+                ),
+            )
+        )
+
+    elif event_time and settings.configuration["min_event_time"]:
+        checks.append(
+            lineage_expressions.GreaterThanOrEqual(
+                left=event_time,
+                right=lineage_values.Timestamp(
+                    settings.configuration["min_event_time"].strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
+                ),
+            )
+        )
+    elif event_time and settings.configuration["max_event_time"]:
+        checks.append(
+            lineage_expressions.LessThanOrEqual(
+                left=event_time,
+                right=lineage_values.Timestamp(
+                    settings.configuration["max_event_time"].strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
+                ),
+            )
+        )
+    else:
+        pass
+
+    if checks:
+        where_condition = lineage.Condition(
+            checks=checks,
+            link_operators=[lineage_operators.And() for i in range(len(checks) - 1)],
+        )
+    else:
+        where_condition = None
 
     return lineage_tables.Core(
         name=source.name,
@@ -928,7 +989,7 @@ def staging_table_transform(source: lineage_tables.Core):
         columns=lineage.ColumnList(
             [
                 staging_column_transform(
-                    source_column=source.columns.list_all()[0],
+                    source_column=source.columns.list_columns()[0],
                     column_metadata=column_metadata,
                 )
                 for column_metadata in expected_column_metadata
@@ -938,7 +999,7 @@ def staging_table_transform(source: lineage_tables.Core):
         primary_key=lineage.ColumnList(
             [
                 staging_column_transform(
-                    source_column=source.columns.list_all()[0],
+                    source_column=source.columns.list_columns()[0],
                     column_metadata=column_metadata,
                 )
                 for column_metadata in expected_column_metadata
@@ -946,4 +1007,5 @@ def staging_table_transform(source: lineage_tables.Core):
             ]
         ),
         event_time=event_time,
+        where_condition=where_condition,
     )

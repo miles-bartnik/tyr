@@ -28,7 +28,7 @@ def significant_figures(source, value):
             lineage_values.Null(data_type=lineage_values.Datatype("INTEGER")),
             lineage_functions.math.Round(
                 source=source,
-                precision=tyr.lineage.functions.data_type.Cast(
+                precision=lineage_functions.data_type.Cast(
                     lineage_functions.math.Subtract(
                         lineage_functions.math.Subtract(
                             value, lineage_values.Integer(1)

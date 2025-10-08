@@ -1,5 +1,6 @@
 from ...lineage import core as lineage
 from ...lineage import values as lineage_values
+from ...lineage import operators
 
 
 class Lag(lineage._Function):

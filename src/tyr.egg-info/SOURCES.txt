@@ -56,6 +56,7 @@ src/tyr/lineage/macros/functions/colour.py
 src/tyr/lineage/macros/functions/datetime.py
 src/tyr/lineage/macros/functions/geo.py
 src/tyr/lineage/macros/functions/interpolate.py
+src/tyr/lineage/macros/functions/math.py
 src/tyr/lineage/macros/functions/numeric.py
 src/tyr/lineage/macros/functions/unit_conversion.py
 src/tyr/lineage/schema/__init__.py

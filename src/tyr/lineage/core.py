@@ -1,12 +1,14 @@
 import copy
 import os.path
+import rustworkx as rx
 
 from typing import List, Any, Dict, AnyStr
 import pandas as pd
 import re
 import units
 from ..interpreter import Interpreter
-from ..network import Spider
+from .. import network
+import collections
 
 _interpreters = {"beeswax_duckdb": Interpreter()}
 
@@ -15,7 +17,7 @@ class _Operator:
     """
     Mathematical, text, sql operations
 
-    :param name: str - Operator name
+    :param name: str - Operator name e.g. "=", "AND", ...
     """
 
     def __init__(self, name: str, macro_group: str = "") -> None:
@@ -30,16 +32,15 @@ class _Operator:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
-
-    def _inbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
+        self.graph = graph
 
 
 class _Expression:
     """
-    Mathematical, text, SQL expressions
+    Mathematical, text, SQL expressions applying an operator between a left and right parameter.
+    e.g. 1 = 1 -> TRUE
 
     :param left:
     :param right:
@@ -76,24 +77,41 @@ class _Expression:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
+        left = rx.PyDiGraph()
+        right = rx.PyDiGraph()
 
-    def _inbound_edge_data(self):
-        return {}
+        left.add_node(self.left._node_data)
+        right.add_node(self.right._node_data)
+
+        left.add_child(0, self._node_data, {})
+        right.add_child(0, self._node_data, {})
+
+        graph = rx.union(left, right, merge_nodes=True, merge_edges=True)
+        self.graph = graph
 
 
 class _Column:
     """
     Column lineage object
 
-    :param source:
-    :param name: str
-    :param data_type: lineage.values.Datatype
-    :param var_type: str - "categorical"/"numeric"/"key"
-    :param on_null: str - "PASS"/"WARN"/"SKIP"/"FAIL"
-    :param is_primary_key: - bool = False
-    :param is_event_time: - bool = False
+    :param source: Source of column
+    :type source: _Column or _Function
+    :param name: Name of column
+    :type name: str
+    :param data_type: Data type of column
+    :type data_type: lineage.values.Datatype
+    :param var_type: Variable type - "categorical"/"numeric"/"key", default = :code:`None`
+    :type var_type: str
+    :param on_null: Behaviour on null value - "PASS"/"WARN"/"SKIP"/"FAIL", default = :code:`"Pass"`
+    :type on_null: str
+    :param is_primary_key: If the column is the part of the primary key of the table, default = :code:`False`
+    :type is_primary_key: bool
+    :param is_event_time: If the column is the event time of the table, default = :code:`False`
+    :type is_event_time: bool
+
+
+    :return: tyr.lineage.core._Column
+    :rtype: _Column
     """
 
     def __init__(
@@ -102,9 +120,9 @@ class _Column:
         name,
         data_type,
         var_type,
-        on_null,
-        is_primary_key,
-        is_event_time,
+        on_null="PASS",
+        is_primary_key=False,
+        is_event_time=False,
         macro_group: str = "",
     ) -> None:
         self.source = source
@@ -117,7 +135,7 @@ class _Column:
         self.current_table = None
 
         if isinstance(source, ColumnList):
-            self.unit = source.list_all()[0].unit
+            self.unit = source.list_columns()[0].unit
         else:
             self.unit = source.unit
 
@@ -148,81 +166,22 @@ class _Column:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
 
-    def _inbound_edge_data(self):
-        return {
-            "is_primary_key": str(self.is_primary_key),
-            "is_event_time": str(self.is_event_time),
-            "on_null": self.on_null,
-        }
+        graph.add_child(0, self.source._node_data, {})
 
+        graph = rx.union(graph, self.source.graph, merge_nodes=True, merge_edges=True)
 
-class _BlankColumn:
-    def __init__(
-        self,
-        name,
-        data_type,
-        var_type,
-        on_null,
-        is_primary_key,
-        is_event_time,
-        unit,
-        macro_group: str = "",
-    ) -> None:
-        self.name = name
-        self.data_type = data_type
-        self.var_type = var_type
-        self.on_null = on_null
-        self.is_primary_key = is_primary_key
-        self.is_event_time = is_event_time
-        self.unit = unit
-        self.current_table = None
-        self.source_table = None
-
-        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
-
-        if self.data_type:
-            if isinstance(self.data_type, str):
-                data_type = self.data_type
-            else:
-                data_type = self.data_type.name
-        else:
-            data_type = ""
-
-        if self.var_type:
-            var_type = self.var_type
-        else:
-            var_type = ""
-
-        self._node_data = {
-            "label": self.name,
-            "data_type": data_type,
-            "var_type": var_type,
-            "type": str(type(self)),
-            "base": str(type(self).__bases__[0]),
-            "unit": self.unit.name,
-            "macro_group": macro_group,
-            "sql": self.sql,
-        }
-
-    def _outbound_edge_data(self):
-        return {}
-
-    def _inbound_edge_data(self):
-        return {
-            "is_primary_key": str(self.is_primary_key),
-            "is_event_time": str(self.is_event_time),
-            "on_null": self.on_null,
-        }
+        self.graph = graph
 
 
 class ColumnList:
     """
     Stores columns and column order
 
-    :param columns: List[lineage.core._Column]
+    :param columns: List of column objects
+    :type columns: List[columns.Core|columns.Select|columns.Record]
     """
 
     def __init__(self, columns=None) -> None:
@@ -236,6 +195,18 @@ class ColumnList:
             self.is_empty = True
             columns = []
 
+        if any(
+            [
+                x > 1
+                for x in dict(
+                    collections.Counter([column.name for column in columns]).items()
+                ).values()
+            ]
+        ):
+            raise ValueError(
+                rf"Duplicate column names detected: {dict(collections.Counter([column.name for column in columns]).items())}"
+            )
+
         for column in columns:
             setattr(self, column.name, copy.deepcopy(column))
 
@@ -247,17 +218,49 @@ class ColumnList:
         else:
             return getattr(self, item)
 
-    def list_all(self):
+    def __add__(self, other):
+        if isinstance(other, ColumnList):
+            return ColumnList(self.list_columns() + other.list_columns())
+
+    def list_columns(
+        self, filter_regex: str = None, filter_unit: units.core.Unit = None
+    ):
         if not self.is_empty:
-            columns = [getattr(self, item) for item in self.order]
+            if filter_regex:
+                columns = [
+                    getattr(self, item)
+                    for item in self.order
+                    if re.match(filter_regex, item)
+                ]
+            else:
+                columns = [getattr(self, item) for item in self.order]
+
+            if filter_unit:
+                columns = [
+                    getattr(self, item.name)
+                    for item in columns
+                    if filter_unit == getattr(self, item.name).unit
+                ]
+
         else:
             columns = []
 
         return columns
 
-    def list_names(self):
+    def list_names(self, filter_regex: str = None, filter_unit: units.core.Unit = None):
         if not self.is_empty:
-            return self.order
+            if filter_regex:
+                columns = [item for item in self.order if re.match(filter_regex, item)]
+            else:
+                columns = self.order
+
+            if filter_unit:
+                columns = [
+                    item for item in columns if filter_unit == getattr(self, item).unit
+                ]
+
+            return columns
+
         else:
             return []
 
@@ -298,7 +301,7 @@ class PartitionBy(ColumnList):
     """
 
     def __init__(self, columns: ColumnList):
-        super().__init__(columns=columns.list_all())
+        super().__init__(columns=columns.list_columns())
 
 
 class _Function:
@@ -362,15 +365,9 @@ class _Function:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
-
-    def _inbound_edge_data(self):
-        return {}
-
-    def _override_unit(self, unit):
-        self.unit = unit
-        return self
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
+        self.graph = graph
 
 
 class _Value:
@@ -427,11 +424,9 @@ class _Value:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
-
-    def _inbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
+        self.graph = graph
 
 
 class Condition:
@@ -457,11 +452,10 @@ class Condition:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
 
-    def _inbound_edge_data(self):
-        return {}
+        self.graph = graph
 
 
 class CaseWhen:
@@ -506,11 +500,55 @@ class CaseWhen:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
+        self.graph = graph
 
-    def _inbound_edge_data(self):
-        return {}
+
+class _Blank:
+    def __init__(
+        self,
+        name,
+        data_type,
+        var_type: str = None,
+        macro_group: str = None,
+        unit: units.core.Unit = units.core.Unit(),
+    ):
+        self.name = name
+        self.data_type = data_type
+        self.var_type = var_type
+        self.macro_group = macro_group
+        self.unit = unit
+        self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
+
+        if self.data_type:
+            if isinstance(self.data_type, str):
+                data_type = self.data_type
+            else:
+                data_type = self.data_type.name
+        else:
+            data_type = ""
+
+        if self.var_type:
+            var_type = self.var_type
+        else:
+            var_type = ""
+
+        if len(str(self.name)) > 25:
+            label = data_type
+        else:
+            label = self.name
+
+        self._node_data = {
+            "label": label,
+            "data_type": data_type,
+            "var_type": var_type,
+            "type": str(type(self)),
+            "base": str(type(self).__bases__[0]),
+            "unit": self.unit.name,
+            "macro_group": macro_group,
+            "sql": self.sql,
+        }
 
 
 class Record:
@@ -518,17 +556,15 @@ class Record:
         self.values = list(values.values())
         self.columns = ColumnList(values.keys())
         self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
+
         self._node_data = {
             "type": str(type(self)),
             "macro_group": macro_group,
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
-
-    def _inbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
 
 
 class RecordList:
@@ -555,11 +591,9 @@ class RecordList:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
-
-    def _inbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
+        self.graph = graph
 
 
 class RecordGenerator:
@@ -578,22 +612,19 @@ class RecordGenerator:
         self.generator = generator([x for x in range(n_records)], generator_args)
         self.columns = generator([1], generator_args).__next__().columns
 
-        for column in self.columns.list_all():
+        for column in self.columns.list_columns():
             setattr(column, "source_table", None)
             setattr(column, "current_table", None)
         self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
-
         self._node_data = {
             "type": str(type(self)),
             "macro_group": macro_group,
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
-
-    def _inbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
+        self.graph = graph
 
 
 class _Table:
@@ -623,7 +654,7 @@ class _Table:
             self.static_primary_key = ColumnList(
                 [
                     column
-                    for column in self.primary_key.list_all()
+                    for column in self.primary_key.list_columns()
                     if column.name != self.event_time.name
                 ]
             )
@@ -643,15 +674,15 @@ class _Table:
             else:
                 self.ctes = ctes
 
-        for column in self.columns.list_all():
+        for column in self.columns.list_columns():
             setattr(column, "current_table", self)
             setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
 
-        for column in self.primary_key.list_all():
+        for column in self.primary_key.list_columns():
             setattr(column, "current_table", self)
             setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
 
-        for column in self.static_primary_key.list_all():
+        for column in self.static_primary_key.list_columns():
             setattr(column, "current_table", self)
             setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
 
@@ -674,11 +705,45 @@ class _Table:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
 
-    def _inbound_edge_data(self):
-        return {}
+        if isinstance(self.source, TableList):
+            for table in self.source.list_tables():
+                graph.add_child(0, table._node_data, {})
+                graph = rx.union(graph, table.graph, merge_nodes=True, merge_edges=True)
+        else:
+            graph.add_child(0, self.source._node_data, {})
+
+        for column in self.columns.list_columns():
+            graph.add_child(
+                0,
+                column._node_data,
+                {
+                    "is_primary_key": column.is_primary_key,
+                    "is_event_time": column.is_event_time,
+                },
+            )
+            graph = rx.union(graph, column.graph, merge_nodes=True, merge_edges=True)
+
+        self.graph = graph
+
+    def update_graph(self):
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
+        graph.add_child(0, self.source, {})
+
+        for column in self.columns.list_columns():
+            graph.add_child(
+                0,
+                column._node_data,
+                {
+                    "is_primary_key": column.is_primary_key,
+                    "is_event_time": column.is_event_time,
+                },
+            )
+
+        self.graph = graph
 
     def add_column(self, column):
         setattr(column, "current_table", self)
@@ -686,16 +751,28 @@ class _Table:
         setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
         self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
+        self.graph.add_child(
+            0,
+            column._node_data,
+            {
+                "is_primary_key": column.is_primary_key,
+                "is_event_time": column.is_event_time,
+            },
+        )
+
     def add_columns(self, columns):
-        for column in columns.list_all():
+        for column in columns.list_columns():
             self.add_column(column)
             setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
         self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
     def set_primary_key(self, primary_key: ColumnList):
+        for column in self.columns.list_columns():
+            setattr(column, "is_primary_key", False)
+
         self.primary_key = primary_key
 
-        for column in self.primary_key.list_all():
+        for column in self.primary_key.list_columns():
             setattr(column, "current_table", self)
             setattr(column, "sql", _interpreters["beeswax_duckdb"].to_sql(column))
 
@@ -703,13 +780,18 @@ class _Table:
             self.static_primary_key = ColumnList(
                 [
                     column
-                    for column in self.primary_key.list_all()
+                    for column in self.primary_key.list_columns()
                     if column.name != self.event_time.name
                 ]
             )
         self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
+        self.update_graph()
+
     def set_event_time(self, event_time):
+        for column in self.columns.list_columns():
+            setattr(column, "is_event_time", False)
+
         self.event_time = event_time
         setattr(self.event_time, "current_table", self)
         setattr(event_time, "sql", _interpreters["beeswax_duckdb"].to_sql(event_time))
@@ -718,7 +800,7 @@ class _Table:
             self.static_primary_key = ColumnList(
                 [
                     column
-                    for column in self.primary_key.list_all()
+                    for column in self.primary_key.list_columns()
                     if column.name != self.event_time.name
                 ]
             )
@@ -727,11 +809,25 @@ class _Table:
             self.primary_key = self.event_time
         self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
 
+        self.update_graph()
+
 
 class TableList:
     def __init__(self, tables: List[Any]) -> None:
         if any([not isinstance(table, _Table) for table in tables]):
             raise ValueError("All tables must be _Table object")
+
+        if any(
+            [
+                x > 1
+                for x in dict(
+                    collections.Counter([table.name for table in tables]).items()
+                ).values()
+            ]
+        ):
+            raise ValueError(
+                rf"Duplicate table names detected: {dict(collections.Counter([table.name for table in tables]).items())}"
+            )
 
         for table in tables:
             setattr(self, table.name, copy.deepcopy(table))
@@ -748,7 +844,7 @@ class TableList:
         else:
             return getattr(self, item)
 
-    def list_all(self):
+    def list_tables(self):
         if not self.is_empty:
             tables = [
                 item for item in self.__dict__.values() if isinstance(item, _Table)
@@ -792,8 +888,14 @@ class _Transformation:
             "sql": self.sql,
         }
 
-    def _outbound_edge_data(self):
-        return {}
+        graph = rx.PyDiGraph()
+        graph.add_node(self._node_data)
 
-    def _inbound_edge_data(self):
-        return {}
+        graph.add_child(0, self.source._node_data, {})
+
+        self.graph = graph
+
+
+class Window:
+    def __init__(self):
+        pass

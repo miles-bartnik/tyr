@@ -45,7 +45,10 @@ class Integer(lineage._Value):
 class Double(lineage._Value):
     def __init__(self, value, unit=lineage.units.core.Unit(), macro_group: str = ""):
         super().__init__(
-            value=value, data_type=Datatype("FLOAT"), unit=unit, macro_group=macro_group
+            value=value,
+            data_type=Datatype("DOUBLE"),
+            unit=unit,
+            macro_group=macro_group,
         )
 
 
@@ -53,6 +56,31 @@ class Float(lineage._Value):
     def __init__(self, value, unit=lineage.units.core.Unit(), macro_group: str = ""):
         super().__init__(
             value=value, data_type=Datatype("FLOAT"), unit=unit, macro_group=macro_group
+        )
+
+
+class Decimal(lineage._Value):
+    def __init__(
+        self,
+        value,
+        width: int,
+        scale: int,
+        unit=lineage.units.core.Unit(),
+        macro_group: str = "",
+    ):
+        if scale > width:
+            raise ValueError(
+                rf"Invalid scale and width values - scale:{scale} !< width:{width}"
+            )
+
+        if width > 38:
+            raise ValueError(rf"Max width of 38 exceeded - width:{width}")
+
+        super().__init__(
+            value=value,
+            data_type=Datatype(rf"DECIMAL({width}, {scale})"),
+            unit=unit,
+            macro_group=macro_group,
         )
 
 
@@ -67,8 +95,8 @@ class Subquery(lineage._Value):
     def __init__(self, value: lineage._Table, macro_group: str = ""):
         super().__init__(
             value=value,
-            data_type=value.columns.list_all()[0].data_type,
-            unit=value.columns.list_all()[0].unit,
+            data_type=value.columns.list_columns()[0].data_type,
+            unit=value.columns.list_columns()[0].unit,
             macro_group=macro_group,
         )
 

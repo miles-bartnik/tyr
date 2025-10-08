@@ -8,7 +8,7 @@ from ... import functions as lineage_functions
 def hex_to_rgb(source):
     return lineage_values.List(
         [
-            tyr.lineage.functions.data_type.Cast(
+            lineage_functions.data_type.Cast(
                 lineage_functions.string.Concatenate(
                     [
                         lineage_values.Varchar("0x"),
@@ -45,9 +45,9 @@ def rgb_to_hex(source):
                         checks=[
                             lineage_expressions.Equal(
                                 lineage_functions.string.Length(
-                                    tyr.lineage.functions.data_type.IntegerToHex(
-                                        tyr.lineage.functions.data_type.Cast(
-                                            tyr.lineage.functions.array.ListExtract(
+                                    lineage_functions.data_type.IntegerToHex(
+                                        lineage_functions.data_type.Cast(
+                                            lineage_functions.array.ListExtract(
                                                 source,
                                                 lineage_values.List(
                                                     [lineage_values.Integer(1)]
@@ -66,9 +66,9 @@ def rgb_to_hex(source):
                     lineage_functions.string.Concatenate(
                         [
                             lineage_values.Varchar("0"),
-                            tyr.lineage.functions.data_type.IntegerToHex(
-                                tyr.lineage.functions.data_type.Cast(
-                                    tyr.lineage.functions.array.ListExtract(
+                            lineage_functions.data_type.IntegerToHex(
+                                lineage_functions.data_type.Cast(
+                                    lineage_functions.array.ListExtract(
                                         source,
                                         lineage_values.List(
                                             [lineage_values.Integer(1)]
@@ -81,9 +81,9 @@ def rgb_to_hex(source):
                         join_string="",
                     )
                 ],
-                else_value=tyr.lineage.functions.data_type.IntegerToHex(
-                    tyr.lineage.functions.data_type.Cast(
-                        tyr.lineage.functions.array.ListExtract(
+                else_value=lineage_functions.data_type.IntegerToHex(
+                    lineage_functions.data_type.Cast(
+                        lineage_functions.array.ListExtract(
                             source,
                             lineage_values.List([lineage_values.Integer(1)]),
                         ),
@@ -97,9 +97,9 @@ def rgb_to_hex(source):
                         checks=[
                             lineage_expressions.Equal(
                                 lineage_functions.string.Length(
-                                    tyr.lineage.functions.data_type.IntegerToHex(
-                                        tyr.lineage.functions.data_type.Cast(
-                                            tyr.lineage.functions.array.ListExtract(
+                                    lineage_functions.data_type.IntegerToHex(
+                                        lineage_functions.data_type.Cast(
+                                            lineage_functions.array.ListExtract(
                                                 source,
                                                 lineage_values.List(
                                                     [lineage_values.Integer(2)]
@@ -118,9 +118,9 @@ def rgb_to_hex(source):
                     lineage_functions.string.Concatenate(
                         [
                             lineage_values.Varchar("0"),
-                            tyr.lineage.functions.data_type.IntegerToHex(
-                                tyr.lineage.functions.data_type.Cast(
-                                    tyr.lineage.functions.array.ListExtract(
+                            lineage_functions.data_type.IntegerToHex(
+                                lineage_functions.data_type.Cast(
+                                    lineage_functions.array.ListExtract(
                                         source,
                                         lineage_values.List(
                                             [lineage_values.Integer(2)]
@@ -133,9 +133,9 @@ def rgb_to_hex(source):
                         join_string="",
                     )
                 ],
-                else_value=tyr.lineage.functions.data_type.IntegerToHex(
-                    tyr.lineage.functions.data_type.Cast(
-                        tyr.lineage.functions.array.ListExtract(
+                else_value=lineage_functions.data_type.IntegerToHex(
+                    lineage_functions.data_type.Cast(
+                        lineage_functions.array.ListExtract(
                             source,
                             lineage_values.List([lineage_values.Integer(2)]),
                         ),
@@ -149,9 +149,9 @@ def rgb_to_hex(source):
                         checks=[
                             lineage_expressions.Equal(
                                 lineage_functions.string.Length(
-                                    tyr.lineage.functions.data_type.IntegerToHex(
-                                        tyr.lineage.functions.data_type.Cast(
-                                            tyr.lineage.functions.array.ListExtract(
+                                    lineage_functions.data_type.IntegerToHex(
+                                        lineage_functions.data_type.Cast(
+                                            lineage_functions.array.ListExtract(
                                                 source,
                                                 lineage_values.List(
                                                     [lineage_values.Integer(3)]
@@ -170,9 +170,9 @@ def rgb_to_hex(source):
                     lineage_functions.string.Concatenate(
                         [
                             lineage_values.Varchar("0"),
-                            tyr.lineage.functions.data_type.IntegerToHex(
-                                tyr.lineage.functions.data_type.Cast(
-                                    tyr.lineage.functions.array.ListExtract(
+                            lineage_functions.data_type.IntegerToHex(
+                                lineage_functions.data_type.Cast(
+                                    lineage_functions.array.ListExtract(
                                         source,
                                         lineage_values.List(
                                             [lineage_values.Integer(3)]
@@ -185,9 +185,9 @@ def rgb_to_hex(source):
                         join_string="",
                     )
                 ],
-                else_value=tyr.lineage.functions.data_type.IntegerToHex(
-                    tyr.lineage.functions.data_type.Cast(
-                        tyr.lineage.functions.array.ListExtract(
+                else_value=lineage_functions.data_type.IntegerToHex(
+                    lineage_functions.data_type.Cast(
+                        lineage_functions.array.ListExtract(
                             source,
                             lineage_values.List([lineage_values.Integer(3)]),
                         ),
@@ -201,8 +201,8 @@ def rgb_to_hex(source):
 
 def rgb_to_hsv(source):
     Rp = lineage_functions.math.Divide(
-        tyr.lineage.functions.data_type.Cast(
-            tyr.lineage.functions.array.ListExtract(
+        lineage_functions.data_type.Cast(
+            lineage_functions.array.ListExtract(
                 source, lineage_values.List([lineage_values.Integer(1)])
             ),
             lineage_values.Datatype("FLOAT"),
@@ -211,8 +211,8 @@ def rgb_to_hsv(source):
     )
 
     Gp = lineage_functions.math.Divide(
-        tyr.lineage.functions.data_type.Cast(
-            tyr.lineage.functions.array.ListExtract(
+        lineage_functions.data_type.Cast(
+            lineage_functions.array.ListExtract(
                 source, lineage_values.List([lineage_values.Integer(2)])
             ),
             lineage_values.Datatype("FLOAT"),
@@ -221,8 +221,8 @@ def rgb_to_hsv(source):
     )
 
     Bp = lineage_functions.math.Divide(
-        tyr.lineage.functions.data_type.Cast(
-            tyr.lineage.functions.array.ListExtract(
+        lineage_functions.data_type.Cast(
+            lineage_functions.array.ListExtract(
                 source, lineage_values.List([lineage_values.Integer(3)])
             ),
             lineage_values.Datatype("FLOAT"),
@@ -230,12 +230,12 @@ def rgb_to_hsv(source):
         lineage_values.Float(255),
     )
 
-    Cmax = tyr.lineage.functions.array.Maximum(lineage_values.List([Rp, Gp, Bp]))
-    Cmin = tyr.lineage.functions.array.Minimum(lineage_values.List([Rp, Gp, Bp]))
+    Cmax = lineage_functions.array.Maximum(lineage_values.List([Rp, Gp, Bp]))
+    Cmin = lineage_functions.array.Minimum(lineage_values.List([Rp, Gp, Bp]))
     delta = lineage_functions.math.Subtract(Cmax, Cmin)
 
     H = lineage_functions.math.Divide(
-        tyr.lineage.functions.data_type.Cast(
+        lineage_functions.data_type.Cast(
             lineage.CaseWhen(
                 conditions=[
                     lineage.Condition(
@@ -286,7 +286,7 @@ def rgb_to_hsv(source):
         lineage_values.Float(360),
     )
 
-    S = tyr.lineage.functions.data_type.Cast(
+    S = lineage_functions.data_type.Cast(
         lineage.CaseWhen(
             conditions=[
                 lineage.Condition(
@@ -299,21 +299,21 @@ def rgb_to_hsv(source):
         lineage_values.Datatype("FLOAT"),
     )
 
-    V = tyr.lineage.functions.data_type.Cast(Cmax, lineage_values.Datatype("FLOAT"))
+    V = lineage_functions.data_type.Cast(Cmax, lineage_values.Datatype("FLOAT"))
 
     return lineage_values.List([H, S, V])
 
 
 def hsv_to_rgb(source):
-    H = tyr.lineage.functions.array.ListExtract(
+    H = lineage_functions.array.ListExtract(
         source, elements=lineage_values.List([lineage_values.Integer(1)])
     )
 
-    S = tyr.lineage.functions.array.ListExtract(
+    S = lineage_functions.array.ListExtract(
         source, elements=lineage_values.List([lineage_values.Integer(2)])
     )
 
-    V = tyr.lineage.functions.array.ListExtract(
+    V = lineage_functions.array.ListExtract(
         source, elements=lineage_values.List([lineage_values.Integer(3)])
     )
 
@@ -405,21 +405,21 @@ def hsv_to_rgb(source):
 
     return lineage_values.List(
         [
-            tyr.lineage.functions.data_type.Cast(
+            lineage_functions.data_type.Cast(
                 lineage_functions.math.Multiply(
                     lineage_functions.math.Add(Rp, m),
                     lineage_values.Float(255),
                 ),
                 data_type=lineage_values.Datatype("INTEGER"),
             ),
-            tyr.lineage.functions.data_type.Cast(
+            lineage_functions.data_type.Cast(
                 lineage_functions.math.Multiply(
                     lineage_functions.math.Add(Gp, m),
                     lineage_values.Float(255),
                 ),
                 data_type=lineage_values.Datatype("INTEGER"),
             ),
-            tyr.lineage.functions.data_type.Cast(
+            lineage_functions.data_type.Cast(
                 lineage_functions.math.Multiply(
                     lineage_functions.math.Add(Bp, m),
                     lineage_values.Float(255),

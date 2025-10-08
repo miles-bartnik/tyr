@@ -116,3 +116,13 @@ class _Like(lineage._Operator):
 class _Between(lineage._Operator):
     def __init__(self, macro_group: str = ""):
         super().__init__(name="BETWEEN", macro_group=macro_group)
+
+
+class Preceding(lineage._Operator):
+    def __init__(self, macro_group: str = ""):
+        super().__init__(name="PRECEDING", macro_group=macro_group)
+
+
+class Following(lineage._Operator):
+    def __init__(self, macro_group: str = ""):
+        super().__init__(name="Following", macro_group=macro_group)

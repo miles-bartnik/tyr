@@ -49,7 +49,7 @@ def source_file(item):
     return base_sql
 
 
-def columns_blank(item):
+def columns_record(item):
     return item.name
 
 
@@ -80,19 +80,25 @@ def columns_core(item, alias=False):
 
 
 def values_varchar(item):
-    base_sql = rf"'{item.value}'"
+    base_sql = rf"CAST('{item.value}' AS VARCHAR)"
 
     return base_sql
 
 
 def values_integer(item):
-    base_sql = rf"{item.value}"
+    base_sql = rf"CAST({item.value} AS INTEGER)"
 
     return base_sql
 
 
 def values_float(item):
-    base_sql = rf"{item.value}"
+    base_sql = rf"CAST({item.value} AS FLOAT)"
+
+    return base_sql
+
+
+def values_decimal(item):
+    base_sql = rf"CAST({item.value} AS {item.data_type.name})"
 
     return base_sql
 
@@ -179,14 +185,14 @@ def tables_core(item, ctes=True):
                     if "lineage.tables.Core" in str(type(table))
                     else rf"""{table.name} AS {table.sql}"""
                 )
-                for table in item.ctes.list_all()
-                if table not in item.source.ctes.list_all()
+                for table in item.ctes.list_tables()
+                if table not in item.source.ctes.list_tables()
             ]
         )
 
-        base_sql += rf""" SELECT {"DISTINCT" if item.distinct else ""} {', '.join([columns_core(column, alias=True) if "lineage.columns.Core" in str(type(column)) else column.sql for column in item.columns.list_all()])}"""
+        base_sql += rf""" SELECT {"DISTINCT" if item.distinct else ""} {', '.join([columns_core(column, alias=True) if "lineage.columns.Core" in str(type(column)) else column.sql for column in item.columns.list_columns()])}"""
     else:
-        base_sql = rf"""SELECT {"DISTINCT" if item.distinct else ""} {', '.join([columns_core(column, alias=True) if "lineage.columns.Core" in str(type(column)) else column.sql for column in item.columns.list_all()])}"""
+        base_sql = rf"""SELECT {"DISTINCT" if item.distinct else ""} {', '.join([columns_core(column, alias=True) if "lineage.columns.Core" in str(type(column)) else column.sql for column in item.columns.list_columns()])}"""
 
     if item.source:
         if any(
@@ -205,7 +211,7 @@ def tables_core(item, ctes=True):
         base_sql += rf""" WHERE {item.where_condition.sql}"""
 
     if (item.group_by) and not (item.primary_key.is_empty):
-        base_sql += rf""" GROUP BY {', '.join([column.source.sql if "lineage.columns.Select" in str(type(column)) else column.sql for column in item.primary_key.list_all()])}"""
+        base_sql += rf""" GROUP BY {', '.join([column.source.sql if "lineage.columns.Select" in str(type(column)) else column.sql for column in item.primary_key.list_columns()])}"""
 
         if item.having_condition:
             base_sql += rf""" HAVING {item.having_condition.sql}"""
@@ -235,7 +241,7 @@ def tables_select(item):
 
 
 def tables_temp(item):
-    base_sql = rf"""CREATE TEMP TABLE {item.name} ({', '.join([column.name + " " + column.data_type for column in item.columns.list_all()])}); INSERT INTO {item.name} ({item.source.sql}); SELECT * FROM {item.name}"""
+    base_sql = rf"""CREATE TEMP TABLE {item.name} ({', '.join([column.name + " " + column.data_type for column in item.columns.list_columns()])}); INSERT INTO {item.name} ({item.source.sql}); SELECT * FROM {item.name}"""
 
     return base_sql
 
@@ -265,7 +271,7 @@ def core_operator(item):
 
 
 def core_order_by(item):
-    base_sql = rf"""ORDER BY {', '.join([item.columns.list_all()[i].sql + " " + item.how[i].sql for i in range(len(item.columns.list_all()))])}"""
+    base_sql = rf"""ORDER BY {', '.join([item.columns.list_columns()[i].sql + " " + item.how[i].sql for i in range(len(item.columns.list_columns()))])}"""
 
     return base_sql
 
@@ -334,7 +340,7 @@ def core_function(item):
     base_sql = rf"""{item.name}({"DISTINCT " if item.distinct else ""}{', '.join([arg.sql for arg in item.args])})"""
 
     if not item.partition_by.is_empty:
-        base_sql += rf""" OVER (PARTITION BY {', '.join([partition.sql for partition in item.partition_by.list_all()])}"""
+        base_sql += rf""" OVER (PARTITION BY {', '.join([partition.sql for partition in item.partition_by.list_columns()])}"""
 
         if not item.order_by.columns.is_empty:
             base_sql += rf" {item.order_by.sql}"
@@ -351,7 +357,7 @@ def functions_row_number(item):
     base_sql = rf"""{item.name}({', '.join([arg.sql for arg in item.args])})"""
 
     if not item.partition_by.is_empty:
-        base_sql += rf""" OVER (PARTITION BY {', '.join([partition.sql for partition in item.partition_by.list_all()])}"""
+        base_sql += rf""" OVER (PARTITION BY {', '.join([partition.sql for partition in item.partition_by.list_columns()])}"""
 
         if not item.order_by.columns.is_empty:
             base_sql += rf" {item.order_by.sql}"
@@ -373,9 +379,16 @@ def functions_to_interval(item):
 def functions_list_extract(item):
     groups = []
 
-    if "lineage.values.List" not in str(type(item.args[1])) and item.args[
-        1
-    ].data_type.sql in ["INTEGER[]", "INT[]"]:
+    if any(
+        [
+            value not in str(type(item.args[1]))
+            for value in [
+                "lineage.values.List",
+                "lineage.values.GeoCoordinate",
+                "lineage.values.Tuple",
+            ]
+        ]
+    ) and item.args[1].data_type.sql in ["INTEGER[]", "INT[]"]:
         values = [value.value for value in item.args[1].value]
 
         for i in range(len(values)):
@@ -438,7 +451,7 @@ def core_record_generator(item):
 
 
 def unions_union(item):
-    column_sql = rf"""SELECT {"DISTINCT" if item.distinct else ""} {', '.join([column.sql for column in item.columns.list_all()])}"""
+    column_sql = rf"""SELECT {"DISTINCT" if item.distinct else ""} {', '.join([column.sql for column in item.columns.list_columns()])}"""
 
     if not item.ctes.is_empty:
         base_sql = rf"""
@@ -450,8 +463,8 @@ def unions_union(item):
                     if "lineage.table.Core" not in str(type(table))
                     else rf"""{table.name} AS {table.sql}"""
                 )
-                for table in item.ctes.list_all()
-                if table not in item.source.ctes.list_all()
+                for table in item.ctes.list_tables()
+                if table not in item.source.ctes.list_tables()
             ]
         )
 
@@ -459,13 +472,13 @@ def unions_union(item):
     else:
         base_sql = rf"""{column_sql}"""
 
-    base_sql += rf""" FROM {' UNION BY NAME '.join(['(' + table.sql + ')' if not any(["lineage.tables.Select" in str(type(table)), "lineage.tables.Subquery" in str(type(table))]) else "SELECT  *  FROM " + table.sql if "lineage.tables.Select" in str(type(table)) else "(" + table.source.sql + ")" if "lineage.tables.Subquery" in str(type(table)) else table.sql for table in item.source.list_all()])}"""
+    base_sql += rf""" FROM {' UNION BY NAME '.join(['(' + table.sql + ')' if not any(["lineage.tables.Select" in str(type(table)), "lineage.tables.Subquery" in str(type(table))]) else "SELECT  *  FROM " + table.sql if "lineage.tables.Select" in str(type(table)) else "(" + table.source.sql + ")" if "lineage.tables.Subquery" in str(type(table)) else table.sql for table in item.source.list_columns()])}"""
 
     if item.where_condition:
         base_sql += rf""" WHERE {item.where_condition.sql}"""
 
     if (item.group_by) and not (item.primary_key.is_empty):
-        base_sql += rf""" GROUP BY {', '.join([column.source.sql if "lineage.columns.Core" not in str(type(column)) else column.sql for column in item.primary_key.list_all()])}"""
+        base_sql += rf""" GROUP BY {', '.join([column.source.sql if "lineage.columns.Core" not in str(type(column)) else column.sql for column in item.primary_key.list_columns()])}"""
 
         if item.having_condition:
             base_sql += rf""" HAVING {item.having_condition.sql}"""

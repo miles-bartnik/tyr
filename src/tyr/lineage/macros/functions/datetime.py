@@ -24,7 +24,7 @@ def truncate_timestamp(source, granularity: lineage_values.Interval):
             granularity=lineage_values.Interval(1, unit_shift[granularity.unit.name]),
         ),
         right=lineage_functions.math.Multiply(
-            left=tyr.lineage.functions.data_type.Cast(
+            left=lineage_functions.data_type.Cast(
                 source=lineage_functions.math.Divide(
                     left=lineage_functions.datetime.DatePart(
                         source=source,

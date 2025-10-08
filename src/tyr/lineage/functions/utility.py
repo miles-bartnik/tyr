@@ -37,4 +37,5 @@ class SourceWildToStagingColumn(lineage._Function):
             args=[source, column_metadata],
             name="SOURCE_WILD_TO_STAGING_COLUMN",
             macro_group=macro_group,
+            unit=column_metadata.source_unit,
         )

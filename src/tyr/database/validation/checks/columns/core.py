@@ -31,9 +31,7 @@ def count_distinct(
         tables_checked=lineage.core.TableList(
             [lineage.tables.Select(source.current_table)]
         ),
-        result=lineage.functions.aggregate.Count(
-            source, distinct=True
-        ),
+        result=lineage.functions.aggregate.Count(source, distinct=True),
         scope=scope,
         source=lineage.tables.Select(source.current_table),
         granularity=granularity,
@@ -93,9 +91,7 @@ def proportion_null(
                     lineage.values.Datatype("FLOAT"),
                 )
             ),
-            right=lineage.functions.aggregate.Count(
-                lineage.values.WildCard()
-            ),
+            right=lineage.functions.aggregate.Count(lineage.values.WildCard()),
         ),
         scope=scope,
         source=lineage.tables.Select(source.current_table),

@@ -13,7 +13,7 @@ def selector(item):
     if "lineage.schema.source.SourceFile" in str(type(item)):
         function_name = "source_file"
 
-    elif "lineage.core._BlankColumn" in str(type(item).__bases__[0]):
+    elif "lineage.schema.source.SourceColumn" in str(type(item).__bases__[0]):
         function_name = "columns_blank"
 
     # COLUMNS
@@ -84,6 +84,9 @@ def selector(item):
 
         elif "lineage.values.Struct" in str(type(item)):
             function_name = "values_struct"
+
+        elif "lineage.values.Decimal" in str(type(item)):
+            function_name = "values_decimal"
 
     # UNITS
 

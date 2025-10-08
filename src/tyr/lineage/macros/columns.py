@@ -1,4 +1,4 @@
-import units.core
+import units
 
 from .. import core as lineage
 from .. import values as lineage_values
@@ -8,8 +8,27 @@ from .. import expressions as lineage_expressions
 from . import functions as macro_functions
 
 
-def select_all(table: lineage._Table):
+def select_all(
+    table: lineage._Table,
+    filter_regex: str = None,
+    filter_unit: units.core.Unit = None,
+    primary_key: bool = True,
+):
     macro_group = rf"SelectAll - {id(table)}"
+
+    if primary_key:
+        pk_columns = lineage.ColumnList(
+            [
+                lineage_columns.Core(
+                    name=column.name,
+                    source=lineage_columns.Select(column, macro_group=macro_group),
+                    macro_group=macro_group,
+                )
+                for column in table.primary_key.list_columns()
+            ]
+        )
+    else:
+        pk_columns = lineage.ColumnList([])
 
     select_columns = lineage.ColumnList(
         [
@@ -18,11 +37,15 @@ def select_all(table: lineage._Table):
                 source=lineage_columns.Select(column, macro_group=macro_group),
                 macro_group=macro_group,
             )
-            for column in table.columns.list_all()
+            for column in table.columns.list_columns(
+                filter_regex=filter_regex, filter_unit=filter_unit
+            )
+            if column.name not in table.primary_key.list_names()
         ]
     )
 
-    return select_columns
+    return pk_columns + select_columns
+
 
 def select_primary_key(table: lineage._Table):
     macro_group = rf"SelectPrimaryKey - {id(table)}"
@@ -34,11 +57,12 @@ def select_primary_key(table: lineage._Table):
                 source=lineage_columns.Select(column, macro_group=macro_group),
                 macro_group=macro_group,
             )
-            for column in table.primary_key.list_all()
+            for column in table.primary_key.list_columns()
         ]
     )
 
     return select_columns
+
 
 def select_static_primary_key(table: lineage._Table):
     macro_group = rf"SelectStaticPrimaryKey - {id(table)}"
@@ -50,7 +74,7 @@ def select_static_primary_key(table: lineage._Table):
                 source=lineage_columns.Select(column, macro_group=macro_group),
                 macro_group=macro_group,
             )
-            for column in table.static_primary_key.list_all()
+            for column in table.static_primary_key.list_columns()
         ]
     )
 
@@ -63,7 +87,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
 
     macro_group = rf"StagingColumnTransform - {id(source_column)}"
 
-    column = tyr.lineage.functions.data_type.TryCast(
+    column = lineage_functions.data_type.TryCast(
         source=lineage_functions.utility.SourceWildToStagingColumn(
             source_column, column_metadata, macro_group=macro_group
         ),
@@ -71,21 +95,18 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
         macro_group=macro_group,
     )
 
-    source_unit = units.core.Unit(column_metadata.source_unit, macro_group=macro_group)
-    target_unit = units.core.Unit(column_metadata.target_unit, macro_group=macro_group)
+    source_unit = units.core.Unit(
+        column_metadata.source_unit.name, macro_group=macro_group
+    )
+    target_unit = units.core.Unit(
+        column_metadata.target_unit.name, macro_group=macro_group
+    )
 
-    print(column_metadata.column_name)
-    print(column_metadata.column_alias)
-    print(column_metadata.regex)
-    print(column_metadata.var_type)
-    print(column_metadata.data_type.__dict__)
-    print("\n")
-
-    if (column_metadata.regex != "") & (column_metadata.var_type == "timestamp"):
+    if column_metadata.regex != "" and column_metadata.var_type == "timestamp":
         if (column_metadata.regex == "datetime") & (
             column_metadata.data_type.value == "TIMESTAMP"
         ):
-            column = tyr.lineage.functions.data_type.TryCast(
+            column = lineage_functions.data_type.TryCast(
                 source=lineage_functions.utility.SourceWildToStagingColumn(
                     source_column, column_metadata, macro_group=macro_group
                 ),
@@ -98,7 +119,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
             and column_metadata.regex == "epoch_ms"
         ):
             column = lineage_functions.datetime.EpochMSToTimestamp(
-                tyr.lineage.functions.data_type.TryCast(
+                lineage_functions.data_type.TryCast(
                     source=lineage_functions.utility.SourceWildToStagingColumn(
                         source_column, column_metadata, macro_group=macro_group
                     ),
@@ -114,7 +135,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
             and column_metadata.regex == "epoch_s"
         ):
             column = lineage_functions.datetime.EpochToTimestamp(
-                tyr.lineage.functions.data_type.TryCast(
+                lineage_functions.data_type.TryCast(
                     source=lineage_functions.utility.SourceWildToStagingColumn(
                         source_column, column_metadata, macro_group=macro_group
                     ),
@@ -127,7 +148,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
             )
         else:
             column = lineage_functions.datetime.StringToTimestamp(
-                tyr.lineage.functions.data_type.TryCast(
+                lineage_functions.data_type.TryCast(
                     source=lineage_functions.utility.SourceWildToStagingColumn(
                         source_column, column_metadata, macro_group=macro_group
                     ),
@@ -146,8 +167,8 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
         if (column_metadata.regex == "datetime") & (
             column_metadata.data_type.value == "INTERVAL"
         ):
-            column = tyr.lineage.functions.data_type.ToInterval(
-                source=tyr.lineage.functions.data_type.TryCast(
+            column = lineage_functions.data_type.ToInterval(
+                source=lineage_functions.data_type.TryCast(
                     source=lineage_functions.utility.SourceWildToStagingColumn(
                         source_column, column_metadata, macro_group=macro_group
                     ),
@@ -163,7 +184,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
         elif column_metadata.data_type.value == "INTERVAL":
             column = lineage_functions.datetime.DateDiff(
                 start=lineage_functions.datetime.StringToTimestamp(
-                    tyr.lineage.functions.data_type.TryCast(
+                    lineage_functions.data_type.TryCast(
                         source=lineage_functions.utility.SourceWildToStagingColumn(
                             source_column, column_metadata, macro_group=macro_group
                         ),
@@ -178,7 +199,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
                     macro_group=macro_group,
                 ),
                 end=lineage_functions.datetime.StringToTimestamp(
-                    tyr.lineage.functions.data_type.TryCast(
+                    lineage_functions.data_type.TryCast(
                         source=lineage_functions.utility.SourceWildToStagingColumn(
                             source_column, column_metadata, macro_group=macro_group
                         ),
@@ -192,8 +213,8 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
                 macro_group=macro_group,
             )
     elif (column_metadata.var_type == "timedelta") & (len(source_unit.sub_units) > 0):
-        column = tyr.lineage.functions.data_type.ToInterval(
-            source=tyr.lineage.functions.data_type.TryCast(
+        column = lineage_functions.data_type.ToInterval(
+            source=lineage_functions.data_type.TryCast(
                 lineage_functions.utility.SourceWildToStagingColumn(
                     source_column, column_metadata, macro_group=macro_group
                 ),
@@ -208,7 +229,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
         column_metadata.data_type.value == "VARCHAR"
     ):
         column = lineage_functions.string.RegExpExtract(
-            source=tyr.lineage.functions.data_type.TryCast(
+            source=lineage_functions.data_type.TryCast(
                 source=lineage_functions.utility.SourceWildToStagingColumn(
                     source_column, column_metadata, macro_group=macro_group
                 ),
@@ -222,9 +243,9 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
         )
 
     elif column_metadata.regex != "":
-        column = tyr.lineage.functions.data_type.TryCast(
+        column = lineage_functions.data_type.TryCast(
             source=lineage_functions.string.RegExpExtract(
-                source=tyr.lineage.functions.data_type.TryCast(
+                source=lineage_functions.data_type.TryCast(
                     source=lineage_functions.utility.SourceWildToStagingColumn(
                         source_column, column_metadata, macro_group=macro_group
                     ),
@@ -238,9 +259,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
                 ),
                 macro_group=macro_group,
             ),
-            data_type=lineage_values.Datatype(
-                column_metadata.data_type, macro_group=macro_group
-            ),
+            data_type=column_metadata.data_type,
             macro_group=macro_group,
         )
 
@@ -271,11 +290,22 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
             macro_group=macro_group,
         )
 
-    column = macro_functions.unit_conversion.convert_to_unit(column, unit=target_unit)
+    if column_metadata.scale_factor:
+        if column_metadata.scale_factor != 1:
+            column = lineage_functions.math.Multiply(
+                column, lineage_values.Float(column_metadata.scale_factor)
+            )
+
+    if source_unit != target_unit:
+        column = macro_functions.unit_conversion.convert_to_unit(
+            source=column, target_unit=target_unit
+        )
+
+    # if column_metadata.
 
     if column_metadata.precision:
         if column_metadata.precision[-2:] == "sf":
-            column = tyr.lineage.macros.functions.numeric.significant_figures(
+            column = macro_functions.numeric.significant_figures(
                 column,
                 lineage_values.Integer(int(column_metadata.precision[:-2])),
             )

@@ -1,6 +1,7 @@
 from ..lineage import core as lineage
 from ..lineage import columns as lineage_columns
 from typing import List
+import rustworkx as rx
 
 
 class Join:
@@ -17,22 +18,22 @@ class Join:
         left_columns = lineage.ColumnList(
             [
                 lineage_columns.Select(column)
-                for column in self.join_expression.left.columns.list_all()
+                for column in self.join_expression.left.columns.list_columns()
             ]
         )
         right_columns = lineage.ColumnList(
             [
                 lineage_columns.Select(column)
-                for column in self.join_expression.right.columns.list_all()
+                for column in self.join_expression.right.columns.list_columns(
+                    filter_regex=rf"^(?!{'|'.join([column for column in left_columns.list_names()])}).*"
+                )
             ]
         )
 
-        self.columns = lineage.ColumnList(
-            left_columns.list_all() + right_columns.list_all()
-        )
+        self.columns = left_columns + right_columns
 
-        left_ctes = self.join_expression.left.ctes.list_all()
-        right_ctes = self.join_expression.right.ctes.list_all()
+        left_ctes = self.join_expression.left.ctes.list_tables()
+        right_ctes = self.join_expression.right.ctes.list_tables()
 
         self.ctes = lineage.TableList(left_ctes + right_ctes)
         self.sql = lineage._interpreters["beeswax_duckdb"].to_sql(self)
@@ -42,8 +43,25 @@ class Join:
             "macro_group": macro_group,
             "sql": self.sql,
         }
-        self._outbound_edge_data = {}
-        self._inbound_edge_data = {}
+
+        left = rx.PyDiGraph()
+        right = rx.PyDiGraph()
+
+        left.add_node(self.join_expression.left._node_data)
+        right.add_node(self.join_expression.right._node_data)
+
+        left.add_child(0, self._node_data, {})
+        right.add_child(0, self._node_data, {})
+
+        left = rx.union(
+            left, self.join_expression.left.graph, merge_nodes=True, merge_edges=True
+        )
+        right = rx.union(
+            right, self.join_expression.right.graph, merge_nodes=True, merge_edges=True
+        )
+
+        graph = rx.union(left, right, merge_nodes=True, merge_edges=True)
+        self.graph = graph
 
 
 class CompoundJoin:
@@ -59,15 +77,15 @@ class CompoundJoin:
                 [
                     column.current_table.name == column_name
                     for column_name in self.columns.list_names()
-                    for column in join.columns.list_all()
+                    for column in join.columns.list_columns()
                 ]
             ):
-                for column in join.columns.list_all():
+                for column in join.columns.list_columns():
                     if column.name not in self.columns.list_names():
                         self.columns.add(column)
 
         for join in joins:
-            for cte in join.ctes.list_all():
+            for cte in join.ctes.list_tables():
                 if cte.name not in self.ctes.list_names():
                     self.ctes.add(cte)
         self.sql = lineage._interpreters["beeswax_duckdb"].to_sql(self)
@@ -77,5 +95,10 @@ class CompoundJoin:
             "macro_group": macro_group,
             "sql": self.sql,
         }
-        self._outbound_edge_data = {}
-        self._inbound_edge_data = {}
+
+        graph = rx.PyDiGraph()
+
+        for join in self.joins:
+            graph = rx.union(graph, join.graph, merge_nodes=True, merge_edges=True)
+
+        self.graph = graph

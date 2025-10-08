@@ -94,7 +94,7 @@ class DateDiff(lineage._Function):
     def __init__(self, start, end, unit, macro_group: str = ""):
         super().__init__(
             args=[
-                lineage_values.Varchar(unit.sub_units.symbol.iloc[0]),
+                lineage_values.Varchar(unit.sub_units["unit_name"].iloc[0].upper()),
                 start,
                 end,
             ],

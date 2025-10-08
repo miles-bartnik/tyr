@@ -56,7 +56,7 @@ class Check:
                                 source=lineage.values.List(
                                     [
                                         lineage.values.Varchar(item.name)
-                                        for item in columns_checked.list_all()
+                                        for item in columns_checked.list_columns()
                                     ]
                                 ),
                             ),
@@ -86,7 +86,7 @@ class Check:
                                 source=lineage.values.List(
                                     [
                                         lineage.values.Varchar(item.name)
-                                        for item in columns_checked.list_all()
+                                        for item in columns_checked.list_columns()
                                     ]
                                 ),
                             ),
@@ -119,7 +119,7 @@ class Check:
                                 source=lineage.values.List(
                                     [
                                         lineage.values.Varchar(column.name)
-                                        for column in source.static_primary_key.list_all()
+                                        for column in source.static_primary_key.list_columns()
                                     ]
                                 ),
                             ),
@@ -133,7 +133,7 @@ class Check:
                                                 "VARCHAR"
                                             ),
                                         )
-                                        for column in source.static_primary_key.list_all()
+                                        for column in source.static_primary_key.list_columns()
                                     ]
                                 ),
                             ),
@@ -142,7 +142,7 @@ class Check:
                                 source=lineage.values.List(
                                     [
                                         lineage.values.Varchar(item.name)
-                                        for item in columns_checked.list_all()
+                                        for item in columns_checked.list_columns()
                                     ]
                                 ),
                             ),
@@ -176,7 +176,7 @@ class Check:
                                                 "VARCHAR"
                                             ),
                                         )
-                                        for column in source.static_primary_key.list_all()
+                                        for column in source.static_primary_key.list_columns()
                                     ]
                                 ),
                             ),
@@ -223,7 +223,7 @@ class Check:
                                 source=lineage.values.List(
                                     [
                                         lineage.values.Varchar(item.name)
-                                        for item in columns_checked.list_all()
+                                        for item in columns_checked.list_columns()
                                     ]
                                 ),
                             ),
@@ -253,7 +253,7 @@ class Check:
                                 source=lineage.values.List(
                                     [
                                         lineage.values.Varchar(item.name)
-                                        for item in columns_checked.list_all()
+                                        for item in columns_checked.list_columns()
                                     ]
                                 ),
                             ),
@@ -316,7 +316,7 @@ class Check:
                                 source=lineage.values.List(
                                     [
                                         lineage.values.Varchar(column.name)
-                                        for column in source.static_primary_key.list_all()
+                                        for column in source.static_primary_key.list_columns()
                                     ]
                                 ),
                             ),
@@ -330,7 +330,7 @@ class Check:
                                                 "VARCHAR"
                                             ),
                                         )
-                                        for column in source.static_primary_key.list_all()
+                                        for column in source.static_primary_key.list_columns()
                                     ]
                                 ),
                             ),
@@ -339,7 +339,7 @@ class Check:
                                 source=lineage.values.List(
                                     [
                                         lineage.values.Varchar(item.name)
-                                        for item in columns_checked.list_all()
+                                        for item in columns_checked.list_columns()
                                     ]
                                 ),
                             ),
@@ -388,7 +388,7 @@ class Check:
                                                 "VARCHAR"
                                             ),
                                         )
-                                        for column in source.static_primary_key.list_all()
+                                        for column in source.static_primary_key.list_columns()
                                     ]
                                 ),
                             ),

@@ -20,7 +20,6 @@ class Select(lineage._Column):
         if not any(
             [
                 isinstance(source, lineage._Column),
-                isinstance(source, Blank),
                 isinstance(source, lineage_dataframes.DataFrameColumn),
                 isinstance(source, lineage_dataframes.LambdaOutput),
                 isinstance(source, WildCard),
@@ -126,45 +125,27 @@ class Core(lineage._Column):
         )
 
 
-class Blank(lineage._BlankColumn):
+class Record(lineage._Blank):
     def __init__(
         self,
-        name: str = None,
+        name,
+        data_type: lineage_values.Datatype,
         var_type: str = None,
-        data_type: lineage_values.Datatype = None,
-        on_null: str = None,
-        is_primary_key: bool = False,
-        is_event_time: bool = False,
-        unit: lineage.units.core.Unit = lineage.units.core.Unit(),
-        macro_group: str = "",
+        macro_group: str = None,
     ):
-        self.name = name
-        self.current_table = None
-
         super().__init__(
-            name=name,
-            var_type=var_type,
-            data_type=data_type,
-            on_null=on_null,
-            is_primary_key=is_primary_key,
-            is_event_time=is_event_time,
-            unit=unit,
-            macro_group=macro_group,
-        )
-
-    def __deepcopy__(self, memodict={}):
-        return Blank(
-            name=self.name,
-            var_type=self.var_type,
-            data_type=self.data_type,
-            on_null=self.on_null,
-            is_primary_key=self.is_primary_key,
-            is_event_time=self.is_event_time,
-            unit=self.unit,
+            name=name, data_type=data_type, var_type=var_type, macro_group=macro_group
         )
 
 
 class WildCard(lineage._Column):
+
+    """
+    WildCard selects all columns from associated table.
+    Use of this class breaks lineage. Only use where appropriate.
+    Recommended alternative is lineage.macros.columns.select_all()
+    """
+
     def __init__(self, macro_group: str = ""):
         source = lineage_values.WildCard()
 

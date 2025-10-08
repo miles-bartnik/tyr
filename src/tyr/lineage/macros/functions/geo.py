@@ -1,7 +1,31 @@
+import units.core
+
+import tyr.lineage.values
 from ... import functions as lineage_functions
 from ... import values as lineage_values
+from . import math as math_macros
 
 EARTH_RADIUS = 6371.009
+
+
+def dms_to_decimal(degrees, minutes, seconds):
+    return math_macros.add_multiple_variable(
+        [
+            degrees,
+            lineage_functions.math.Divide(
+                minutes,
+                tyr.lineage.values.Float(
+                    60, unit=units.core.Unit("°^1′^-1").reciprocal()
+                ),
+            ),
+            lineage_functions.math.Divide(
+                seconds,
+                tyr.lineage.values.Float(
+                    3600, unit=units.core.Unit("°^1′′^-1").reciprocal()
+                ),
+            ),
+        ]
+    )
 
 
 def point_from_distance_bearing(
@@ -27,7 +51,7 @@ def point_from_distance_bearing(
                     lineage_functions.math.Multiply(
                         lineage_functions.math.Sin(
                             lineage_functions.math.Radians(
-                                lineage_functions.ListExtract(
+                                lineage_functions.array.ListExtract(
                                     origin,
                                     lineage_values.List([lineage_values.Integer(1)]),
                                 )
@@ -41,7 +65,7 @@ def point_from_distance_bearing(
                         lineage_functions.math.Multiply(
                             lineage_functions.math.Cos(
                                 lineage_functions.math.Radians(
-                                    lineage_functions.ListExtract(
+                                    lineage_functions.array.ListExtract(
                                         origin,
                                         lineage_values.List(
                                             [lineage_values.Integer(1)]
@@ -67,7 +91,7 @@ def point_from_distance_bearing(
         lineage_functions.math.Degrees(
             lineage_functions.math.Add(
                 lineage_functions.math.Radians(
-                    tyr.lineage.functions.array.ListExtract(
+                    lineage_functions.array.ListExtract(
                         origin, lineage_values.List([lineage_values.Integer(2)])
                     )
                 ),
@@ -83,7 +107,7 @@ def point_from_distance_bearing(
                         ),
                         lineage_functions.math.Cos(
                             lineage_functions.math.Radians(
-                                tyr.lineage.functions.array.ListExtract(
+                                lineage_functions.array.ListExtract(
                                     origin,
                                     lineage_values.List([lineage_values.Integer(1)]),
                                 )
@@ -96,7 +120,7 @@ def point_from_distance_bearing(
                         ),
                         lineage_functions.math.Multiply(
                             lineage_functions.math.Sin(
-                                tyr.lineage.functions.array.ListExtract(
+                                lineage_functions.array.ListExtract(
                                     origin,
                                     lineage_values.List([lineage_values.Integer(1)]),
                                 )
@@ -114,7 +138,7 @@ def point_from_distance_bearing(
 
 
 def as_list(source):
-    return tyr.lineage.functions.data_type.Cast(
+    return lineage_functions.data_type.Cast(
         lineage_functions.string.RegExpExtractAll(
             lineage_functions.geo.AsWKT(source),
             lineage_values.Varchar(r"[\d\.]+"),
