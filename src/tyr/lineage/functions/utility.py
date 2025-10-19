@@ -1,6 +1,5 @@
 from ...lineage import core as lineage
 from ...lineage import values as lineage_values
-from ...lineage import columns as lineage_columns
 from typing import List as TypingList, Any
 import pandas as pd
 
@@ -24,7 +23,7 @@ class SourceWildToStagingColumn(lineage._Function):
 
     def __init__(
         self,
-        source: lineage_columns.WildCard(),
+        source,
         column_metadata,
         macro_group: str = "",
     ):
@@ -32,6 +31,9 @@ class SourceWildToStagingColumn(lineage._Function):
             raise ValueError(
                 "column_metadata must be lineage.schema.source.ColumnMetadata object"
             )
+
+        if "lineage.columns.WildCard" not in str(type(source)):
+            raise ValueError("source must be lineage.columns.WildCard object")
 
         super().__init__(
             args=[source, column_metadata],
