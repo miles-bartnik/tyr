@@ -1,5 +1,0 @@
-Test Lineage
-----------------
-
-.. automodule:: tyr.lineage.core
-   :members:

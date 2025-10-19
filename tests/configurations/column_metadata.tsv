@@ -1,0 +1,110 @@
+schema	dataset	column_name	column_alias	var_type	data_type	on_null	is_primary_key	is_event_time	filter_values	on_filter	regex	source_unit	target_unit	scale_factor	precision	ordinal_position
+staging	car_location	Date	event_ts	timestamp	TIMESTAMP	PASS	True	True		PASS	%Y-%m-%d %H:%M:%S.%g					0
+staging	car_location	Status	status	categorical	VARCHAR	PASS	False	False		PASS						2
+staging	car_location	X	x	numeric	DECIMAL(15,5)	PASS	False	False		PASS		m^1			1dp	3
+staging	car_location	Y	y	numeric	DECIMAL(15,5)	PASS	False	False		PASS		m^1			1dp	4
+staging	car_location	Z	z	numeric	DECIMAL(15,5)	PASS	False	False		PASS		m^1			1dp	5
+staging	car_location	Source	source	categorical	VARCHAR	PASS	False	False		PASS						6
+staging	car_location	Time	meeting_time	timedelta	INTERVAL	PASS	False	False		PASS						7
+staging	car_location	SessionTime	session_time	timedelta	INTERVAL	PASS	False	False		PASS						8
+staging	car_location	DriverNumber	driver_number	key	INTEGER	PASS	True	False		PASS						1
+staging	car_telemetry	Date	event_ts	timestamp	TIMESTAMP	PASS	True	True		PASS	%Y-%m-%d %H:%M:%S.%g					0
+staging	car_telemetry	RPM	rpm	numeric	DECIMAL(15,5)	PASS	False	False		PASS		rpm^1			0dp	2
+staging	car_telemetry	Speed	kmh	numeric	DECIMAL(15,5)	PASS	False	False		PASS		km^1h^-1			1dp	3
+staging	car_telemetry	nGear	n_gear	sequential	INTEGER	PASS	False	False		PASS						4
+staging	car_telemetry	Throttle	throttle	numeric	DECIMAL(15,5)	PASS	False	False		PASS				0.01		5
+staging	car_telemetry	Brake	brake	numeric	DECIMAL(15,5)	PASS	False	False		PASS						6
+staging	car_telemetry	DRS	drs	categorical	BOOLEAN	PASS	False	False		PASS						7
+staging	car_telemetry	Source	source	categorical	VARCHAR	PASS	False	False		PASS						8
+staging	car_telemetry	Time	meeting_time	timedelta	INTERVAL	PASS	False	False		PASS						9
+staging	car_telemetry	SessionTime	session_time	timedelta	INTERVAL	PASS	False	False		PASS						10
+staging	car_telemetry	DriverNumber	driver_number	key	INTEGER	PASS	True	False		PASS						1
+staging	meetings	Key	meeting_key	key	INTEGER	PASS	True	False		PASS						0
+staging	meetings	Name	meeting_name	string	VARCHAR	PASS	False	False		PASS						1
+staging	meetings	OfficialName	official_name	string	VARCHAR	PASS	False	False		PASS						2
+staging	meetings	Location	location	string	VARCHAR	PASS	False	False		PASS						3
+staging	meetings	CountryKey	country_key	key	INTEGER	PASS	False	False		PASS						4
+staging	meetings	CountryCode	country_code	key	VARCHAR	PASS	False	False		PASS						5
+staging	meetings	CountryName	country_name	string	VARCHAR	PASS	False	False		PASS						6
+staging	meetings	CircuitKey	circuit_key	key	INTEGER	PASS	False	False		PASS						7
+staging	meetings	CircuitShortName	circuit_short_name	string	VARCHAR	PASS	False	False		PASS						8
+staging	race_control	Time	event_ts	timestamp	TIMESTAMP	PASS	True	True		PASS	%Y-%m-%d %H:%M:%S.%g					0
+staging	race_control	Category	category	categorical	VARCHAR	PASS	True	False		PASS						1
+staging	race_control	Message	message	string	TEXT	PASS	False	False		PASS						2
+staging	race_control	Status	status	categorical	VARCHAR	PASS	False	False		PASS						3
+staging	race_control	Flag	flag	categorical	VARCHAR	PASS	False	False		PASS						4
+staging	race_control	Scope	scope	categorical	VARCHAR	PASS	False	False		PASS						5
+staging	race_control	Sector	sector	categorical	INTEGER	PASS	False	False		PASS						6
+staging	race_control	RacingNumber	driver_number	key	INTEGER	PASS	False	False		PASS						7
+staging	race_control	Lap	lap	numeric	INTEGER	PASS	False	False		PASS						8
+staging	track_status	Time	session_time	timedelta	INTERVAL	PASS	True	True		PASS						0
+staging	track_status	Status	status	categorical	VARCHAR	PASS	True	False		PASS						1
+staging	track_status	Message	message	string	TEXT	PASS	False	False		PASS						2
+staging	sessions	Key	session_key	key	INT	PASS	True	False		PASS						0
+staging	sessions	Type	type	categorical	VARCHAR	PASS	False	False		PASS						1
+staging	sessions	Name	name	string	VARCHAR	PASS	False	False		PASS						2
+staging	sessions	StartDate	start_date	timestamp	TIMESTAMP	PASS	False	False		PASS	%Y-%m-%d %H:%M:%S					3
+staging	sessions	EndDate	end_date	timestamp	TIMESTAMP	PASS	False	False		PASS	%Y-%m-%d %H:%M:%S					4
+staging	sessions	GmtOffset	gmt_offset	timedelta	INTERVAL	PASS	False	False		PASS						5
+staging	sessions	Path	path	string	VARCHAR	PASS	False	False		PASS						6
+staging	weather	SessionKey	session_key	key	INT	PASS	True	False		PASS						0
+staging	weather	Time	session_time	timedelta	INTERVAL	PASS	True	True		PASS						1
+staging	weather	AirTemp	air_temp	numeric	DECIMAL(15,5)	PASS	False	False		PASS		°C^1			1dp	2
+staging	weather	Humidity	humidity	numeric	DECIMAL(15,5)	PASS	False	False		PASS						3
+staging	weather	Pressure	pressure	numeric	DECIMAL(15,5)	PASS	False	False		PASS		kPa^1			0dp	4
+staging	weather	Rainfall	rainfall	numeric	DECIMAL(15,5)	PASS	False	False		PASS		mm^1			0dp	5
+staging	weather	TrackTemp	track_temp	numeric	DECIMAL(15,5)	PASS	False	False		PASS		°C^1			1dp	6
+staging	weather	WindDirection	wind_direction	numeric	DECIMAL(15,5)	PASS	False	False		PASS		°^1			0dp	7
+staging	weather	WindSpeed	wind_speed	numeric	DECIMAL(15,5)	PASS	False	False		PASS		kn^1	km^1h^-1		1dp	8
+staging	circuits	id	circuit_key	key	VARCHAR	PASS	True	False		PASS						0
+staging	circuits	Location	location	string	VARCHAR	PASS	False	False		PASS						1
+staging	circuits	Name	name	string	VARCHAR	PASS	False	False		PASS						2
+staging	circuits	opened	opened	timestamp	DATE	PASS	False	False		PASS	%Y					3
+staging	circuits	firstgp	first_gp	timestamp	DATE	PASS	False	False		PASS	%Y					4
+staging	circuits	length	length	numeric	INTEGER	PASS	False	False		PASS		m^1				5
+staging	circuits	altitude	altitude	numeric	INTEGER	PASS	False	False		PASS		m^1				6
+staging	circuits	geom	geometry	geometry	GEOMETRY	PASS	False	False		PASS						7
+staging	results	SessionKey	session_key	key	INTEGER	PASS	True	False		PASS						0
+staging	results	DriverNumber	driver_number	key	INTEGER	PASS	True	False		PASS						1
+staging	results	BroadcastName	broadcast_name	string	VARCHAR	PASS	False	False		PASS						2
+staging	results	Abbreviation	abbreviation	string	VARCHAR	PASS	False	False		PASS						3
+staging	results	DriverId	driver_id	string	VARCHAR	PASS	False	False		PASS						4
+staging	results	TeamName	team_name	string	VARCHAR	PASS	False	False		PASS						5
+staging	results	TeamColor	team_colour	string	VARCHAR	PASS	False	False		PASS						6
+staging	results	TeamId	team_id	string	VARCHAR	PASS	False	False		PASS						7
+staging	results	FirstName	first_name	string	VARCHAR	PASS	False	False		PASS						8
+staging	results	LastName	last_name	string	VARCHAR	PASS	False	False		PASS						9
+staging	results	FullName	full_name	string	VARCHAR	PASS	False	False		PASS						10
+staging	results	HeadshotUrl	headshot_url	string	VARCHAR	PASS	False	False		PASS						11
+staging	results	CountryCode	country_code	key	VARCHAR	PASS	False	False		PASS						12
+staging	results	Position	position	numeric	INTEGER	PASS	False	False		PASS						13
+staging	results	ClassifiedPosition	classified_position	numeric	INTEGER	PASS	False	False		PASS						14
+staging	results	GridPosition	grid_position	numeric	INTEGER	PASS	False	False		PASS						15
+staging	results	Q1	qualifying_1	timedelta	INTERVAL	PASS	False	False		PASS						16
+staging	results	Q2	qualifying_2	timedelta	INTERVAL	PASS	False	False		PASS						17
+staging	results	Q3	qualifying_3	timedelta	INTERVAL	PASS	False	False		PASS						18
+staging	results	Time	classified_time	timedelta	INTERVAL	PASS	False	False		PASS						19
+staging	results	Status	session_status	categorical	VARCHAR	PASS	False	False		PASS						20
+staging	results	Points	points	numeric	INTEGER	PASS	False	False		PASS						21
+staging	results	Laps	laps_completed	numeric	INTEGER	PASS	False	False		PASS						22
+staging	session_status	SessionKey	session_key	key	INTEGER	PASS	True	False		PASS						0
+staging	session_status	Time	session_time	timedelta	INTERVAL	PASS	True	True		PASS						1
+staging	session_status	Status	session_status	categorical	VARCHAR	PASS	False	False		PASS						2
+staging	team_radio	session_key		key	INTEGER	PASS	True	False		PASS						0
+staging	team_radio	driver_number		key	INTEGER	PASS	True	False		PASS						1
+staging	team_radio	date	event_ts	timestamp	TIMESTAMP	PASS	True	True		PASS	%Y-%m-%dT%H:%M:%S.%g000%z					2
+staging	team_radio	recording_url		string	VARCHAR	PASS	False	False		PASS						3
+staging	pit_stops	date		timestamp	TIMESTAMP	PASS	True	True		PASS						0
+staging	pit_stops	session_key		key	INTEGER	PASS	True	False		PASS						1
+staging	pit_stops	driver_number		key	INTEGER	PASS	True	False		PASS						2
+staging	pit_stops	pit_duration		numeric	FLOAT	PASS	False	False		PASS						3
+staging	pit_stops	lap_number		numeric	INTEGER	PASS	False	False		PASS		s^1				4
+staging	position	date	event_ts	timestamp	TIMESTAMP	PASS	True	True		PASS						0
+staging	position	session_key		key	INTEGER	PASS	True	False		PASS						1
+staging	position	driver_number		key	INTEGER	PASS	True	False		PASS						2
+staging	position	position		numeric	INTEGER	PASS	False	False		PASS	%Y-%m-%dT%H:%M:%S.%g000%z					3
+staging	intervals	date	event_ts	timestamp	TIMESTAMP	PASS	True	True		PASS						0
+staging	intervals	session_key		key	INTEGER	PASS	True	False		PASS						1
+staging	intervals	driver_number		key	INTEGER	PASS	True	False		PASS						2
+staging	intervals	gap_to_leader		numeric	FLOAT	PASS	False	False		PASS		s^1				3
+staging	intervals	interval		numeric	FLOAT	PASS	False	False		PASS		s^1				4

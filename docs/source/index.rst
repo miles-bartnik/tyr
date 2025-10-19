@@ -17,5 +17,8 @@ documentation for details.
 
    lineage/core
    lineage/columns
-   lineage/tables
+   lineage/values
    lineage/functions
+   lineage/tables
+   lineage/expressions
+   lineage/joins

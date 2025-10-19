@@ -45,8 +45,11 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="lineage/core.html">Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lineage/columns.html">Columns</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lineage/tables.html">Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lineage/values.html">Values</a></li>
 <li class="toctree-l1"><a class="reference internal" href="lineage/functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lineage/tables.html">Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lineage/expressions.html">Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lineage/joins.html">Joins</a></li>
 </ul>
 
         </div>
@@ -82,6 +85,7 @@ documentation for details.</p>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="lineage/core.html">Core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lineage/core.html#tyr.lineage.core.AppendOperator"><code class="docutils literal notranslate"><span class="pre">AppendOperator</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lineage/core.html#tyr.lineage.core.ColumnList"><code class="docutils literal notranslate"><span class="pre">ColumnList</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lineage/core.html#tyr.lineage.core.OrderBy"><code class="docutils literal notranslate"><span class="pre">OrderBy</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lineage/core.html#tyr.lineage.core.PartitionBy"><code class="docutils literal notranslate"><span class="pre">PartitionBy</span></code></a></li>
@@ -89,15 +93,64 @@ documentation for details.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="lineage/columns.html">Columns</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="lineage/columns.html#tyr.lineage.columns.Core"><code class="docutils literal notranslate"><span class="pre">Core</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/columns.html#tyr.lineage.columns.Record"><code class="docutils literal notranslate"><span class="pre">Record</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lineage/columns.html#tyr.lineage.columns.Select"><code class="docutils literal notranslate"><span class="pre">Select</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="lineage/columns.html#tyr.lineage.columns.WildCard"><code class="docutils literal notranslate"><span class="pre">WildCard</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="lineage/tables.html">Tables</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="lineage/tables.html#tyr.lineage.tables.Core"><code class="docutils literal notranslate"><span class="pre">Core</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="lineage/values.html">Values</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Boolean"><code class="docutils literal notranslate"><span class="pre">Boolean</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Datatype"><code class="docutils literal notranslate"><span class="pre">Datatype</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Date"><code class="docutils literal notranslate"><span class="pre">Date</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Decimal"><code class="docutils literal notranslate"><span class="pre">Decimal</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Double"><code class="docutils literal notranslate"><span class="pre">Double</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Float"><code class="docutils literal notranslate"><span class="pre">Float</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.GeoCoordinate"><code class="docutils literal notranslate"><span class="pre">GeoCoordinate</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Integer"><code class="docutils literal notranslate"><span class="pre">Integer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Interval"><code class="docutils literal notranslate"><span class="pre">Interval</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.JSON"><code class="docutils literal notranslate"><span class="pre">JSON</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.List"><code class="docutils literal notranslate"><span class="pre">List</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Null"><code class="docutils literal notranslate"><span class="pre">Null</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Raw"><code class="docutils literal notranslate"><span class="pre">Raw</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Struct"><code class="docutils literal notranslate"><span class="pre">Struct</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Subquery"><code class="docutils literal notranslate"><span class="pre">Subquery</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Timestamp"><code class="docutils literal notranslate"><span class="pre">Timestamp</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Tuple"><code class="docutils literal notranslate"><span class="pre">Tuple</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.Varchar"><code class="docutils literal notranslate"><span class="pre">Varchar</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/values.html#tyr.lineage.values.WildCard"><code class="docutils literal notranslate"><span class="pre">WildCard</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="lineage/functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lineage/functions.html">Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lineage/function_docs/aggregates.html">Aggregates</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lineage/tables.html">Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lineage/expressions.html">Expressions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.And"><code class="docutils literal notranslate"><span class="pre">And</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.As"><code class="docutils literal notranslate"><span class="pre">As</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.Between"><code class="docutils literal notranslate"><span class="pre">Between</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.Equal"><code class="docutils literal notranslate"><span class="pre">Equal</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.FullOuterJoin"><code class="docutils literal notranslate"><span class="pre">FullOuterJoin</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.GreaterThan"><code class="docutils literal notranslate"><span class="pre">GreaterThan</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.GreaterThanOrEqual"><code class="docutils literal notranslate"><span class="pre">GreaterThanOrEqual</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.In"><code class="docutils literal notranslate"><span class="pre">In</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.InnerJoin"><code class="docutils literal notranslate"><span class="pre">InnerJoin</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.Is"><code class="docutils literal notranslate"><span class="pre">Is</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.LeftJoin"><code class="docutils literal notranslate"><span class="pre">LeftJoin</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.LessThan"><code class="docutils literal notranslate"><span class="pre">LessThan</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.LessThanOrEqual"><code class="docutils literal notranslate"><span class="pre">LessThanOrEqual</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.Like"><code class="docutils literal notranslate"><span class="pre">Like</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.Not"><code class="docutils literal notranslate"><span class="pre">Not</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.NotEqual"><code class="docutils literal notranslate"><span class="pre">NotEqual</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.Or"><code class="docutils literal notranslate"><span class="pre">Or</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/expressions.html#tyr.lineage.expressions.RightJoin"><code class="docutils literal notranslate"><span class="pre">RightJoin</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lineage/joins.html">Joins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lineage/joins.html#tyr.lineage.joins.CompoundJoin"><code class="docutils literal notranslate"><span class="pre">CompoundJoin</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lineage/joins.html#tyr.lineage.joins.Join"><code class="docutils literal notranslate"><span class="pre">Join</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>

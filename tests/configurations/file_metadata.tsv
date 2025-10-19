@@ -1,0 +1,16 @@
+schema	dataset	file_regex	delim	distinct
+staging	car_location	/home/miles/tyr/tests/datasets/car_location_session_*.tsv	t	True
+staging	car_telemetry	/home/miles/tyr/tests/datasets/car_telemetry_session_*.tsv	t	True
+staging	circuits	/home/miles/tyr/tests/datasets/f1_circuits.geojson	geojson	True
+staging	meetings	/home/miles/tyr/tests/datasets/meetings.tsv	t	True
+staging	race_control	/home/miles/tyr/tests/datasets/race_control_session_*.tsv	t	True
+staging	session_status	/home/miles/tyr/tests/datasets/session_status_session_*.tsv	t	True
+staging	track_status	/home/miles/tyr/tests/datasets/track_status_session_*.tsv	t	True
+staging	sessions	/home/miles/tyr/tests/datasets/sessions.tsv	t	True
+staging	weather	/home/miles/tyr/tests/datasets/weather_session_*.tsv	t	True
+staging	results	/home/miles/tyr/tests/datasets/results_session_*.tsv	t	True
+staging	track_status	/home/miles/tyr/tests/datasets/track_status_session_*.tsv	t	True
+staging	team_radio	/home/miles/tyr/tests/datasets/team_radio_session_*.tsv	t	True
+staging	pit_stops	/home/miles/tyr/tests/datasets/pit_session_*.tsv	t	True
+staging	position	/home/miles/tyr/tests/datasets/position_session_*.tsv	t	True
+staging	intervals	/home/miles/tyr/tests/datasets/intervals_session_*.tsv	t	True

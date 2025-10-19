@@ -1,3 +1,0 @@
-schema	dataset	column_name	column_alias	var_type	data_type	on_null	is_primary_key	is_event_time	filter_values	on_filter	regex	source_unit	target_unit	precision	ordinal_position
-testing	accounts	event_ts	event_ts	timestamp	TIMESTAMP					NULL	SKIP	TRUE	TRUE	datetime	1
-testing	accounts														

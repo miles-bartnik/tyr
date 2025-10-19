@@ -1,15 +1,38 @@
+"""
+Aggregate functions group multiple elements
+of a column or table together to produce a result
+"""
+
 from ...lineage import core as lineage
 from ...lineage import values as lineage_values
+from ...lineage.expressions import Between
+from . import math
 
 
 class Average(lineage._Function):
+
+    """
+    Take the average (arithmetic mean) of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="AVG",
@@ -20,18 +43,99 @@ class Average(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
+
+    def __add__(self, other):
+        if (self.data_type in [lineage_values.Datatype("VARCHAR")]) and (
+            other.data_type in [lineage_values.Datatype("VARCHAR")]
+        ):
+            return lineage_functions.string.Concatenate([self, other])
+
+        elif (
+            self.data_type
+            in [lineage_values.Datatype("INTEGER"), lineage_values.Datatype("FLOAT")]
+        ) and (
+            other.data_type
+            in [lineage_values.Datatype("INTEGER"), lineage_values.Datatype("FLOAT")]
+        ):
+            return lineage_functions.math.Add(self, other)
+
+        else:
+            raise SyntaxError(
+                rf"Native addition not supported between {self.data_type.value} and {other.data_type.value}. Use full lineage.function syntax"
+            )
+
+    def __rmul__(self, other):
+        if (
+            self.data_type
+            in [lineage_values.Datatype("INTEGER"), lineage_values.Datatype("FLOAT")]
+        ) and (
+            other.data_type
+            in [lineage_values.Datatype("INTEGER"), lineage_values.Datatype("FLOAT")]
+        ):
+            return lineage_functions.math.Multiply(self, other)
+
+        else:
+            raise SyntaxError(
+                rf"Native multiplication not supported between {self.data_type.value} and {other.data_type.value}. Use full lineage.function syntax"
+            )
+
+    def __sub__(self, other):
+        if (
+            self.data_type
+            in [lineage_values.Datatype("INTEGER"), lineage_values.Datatype("FLOAT")]
+        ) and (
+            other.data_type
+            in [lineage_values.Datatype("INTEGER"), lineage_values.Datatype("FLOAT")]
+        ):
+            return lineage_functions.math.Subtract(self, other)
+
+        else:
+            raise SyntaxError(
+                rf"Native subtraction not supported between {self.data_type.value} and {other.data_type.value}. Use full lineage.function syntax"
+            )
+
+    def __truediv__(self, other):
+        if (
+            self.data_type
+            in [lineage_values.Datatype("INTEGER"), lineage_values.Datatype("FLOAT")]
+        ) and (
+            other.data_type
+            in [lineage_values.Datatype("INTEGER"), lineage_values.Datatype("FLOAT")]
+        ):
+            return lineage_functions.math.Divide(self, other)
+
+        else:
+            raise SyntaxError(
+                rf"Native division not supported between {self.data_type.value} and {other.data_type.value}. Use full lineage.function syntax"
+            )
 
 
 class Minimum(lineage._Function):
+
+    """
+    Take the minimum of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="MIN",
@@ -42,18 +146,34 @@ class Minimum(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class First(lineage._Function):
+
+    """
+    Take the first of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(columns=lineage.ColumnList([])),
         macro_group: str = "",
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="FIRST",
@@ -64,18 +184,34 @@ class First(lineage._Function):
             order_by=order_by,
             unit=source.unit,
             macro_group=macro_group,
-            window=window,
+            framing=framing,
         )
 
 
 class Last(lineage._Function):
+
+    """
+    Take the last of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(columns=lineage.ColumnList([])),
         macro_group: str = "",
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="LAST",
@@ -86,18 +222,34 @@ class Last(lineage._Function):
             macro_group=macro_group,
             order_by=order_by,
             partition_by=partition_by,
-            window=window,
+            framing=framing,
         )
 
 
 class Maximum(lineage._Function):
+
+    """
+    Take the maximum of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(columns=lineage.ColumnList([])),
         macro_group: str = "",
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="MAX",
@@ -108,18 +260,34 @@ class Maximum(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class Array(lineage._Function):
+
+    """
+    Return the set of values as an array
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="ARRAY_AGG",
@@ -130,18 +298,34 @@ class Array(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class StandardDeviation(lineage._Function):
+
+    """
+    Take the standard deviation of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         self.var_type = source.var_type
         self.data_type = lineage_values.Datatype("FLOAT")
@@ -152,18 +336,34 @@ class StandardDeviation(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class PopulationStandardDeviation(lineage._Function):
+
+    """
+    Take the population standard deviation of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         self.var_type = source.var_type
         self.data_type = lineage_values.Datatype("FLOAT")
@@ -174,18 +374,34 @@ class PopulationStandardDeviation(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class SampleStandardDeviation(lineage._Function):
+
+    """
+    Take the sample standard deviation of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         self.var_type = source.var_type
         self.data_type = lineage_values.Datatype("FLOAT")
@@ -196,18 +412,34 @@ class SampleStandardDeviation(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class PopulationVariance(lineage._Function):
+
+    """
+    Take the population variance of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         self.var_type = source.var_type
         self.data_type = lineage_values.Datatype("FLOAT")
@@ -218,18 +450,34 @@ class PopulationVariance(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class SampleVariance(lineage._Function):
+
+    """
+    Take the sample variance of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="VAR_SAMP",
@@ -240,18 +488,34 @@ class SampleVariance(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class Sum(lineage._Function):
+
+    """
+    Take the sum of a set of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="SUM",
@@ -262,11 +526,29 @@ class Sum(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class Count(lineage._Function):
+
+    """
+    Return the number of values in the set
+
+    :param source: Source to take average from
+    :type source: Any
+    :param distinct: Default: ``False``
+    :type distinct: bool
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
@@ -274,7 +556,7 @@ class Count(lineage._Function):
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(columns=lineage.ColumnList([])),
         macro_group: str = "",
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="COUNT",
@@ -285,11 +567,27 @@ class Count(lineage._Function):
             partition_by=partition_by,
             order_by=order_by,
             macro_group=macro_group,
-            window=window,
+            framing=framing,
         )
 
 
 class Correlation(lineage._Function):
+
+    """
+    Return the correlation between two sets of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         y,
@@ -297,7 +595,7 @@ class Correlation(lineage._Function):
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="CORR",
@@ -307,11 +605,27 @@ class Correlation(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class PopulationCovariance(lineage._Function):
+
+    """
+    Return the population covariance between two sets of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         y,
@@ -319,7 +633,7 @@ class PopulationCovariance(lineage._Function):
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="COVAR_POP",
@@ -329,11 +643,27 @@ class PopulationCovariance(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class SampleCovariance(lineage._Function):
+
+    """
+    Return the sample covariance between two sets of values
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         y,
@@ -341,7 +671,7 @@ class SampleCovariance(lineage._Function):
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="COVAR_SAMP",
@@ -351,18 +681,34 @@ class SampleCovariance(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class AbsoluteMedian(lineage._Function):
+
+    """
+    Return the absolute median of values in the set
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="MAD",
@@ -373,18 +719,34 @@ class AbsoluteMedian(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )
 
 
 class Median(lineage._Function):
+
+    """
+    Return the median of values in the set
+
+    :param source: Source to take average from
+    :type source: Any
+    :param macro_group: Default: ``""``
+    :type macro_group: str
+    :param partition_by: Default: ``lineage.PartitionBy(lineage.ColumnList([]))``
+    :type partition_by: lineage.PartitionBy
+    :param order_by: Default: ``lineage.OrderBy(lineage.ColumnList([]))``
+    :type order_by: lineage.OrderBy
+    :param framing: Default: ``None``
+    :type framing: lineage.expressions.Between
+    """
+
     def __init__(
         self,
         source,
         macro_group: str = "",
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(lineage.ColumnList([])),
-        window: lineage.Window = None,
+        framing: Between = None,
     ):
         super().__init__(
             name="MEDIAN",
@@ -395,5 +757,5 @@ class Median(lineage._Function):
             macro_group=macro_group,
             partition_by=partition_by,
             order_by=order_by,
-            window=window,
+            framing=framing,
         )

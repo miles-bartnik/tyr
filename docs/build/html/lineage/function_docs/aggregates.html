@@ -1,0 +1,448 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aggregates &mdash; tyr 0.0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Tables" href="../tables.html" />
+    <link rel="prev" title="Functions" href="../functions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            tyr
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../core.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../columns.html">Columns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../values.html">Values</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Aggregates</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.AbsoluteMedian"><code class="docutils literal notranslate"><span class="pre">AbsoluteMedian</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.Array"><code class="docutils literal notranslate"><span class="pre">Array</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.Average"><code class="docutils literal notranslate"><span class="pre">Average</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.Correlation"><code class="docutils literal notranslate"><span class="pre">Correlation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.Count"><code class="docutils literal notranslate"><span class="pre">Count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.First"><code class="docutils literal notranslate"><span class="pre">First</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.Last"><code class="docutils literal notranslate"><span class="pre">Last</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.Maximum"><code class="docutils literal notranslate"><span class="pre">Maximum</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.Median"><code class="docutils literal notranslate"><span class="pre">Median</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.Minimum"><code class="docutils literal notranslate"><span class="pre">Minimum</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.PopulationCovariance"><code class="docutils literal notranslate"><span class="pre">PopulationCovariance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.PopulationStandardDeviation"><code class="docutils literal notranslate"><span class="pre">PopulationStandardDeviation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.PopulationVariance"><code class="docutils literal notranslate"><span class="pre">PopulationVariance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.SampleCovariance"><code class="docutils literal notranslate"><span class="pre">SampleCovariance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.SampleStandardDeviation"><code class="docutils literal notranslate"><span class="pre">SampleStandardDeviation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.SampleVariance"><code class="docutils literal notranslate"><span class="pre">SampleVariance</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.StandardDeviation"><code class="docutils literal notranslate"><span class="pre">StandardDeviation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tyr.lineage.functions.aggregate.Sum"><code class="docutils literal notranslate"><span class="pre">Sum</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tables.html">Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../expressions.html">Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../joins.html">Joins</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">tyr</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
+      <li class="breadcrumb-item active">Aggregates</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/lineage/function_docs/aggregates.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-tyr.lineage.functions.aggregate">
+<span id="aggregates"></span><h1>Aggregates<a class="headerlink" href="#module-tyr.lineage.functions.aggregate" title="Link to this heading"></a></h1>
+<p>Aggregate functions group multiple elements
+of a column or table together to produce a result</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.AbsoluteMedian">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">AbsoluteMedian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.AbsoluteMedian" title="Link to this definition"></a></dt>
+<dd><p>Return the absolute median of values in the set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.Array">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">Array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.Array" title="Link to this definition"></a></dt>
+<dd><p>Return the set of values as an array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.Average">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">Average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.Average" title="Link to this definition"></a></dt>
+<dd><p>Take the average (arithmetic mean) of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.Correlation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">Correlation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.Correlation" title="Link to this definition"></a></dt>
+<dd><p>Return the correlation between two sets of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.Count">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">Count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.Count" title="Link to this definition"></a></dt>
+<dd><p>Return the number of values in the set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>distinct</strong> (<em>bool</em>) – Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.First">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">First</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.First" title="Link to this definition"></a></dt>
+<dd><p>Take the first of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.Last">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">Last</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.Last" title="Link to this definition"></a></dt>
+<dd><p>Take the last of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.Maximum">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">Maximum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.Maximum" title="Link to this definition"></a></dt>
+<dd><p>Take the maximum of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.Median">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">Median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.Median" title="Link to this definition"></a></dt>
+<dd><p>Return the median of values in the set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.Minimum">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">Minimum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.Minimum" title="Link to this definition"></a></dt>
+<dd><p>Take the minimum of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.PopulationCovariance">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">PopulationCovariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.PopulationCovariance" title="Link to this definition"></a></dt>
+<dd><p>Return the population covariance between two sets of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.PopulationStandardDeviation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">PopulationStandardDeviation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.PopulationStandardDeviation" title="Link to this definition"></a></dt>
+<dd><p>Take the population standard deviation of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.PopulationVariance">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">PopulationVariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.PopulationVariance" title="Link to this definition"></a></dt>
+<dd><p>Take the population variance of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.SampleCovariance">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">SampleCovariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.SampleCovariance" title="Link to this definition"></a></dt>
+<dd><p>Return the sample covariance between two sets of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.SampleStandardDeviation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">SampleStandardDeviation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.SampleStandardDeviation" title="Link to this definition"></a></dt>
+<dd><p>Take the sample standard deviation of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.SampleVariance">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">SampleVariance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.SampleVariance" title="Link to this definition"></a></dt>
+<dd><p>Take the sample variance of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.StandardDeviation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">StandardDeviation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.StandardDeviation" title="Link to this definition"></a></dt>
+<dd><p>Take the standard deviation of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.functions.aggregate.Sum">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.functions.aggregate.</span></span><span class="sig-name descname"><span class="pre">Sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by:</span> <span class="pre">~tyr.lineage.core.PartitionBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.PartitionBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by:</span> <span class="pre">~tyr.lineage.core.OrderBy</span> <span class="pre">=</span> <span class="pre">&lt;tyr.lineage.core.OrderBy</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framing:</span> <span class="pre">~tyr.lineage.expressions.Between</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.functions.aggregate.Sum" title="Link to this definition"></a></dt>
+<dd><p>Take the sum of a set of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Source to take average from</p></li>
+<li><p><strong>macro_group</strong> (<em>str</em>) – Default: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></li>
+<li><p><strong>partition_by</strong> (<em>lineage.PartitionBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.PartitionBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>order_by</strong> (<em>lineage.OrderBy</em>) – Default: <code class="docutils literal notranslate"><span class="pre">lineage.OrderBy(lineage.ColumnList([]))</span></code></p></li>
+<li><p><strong>framing</strong> (<a class="reference internal" href="../expressions.html#tyr.lineage.expressions.Between" title="tyr.lineage.expressions.Between"><em>lineage.expressions.Between</em></a>) – Default: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../functions.html" class="btn btn-neutral float-left" title="Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tables.html" class="btn btn-neutral float-right" title="Tables" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Miles Bartnik.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

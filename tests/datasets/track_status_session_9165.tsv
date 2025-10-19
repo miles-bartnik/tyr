@@ -1,0 +1,21 @@
+SessionKey	Time	Status	Message
+9165	0 days 00:00:00	1	AllClear
+9165	0 days 01:04:20.881000	2	Yellow
+9165	0 days 01:04:26.069000	1	AllClear
+9165	0 days 01:04:37.490000	2	Yellow
+9165	0 days 01:04:55.006000	1	AllClear
+9165	0 days 01:34:03.392000	2	Yellow
+9165	0 days 01:34:23.252000	1	AllClear
+9165	0 days 01:35:40.282000	4	SCDeployed
+9165	0 days 01:41:49.293000	1	AllClear
+9165	0 days 02:16:10.019000	2	Yellow
+9165	0 days 02:17:05.534000	6	VSCDeployed
+9165	0 days 02:20:29.032000	7	VSCEnding
+9165	0 days 02:20:43.673000	1	AllClear
+9165	0 days 02:23:46.874000	2	Yellow
+9165	0 days 02:24:02.795000	1	AllClear
+9165	0 days 02:33:41.851000	2	Yellow
+9165	0 days 02:33:44.273000	1	AllClear
+9165	0 days 02:43:05.720000	2	Yellow
+9165	0 days 02:43:26.282000	1	AllClear
+9165	0 days 02:48:37.888000	2	Yellow

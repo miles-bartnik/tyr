@@ -45,14 +45,18 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tyr.lineage.core.AppendOperator"><code class="docutils literal notranslate"><span class="pre">AppendOperator</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tyr.lineage.core.ColumnList"><code class="docutils literal notranslate"><span class="pre">ColumnList</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tyr.lineage.core.OrderBy"><code class="docutils literal notranslate"><span class="pre">OrderBy</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tyr.lineage.core.PartitionBy"><code class="docutils literal notranslate"><span class="pre">PartitionBy</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="columns.html">Columns</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tables.html">Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="values.html">Values</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tables.html">Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expressions.html">Expressions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="joins.html">Joins</a></li>
 </ul>
 
         </div>
@@ -81,13 +85,37 @@
              
   <section id="module-tyr.lineage.core">
 <span id="core"></span><h1>Core<a class="headerlink" href="#module-tyr.lineage.core" title="Link to this heading"></a></h1>
+<p>Core intro</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tyr.lineage.core.AppendOperator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.core.</span></span><span class="sig-name descname"><span class="pre">AppendOperator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro_group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.core.AppendOperator" title="Link to this definition"></a></dt>
+<dd><p><strong>AppendOperator</strong> behaves similarly to an <strong>Expression</strong> object with only the right side.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> (<em>Any</em>) – Object to apply operator to</p></li>
+<li><p><strong>operator</strong> (<em>lineage._Operator</em>) – Operator to apply</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="tyr.lineage.core.ColumnList">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.core.</span></span><span class="sig-name descname"><span class="pre">ColumnList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.core.ColumnList" title="Link to this definition"></a></dt>
-<dd><p>Stores columns and column order</p>
+<dd><p>Stores columns and column order.
+This object is necessary for the following reasons:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Input validation of columns</p></li>
+<li><p>Accessibility of columns as attributes of a table</p></li>
+<li><p>Ease of manipulation of multiple column objects</p></li>
+<li><p>Preserving lineage between columns and tables</p></li>
+</ul>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>columns</strong> (<em>List</em><em>[</em><a class="reference internal" href="columns.html#tyr.lineage.columns.Core" title="tyr.lineage.columns.Core"><em>columns.Core</em></a><em>|</em><a class="reference internal" href="columns.html#tyr.lineage.columns.Select" title="tyr.lineage.columns.Select"><em>columns.Select</em></a><em>|</em><em>columns.Record</em><em>]</em>) – List of column objects</p>
+<dd class="field-odd"><p><strong>columns</strong> (<a class="reference internal" href="values.html#tyr.lineage.values.List" title="tyr.lineage.values.List"><em>List</em></a><em>[</em><a class="reference internal" href="columns.html#tyr.lineage.columns.Core" title="tyr.lineage.columns.Core"><em>columns.Core</em></a><em>|</em><a class="reference internal" href="columns.html#tyr.lineage.columns.Select" title="tyr.lineage.columns.Select"><em>columns.Select</em></a><em>|</em><a class="reference internal" href="columns.html#tyr.lineage.columns.Record" title="tyr.lineage.columns.Record"><em>columns.Record</em></a><em>]</em>) – List of column objects</p>
 </dd>
 </dl>
 </dd></dl>
@@ -109,7 +137,14 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="tyr.lineage.core.PartitionBy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tyr.lineage.core.</span></span><span class="sig-name descname"><span class="pre">PartitionBy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#tyr.lineage.core.ColumnList" title="tyr.lineage.core.ColumnList"><span class="pre">ColumnList</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tyr.lineage.core.PartitionBy" title="Link to this definition"></a></dt>
-<dd><p>Columns and direction to partition a table or function</p>
+<dd><p>PartitionBy is a specific subclass of ColumnList for the purpose of creating partitions.
+It has been made distinct for the following reasons:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Ease of maintainability and avoiding confusion between ColumnList</p></li>
+<li><p>Different treatment of partition columns within the lineage graph system</p></li>
+</ul>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>columns</strong> – lineage.core.ColumnList</p>

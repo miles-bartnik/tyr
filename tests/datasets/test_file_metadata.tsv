@@ -1,4 +1,0 @@
-schema	dataset	file_regex	delim
-testing	customer	/*/tyr/tests/datasets/customer.tsv	t
-testing	accounts	/*/tyr/tests/datasets/accounts.tsv	t
-testing	transactions	/*/tyr/tests/datasets/transactions.tsv	t

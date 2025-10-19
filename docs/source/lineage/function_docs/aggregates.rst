@@ -1,0 +1,5 @@
+Aggregates
+----------------
+
+.. automodule:: tyr.lineage.functions.aggregate
+   :members:

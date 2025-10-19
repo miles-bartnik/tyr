@@ -1,6 +1,5 @@
 pyproject.toml
 src/__init__.py
-src/docs.py
 src/tyr/__init__.py
 src/tyr/interpreter.py
 src/tyr/network.py
@@ -68,4 +67,5 @@ src/tyr/syntax/__init__.py
 src/tyr/syntax/core.py
 src/tyr/syntax/duckdb.py
 src/tyr/syntax/translate.py
-tests/test_macros_tables.py
+tests/test_lineage.py
+tests/test_network.py

@@ -23,7 +23,7 @@ extensions = [
     "sphinx.ext.duration",
     "sphinx.ext.doctest",
     "sphinx.ext.autodoc",
-    'sphinx_rtd_theme'
+    "sphinx_rtd_theme",
 ]
 
 templates_path = ["_templates"]
