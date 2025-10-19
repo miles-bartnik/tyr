@@ -33,7 +33,7 @@ class SourceWildToStagingColumn(lineage._Function):
             )
 
         if "lineage.columns.WildCard" not in str(type(source)):
-            raise ValueError("source must be lineage.columns.WildCard object")
+            raise ValueError(rf"source must be lineage.columns.WildCard object. Encountered: {str(type(source))}")
 
         super().__init__(
             args=[source, column_metadata],
