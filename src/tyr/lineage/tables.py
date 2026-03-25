@@ -34,8 +34,6 @@ class Core(lineage._Table):
     :type order_by: lineage.OrderBy
     :param ctes: Common Table Expressions (CTE) to be created in a WITH statement preceeding the query. Must be in correct order. Default: ``None``
     :type ctes: lineage.TableList
-    :param macro_group: Used to group multiple pre-fabricated lineage objects into the same custom node collection - Default: ``""``
-    :type macro_group: str
     """
 
     def __init__(
@@ -53,34 +51,33 @@ class Core(lineage._Table):
         having_condition: lineage.Condition = None,
         order_by: lineage.OrderBy = None,
         ctes=None,
-        macro_group: str = "",
     ) -> None:
         if not all(
-            [isinstance(column, lineage._Column) for column in columns.list_columns_()]
+            [isinstance(column, lineage._Column) for column in columns.list_columns()]
         ):
             print(
                 [
                     rf"{column.name} - {type(column)}"
-                    for column in columns.list_columns_()
+                    for column in columns.list_columns()
                 ]
             )
             raise ValueError("All columns must be Core, Blank, or WildCard")
 
         if ctes:
-            for table in ctes.list_tables_():
+            for table in ctes.list_tables():
                 if type(table) not in [Core, Select]:
                     print(table.__dict__)
                     raise ValueError("cte must be either Core or Select")
 
-        if (inherit_primary_key) and not (primary_key.is_empty):
+        if (inherit_primary_key) and not (primary_key):
             raise ValueError(
-                "inherit_primary_key=True contradicted by primary_key.is_empty=False"
+                "inherit_primary_key=True contradicted by primary_key=None"
             )
         elif inherit_primary_key:
             primary_key = lineage.ColumnList(
                 [
                     lineage_columns.Select(column)
-                    for column in source.primary_key.list_columns_()
+                    for column in source.primary_key.list_columns()
                 ]
             )
 
@@ -102,7 +99,6 @@ class Core(lineage._Table):
             where_condition=where_condition,
             having_condition=having_condition,
             ctes=ctes,
-            macro_group=macro_group,
             order_by=order_by,
         )
 
@@ -125,7 +121,7 @@ class Core(lineage._Table):
 
 
 class Select(lineage._Table):
-    def __init__(self, source, alias: str = None, macro_group: str = "") -> None:
+    def __init__(self, source, alias: str = None) -> None:
         if isinstance(source, lineage._Table):
             if alias:
                 name = alias
@@ -141,19 +137,18 @@ class Select(lineage._Table):
                 columns=lineage.ColumnList(
                     [
                         lineage_columns.Select(column)
-                        for column in source.columns.list_columns_()
+                        for column in source.columns.list_columns()
                     ]
                 ),
                 primary_key=lineage.ColumnList(
                     [
                         lineage_columns.Select(column)
-                        for column in source.primary_key.list_columns_()
+                        for column in source.primary_key.list_columns()
                     ]
                 ),
                 event_time=lineage_columns.Select(source.event_time),
                 source=source,
                 schema=source.schema,
-                macro_group=macro_group,
             )
         else:
             super().__init__(
@@ -161,18 +156,17 @@ class Select(lineage._Table):
                 columns=lineage.ColumnList(
                     [
                         lineage_columns.Select(column)
-                        for column in source.columns.list_columns_()
+                        for column in source.columns.list_columns()
                     ]
                 ),
                 primary_key=lineage.ColumnList(
                     [
                         lineage_columns.Select(column)
-                        for column in source.primary_key.list_columns_()
+                        for column in source.primary_key.list_columns()
                     ]
                 ),
                 source=source,
                 schema=source.schema,
-                macro_group=macro_group,
             )
 
     def __deepcopy__(self, memodict={}):
@@ -189,7 +183,6 @@ class FromRecords(lineage._Table):
         source: lineage.RecordList,
         primary_key: lineage.ColumnList = lineage.ColumnList([]),
         event_time: lineage._Column = None,
-        macro_group: str = "",
     ):
         if event_time:
             super().__init__(
@@ -198,7 +191,6 @@ class FromRecords(lineage._Table):
                 columns=source.columns,
                 primary_key=primary_key,
                 event_time=event_time,
-                macro_group=macro_group,
             )
         else:
             super().__init__(
@@ -207,7 +199,6 @@ class FromRecords(lineage._Table):
                 columns=source.columns,
                 primary_key=primary_key,
                 event_time=None,
-                macro_group=macro_group,
             )
 
     def __deepcopy__(self, memodict={}):
@@ -220,13 +211,12 @@ class FromRecords(lineage._Table):
 
 
 class Insert:
-    def __init__(self, source, target: Select, macro_group: str = ""):
+    def __init__(self, source, target: Select):
         self.source = source
         self.target = target
 
         self._node_data = {
             "label": rf"INSERT - {str(id(self))}",
-            "macro_group": macro_group,
         }
 
     def __deepcopy__(self, memodict={}):
@@ -234,7 +224,7 @@ class Insert:
 
 
 class Subquery(lineage._Table):
-    def __init__(self, source, name: str = None, macro_group: str = "") -> None:
+    def __init__(self, source, name: str = None) -> None:
         if type(source) not in [Core, Union]:
             raise ValueError("Subquery source must be Core")
 
@@ -255,18 +245,17 @@ class Subquery(lineage._Table):
                     lineage_columns.Core(
                         source=lineage_columns.Select(column), name=column.name
                     )
-                    for column in source.columns.list_columns_()
+                    for column in source.columns.list_columns()
                 ]
             ),
             source=source,
             primary_key=lineage.ColumnList(
                 [
                     lineage_columns.Select(column)
-                    for column in source.primary_key.list_columns_()
+                    for column in source.primary_key.list_columns()
                 ]
             ),
             event_time=event_time,
-            macro_group=macro_group,
         )
 
 
@@ -278,22 +267,21 @@ class Union(lineage._Table):
         columns: lineage.ColumnList = lineage.ColumnList([]),
         primary_key: lineage.ColumnList = lineage.ColumnList([]),
         event_time: lineage._Column = None,
-        macro_group: str = "",
     ) -> None:
         if not all(
-            [type(column) is lineage_columns.Core for column in columns.list_columns_()]
+            [type(column) is lineage_columns.Core for column in columns.list_columns()]
         ):
             raise ValueError("Columns must be lineage_columns.Expand")
 
         if not all(
             [
                 type(column) is lineage_columns.Core
-                for column in primary_key.list_columns_()
+                for column in primary_key.list_columns()
             ]
         ):
             raise ValueError("Columns must be lineage_columns.Expand")
 
-        if columns.is_empty:
+        if columns:
             columns = lineage.ColumnList(
                 [
                     lineage_columns.Core(
@@ -301,15 +289,15 @@ class Union(lineage._Table):
                         source=lineage_functions.union.UnionColumn(
                             [
                                 lineage_columns.Select(table.columns[column.name])
-                                for table in tables.list_tables_()
+                                for table in tables.list_tables()
                             ]
                         ),
                     )
-                    for column in tables.list_tables_()[0].columns.list_columns_()
+                    for column in tables.list_tables()[0].columns.list_columns()
                     if all(
                         [
-                            column.name in table.columns.list_names_()
-                            for table in tables.list_tables_()
+                            column.name in table.columns.list_names()
+                            for table in tables.list_tables()
                         ]
                     )
                 ]
@@ -321,12 +309,11 @@ class Union(lineage._Table):
             source=tables,
             primary_key=primary_key,
             event_time=event_time,
-            macro_group=macro_group,
         )
 
 
 class Temp(lineage._Table):
-    def __init__(self, table: Core, macro_group: str = ""):
+    def __init__(self, table: Core):
         super().__init__(
             name=table.name,
             columns=table.columns,
@@ -336,5 +323,4 @@ class Temp(lineage._Table):
             where_condition=table.where_condition,
             group_by=table.group_by,
             having_condition=table.having_condition,
-            macro_group=macro_group,
         )

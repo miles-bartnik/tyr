@@ -70,7 +70,7 @@ class _Schema:
         graph.add_node(self._node_data)
         graph = LineageGraph(graph)
 
-        for table in self.tables.list_tables_():
+        for table in self.tables.list_tables():
             setattr(table, "schema", self)
             setattr(
                 table, "_node_data", table._node_data | {"schema": self.settings.name}
@@ -101,31 +101,31 @@ class _Schema:
         table.update_graph()
 
         try:
-            self.tables.add_(table, override=override)
+            self.tables.add(table, override=override)
             self.graph.add_child(0, table._node_data, {})
         except:
             setattr(table, "schema", None)
             table.update_graph()
-            self.tables.add_(table, override=override)
+            self.tables.add(table, override=override)
             self.graph.add_child(0, table._node_data, {})
 
     def add_tables(self, tables: TableList, override: bool = False):
-        if not tables.is_empty:
-            for table in tables.list_tables_():
+        if tables:
+            for table in tables.list_tables():
                 setattr(table, "schema", self)
                 table.update_graph()
                 try:
-                    self.tables.add_(table, override=override)
+                    self.tables.add(table, override=override)
                     self.graph.add_child(0, table._node_data, {})
                 except:
                     setattr(table, "schema", None)
                     table.update_graph()
-                    self.tables.add_(table, override=override)
+                    self.tables.add(table, override=override)
                     self.graph.add_child(0, table._node_data, {})
 
     def drop_tables(self, tables: List[str] = [], force=False):
         if not tables:
-            tables = self.tables.list_names_()
+            tables = self.tables.list_names()
 
         if not force:
             joinstr = "\n - "
@@ -136,15 +136,15 @@ class _Schema:
 
             if input(prompt) == "y":
                 for table in tables:
-                    delattr(self.tables, table)
+                    del self.tables[table]
 
         else:
             for table in tables:
-                delattr(self.tables, table)
+                del self.tables[table]
 
     def root_graph(self):
         graph = self.graph
 
-        graph.union([table.graph for table in self.tables.list_tables_()])
+        graph.union([table.graph for table in self.tables.list_tables()])
 
         return graph

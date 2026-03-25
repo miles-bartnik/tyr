@@ -1,16 +1,17 @@
 import pandas as pd
-from ..values import Varchar, Datatype, Boolean
+from ..values import Varchar, Datatype, Boolean, Raw, Null, List
 from ..columns import WildCard
 from ..core import ColumnList, TableList, _Table, LineageGraph, _Transformation
 from .. import tables
 from ...interpreter import Interpreter
 from .core import _Schema, _SchemaSettings
-from units.core import Unit
+from ..units.core import Unit
 import json
-from typing import List, Dict
+import typing
 import os
 import re
 import rustworkx as rx
+import ast
 
 _interpreters = {"beeswax_duckdb": Interpreter()}
 
@@ -37,7 +38,7 @@ def read_column_metadata(filepath: str, separator: str = "\t"):
 
     return {
         dataset: {
-            column.name: ColumnMetadata(column)
+            column["column_name"]: ColumnMetadata(column)
             for index, column in column_metadata[
                 column_metadata["dataset"] == dataset
             ].iterrows()
@@ -121,9 +122,32 @@ class ColumnMetadata:
             self.scale_factor = 1
         else:
             self.scale_factor = None
-        self.filter_values = json.loads(column_metadata["filter_values"])
+
+        if json.loads(column_metadata["filter_values"]):
+            self.filter_values = json.loads(column_metadata["filter_values"])
+        else:
+            self.filter_values = []
         self.on_filter = str(column_metadata["on_filter"])
         self.on_null = str(column_metadata["on_null"])
+
+        if column_metadata["default_value"]:
+            if "[]" in self.data_type.value:
+                self.default_value = self.data_type.to_value(
+                    value=[
+                        Datatype(self.data_type.value.replace("[]", "")).to_value(value)
+                        for value in ast.literal_eval(column_metadata.default_value)
+                    ],
+                    unit=self.source_unit,
+                )
+            else:
+                self.default_value = self.data_type.to_value(
+                    value=column_metadata.default_value,
+                    unit=self.source_unit,
+                )
+
+        else:
+            self.default_value = Null(data_type=self.data_type)
+
         self.is_primary_key = bool(column_metadata["is_primary_key"])
         self.is_event_time = bool(column_metadata["is_event_time"])
         self.regex = str(column_metadata["regex"])
@@ -206,12 +230,19 @@ class SourceFile:
     def __init__(
         self,
         file_metadata: FileMetadata,
-        expected_column_metadata: Dict[str, ColumnMetadata],
+        expected_column_metadata: typing.Dict[str, ColumnMetadata],
     ) -> None:
+        if file_metadata.delim == "t":
+            delim = r"'\t'"
+        elif file_metadata.delim == "c":
+            delim = r"','"
+        else:
+            delim = rf"'{file_metadata.delim}'"
+
         self.name = file_metadata.dataset
         self.dataset = Varchar(file_metadata.dataset)
         self.file_regex = Varchar(file_metadata.file_regex)
-        self.delim = Varchar(file_metadata.delim)
+        self.delim = Raw(delim)
         self.distinct = file_metadata.distinct
         self.expected_column_metadata = expected_column_metadata
         self.sql = _interpreters["beeswax_duckdb"].to_sql(self)
@@ -229,18 +260,17 @@ class ReadCSV(_Transformation):
         source_file: SourceFile,
         union_by_name: Boolean = Boolean(False),
         headers: Boolean = Boolean(False),
-        macro_group: str = "",
         all_varchar: Boolean = Boolean(False),
     ):
         super().__init__(
             name="READ_CSV",
             source=source_file,
             args={
+                "delim": source_file.delim,
                 "union_by_name": union_by_name,
                 "header": headers,
                 "all_varchar": all_varchar,
             },
-            macro_group=macro_group,
         )
 
 
@@ -248,12 +278,9 @@ class ReadGeoJson(_Transformation):
     def __init__(
         self,
         source_file: SourceFile,
-        macro_group: str = "",
     ):
         if source_file.extension.value in ["json", "geojson"]:
-            super().__init__(
-                name="ST_READ", source=source_file, args={}, macro_group=macro_group
-            )
+            super().__init__(name="ST_READ", source=source_file, args={})
         else:
             raise ValueError(
                 rf"SourceFile extension not compatible with ReadGeoJson: {source_file.extension.value}"
@@ -263,10 +290,10 @@ class ReadGeoJson(_Transformation):
 class SourceSettings(_SchemaSettings):
     def __init__(
         self,
-        file_metadata: Dict[str, FileMetadata],
-        expected_column_metadata: Dict[str, Dict[str, ColumnMetadata]],
+        file_metadata: typing.Dict[str, FileMetadata],
+        expected_column_metadata: typing.Dict[str, typing.Dict[str, ColumnMetadata]],
         substitutions={},
-        extensions: List[Dict[str, str]] = [],
+        extensions: typing.List[typing.Dict[str, str]] = [],
         connection={},
     ):
         super().__init__(
@@ -318,7 +345,7 @@ class Source(_Schema):
                 source_file.expected_column_metadata,
             )
 
-            source_tables.add_(source_table)
+            source_tables.add(source_table)
 
         super().__init__(settings=settings, tables=source_tables)
 

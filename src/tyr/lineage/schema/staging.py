@@ -34,10 +34,10 @@ class Staging(_Schema):
 
         tables = TableList([])
 
-        for table in self.source.tables.list_tables_():
+        for table in self.source.tables.list_tables():
             staging_table = staging_table_transform(table, settings)
 
-            tables.add_(staging_table)
+            tables.add(staging_table)
 
         super().__init__(settings=settings, tables=tables)
 

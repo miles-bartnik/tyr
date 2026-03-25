@@ -10,6 +10,8 @@ import sys
 import os
 
 sys.path.insert(0, os.path.abspath("../../src"))
+sys.path.append(os.path.abspath("..."))
+
 
 project = "tyr"
 copyright = "2025, Miles Bartnik"

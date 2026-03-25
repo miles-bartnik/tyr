@@ -1,4 +1,4 @@
-import units.core
+from ...units.core import Unit
 
 import tyr.lineage.values
 from ... import functions as lineage_functions
@@ -14,14 +14,12 @@ def dms_to_decimal(degrees, minutes, seconds):
             degrees,
             lineage_functions.math.Divide(
                 minutes,
-                tyr.lineage.values.Float(
-                    60, unit=units.core.Unit("°^1′^-1").reciprocal()
-                ),
+                tyr.lineage.values.FloatingPoint(60, unit=Unit("°^1′^-1").reciprocal()),
             ),
             lineage_functions.math.Divide(
                 seconds,
-                tyr.lineage.values.Float(
-                    3600, unit=units.core.Unit("°^1′′^-1").reciprocal()
+                tyr.lineage.values.FloatingPoint(
+                    3600, unit=Unit("°^1′′^-1").reciprocal()
                 ),
             ),
         ]
@@ -30,9 +28,9 @@ def dms_to_decimal(degrees, minutes, seconds):
 
 def point_from_distance_bearing(
     origin,
-    bearing: lineage_values.Float,
-    distance: lineage_values.Float,
-    radius: lineage_values.Float = lineage_values.Float(EARTH_RADIUS),
+    bearing: lineage_values.FloatingPoint,
+    distance: lineage_values.FloatingPoint,
+    radius: lineage_values.FloatingPoint = lineage_values.FloatingPoint(EARTH_RADIUS),
 ):
     if origin.data_type.value == "FLOAT[]":
         origin = origin

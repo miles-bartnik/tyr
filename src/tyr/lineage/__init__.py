@@ -11,4 +11,5 @@ from . import (
     tables,
     transformations,
     values,
+    units,
 )

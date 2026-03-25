@@ -207,7 +207,7 @@ def rgb_to_hsv(source):
             ),
             lineage_values.Datatype("FLOAT"),
         ),
-        lineage_values.Float(255),
+        lineage_values.FloatingPoint(255),
     )
 
     Gp = lineage_functions.math.Divide(
@@ -217,7 +217,7 @@ def rgb_to_hsv(source):
             ),
             lineage_values.Datatype("FLOAT"),
         ),
-        lineage_values.Float(255),
+        lineage_values.FloatingPoint(255),
     )
 
     Bp = lineage_functions.math.Divide(
@@ -227,7 +227,7 @@ def rgb_to_hsv(source):
             ),
             lineage_values.Datatype("FLOAT"),
         ),
-        lineage_values.Float(255),
+        lineage_values.FloatingPoint(255),
     )
 
     Cmax = lineage_functions.array.Maximum(lineage_values.List([Rp, Gp, Bp]))
@@ -248,52 +248,54 @@ def rgb_to_hsv(source):
                     lineage.Condition(checks=[lineage_expressions.Equal(Cmax, Bp)]),
                 ],
                 values=[
-                    lineage_values.Float(0),
+                    lineage_values.FloatingPoint(0),
                     lineage_functions.math.Multiply(
-                        lineage_values.Float(60),
+                        lineage_values.FloatingPoint(60),
                         lineage_functions.math.Mod(
                             lineage_functions.math.Divide(
                                 lineage_functions.math.Subtract(Gp, Bp),
                                 delta,
                             ),
-                            lineage_values.Float(6),
+                            lineage_values.FloatingPoint(6),
                         ),
                     ),
                     lineage_functions.math.Multiply(
-                        lineage_values.Float(60),
+                        lineage_values.FloatingPoint(60),
                         lineage_functions.math.Add(
                             lineage_functions.math.Divide(
                                 lineage_functions.math.Subtract(Bp, Rp),
                                 delta,
                             ),
-                            lineage_values.Float(2),
+                            lineage_values.FloatingPoint(2),
                         ),
                     ),
                     lineage_functions.math.Multiply(
-                        lineage_values.Float(60),
+                        lineage_values.FloatingPoint(60),
                         lineage_functions.math.Add(
                             lineage_functions.math.Divide(
                                 lineage_functions.math.Subtract(Rp, Gp),
                                 delta,
                             ),
-                            lineage_values.Float(4),
+                            lineage_values.FloatingPoint(4),
                         ),
                     ),
                 ],
             ),
             lineage_values.Datatype("FLOAT"),
         ),
-        lineage_values.Float(360),
+        lineage_values.FloatingPoint(360),
     )
 
     S = lineage_functions.data_type.Cast(
         lineage.CaseWhen(
             conditions=[
                 lineage.Condition(
-                    checks=[lineage_expressions.Equal(Cmax, lineage_values.Float(0))]
+                    checks=[
+                        lineage_expressions.Equal(Cmax, lineage_values.FloatingPoint(0))
+                    ]
                 )
             ],
-            values=[lineage_values.Float(0)],
+            values=[lineage_values.FloatingPoint(0)],
             else_value=lineage_functions.math.Divide(delta, Cmax),
         ),
         lineage_values.Datatype("FLOAT"),
@@ -317,21 +319,21 @@ def hsv_to_rgb(source):
         source, elements=lineage_values.List([lineage_values.Integer(3)])
     )
 
-    Hp = lineage_functions.math.Multiply(H, lineage_values.Float(6))
+    Hp = lineage_functions.math.Multiply(H, lineage_values.FloatingPoint(6))
 
     C = lineage_functions.math.Multiply(V, S)
 
     X = lineage_functions.math.Multiply(
         C,
         lineage_functions.math.Subtract(
-            lineage_values.Float(1),
+            lineage_values.FloatingPoint(1),
             lineage_functions.math.AbsoluteValue(
                 lineage_functions.math.Subtract(
                     lineage_functions.math.Mod(
                         Hp,
-                        lineage_values.Float(2),
+                        lineage_values.FloatingPoint(2),
                     ),
-                    lineage_values.Float(1),
+                    lineage_values.FloatingPoint(1),
                 )
             ),
         ),
@@ -342,10 +344,12 @@ def hsv_to_rgb(source):
     conditions = [
         lineage.Condition(
             checks=[
-                lineage_expressions.GreaterThanOrEqual(Hp, lineage_values.Float(0)),
+                lineage_expressions.GreaterThanOrEqual(
+                    Hp, lineage_values.FloatingPoint(0)
+                ),
                 lineage_expressions.LessThan(
                     Hp,
-                    lineage_values.Float(1),
+                    lineage_values.FloatingPoint(1),
                 ),
             ],
             link_operators=[lineage_operators.And()],
@@ -355,11 +359,11 @@ def hsv_to_rgb(source):
             checks=[
                 lineage_expressions.GreaterThanOrEqual(
                     Hp,
-                    lineage_values.Float(i),
+                    lineage_values.FloatingPoint(i),
                 ),
                 lineage_expressions.LessThan(
                     Hp,
-                    lineage_values.Float(i + 1),
+                    lineage_values.FloatingPoint(i + 1),
                 ),
             ],
             link_operators=[lineage_operators.And()],
@@ -372,8 +376,8 @@ def hsv_to_rgb(source):
         values=[
             C,
             X,
-            lineage_values.Float(0),
-            lineage_values.Float(0),
+            lineage_values.FloatingPoint(0),
+            lineage_values.FloatingPoint(0),
             X,
             C,
         ],
@@ -386,16 +390,16 @@ def hsv_to_rgb(source):
             C,
             C,
             X,
-            lineage_values.Float(0),
-            lineage_values.Float(0),
+            lineage_values.FloatingPoint(0),
+            lineage_values.FloatingPoint(0),
         ],
     )
 
     Bp = lineage.CaseWhen(
         conditions=conditions,
         values=[
-            lineage_values.Float(0),
-            lineage_values.Float(0),
+            lineage_values.FloatingPoint(0),
+            lineage_values.FloatingPoint(0),
             X,
             C,
             C,
@@ -408,23 +412,27 @@ def hsv_to_rgb(source):
             lineage_functions.data_type.Cast(
                 lineage_functions.math.Multiply(
                     lineage_functions.math.Add(Rp, m),
-                    lineage_values.Float(255),
+                    lineage_values.FloatingPoint(255),
                 ),
                 data_type=lineage_values.Datatype("INTEGER"),
             ),
             lineage_functions.data_type.Cast(
                 lineage_functions.math.Multiply(
                     lineage_functions.math.Add(Gp, m),
-                    lineage_values.Float(255),
+                    lineage_values.FloatingPoint(255),
                 ),
                 data_type=lineage_values.Datatype("INTEGER"),
             ),
             lineage_functions.data_type.Cast(
                 lineage_functions.math.Multiply(
                     lineage_functions.math.Add(Bp, m),
-                    lineage_values.Float(255),
+                    lineage_values.FloatingPoint(255),
                 ),
                 data_type=lineage_values.Datatype("INTEGER"),
             ),
         ]
     )
+
+
+def hex_to_hsv(source):
+    return rgb_to_hsv(hex_to_rgb(source))

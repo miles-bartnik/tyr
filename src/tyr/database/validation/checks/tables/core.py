@@ -1,5 +1,3 @@
-import units
-
 from ..core import Check
 from tyr import lineage
 
@@ -35,7 +33,7 @@ def event_time_standard_deviation(
     source: lineage.core._Table, scope: str, granularity: lineage.values.Interval = None
 ):
     if source.event_time.data_type.value in ["TIMESTAMP"]:
-        result = lineage.functions.data_type.ToInterval(
+        result = lineage.functions.data_type.Cast(
             source=lineage.functions.data_type.Cast(
                 source=lineage.functions.aggregate.StandardDeviation(
                     source=lineage.functions.datetime.TimestampToEpochMS(
@@ -44,7 +42,7 @@ def event_time_standard_deviation(
                 ),
                 data_type=lineage.values.Datatype("INTEGER"),
             ),
-            unit=units.core.Unit("ms^1"),
+            data_type=lineage.values.Datatype("INTERVAL"),
         )
 
     elif source.event_time.data_type.value in ["INTEGER", "FLOAT"]:

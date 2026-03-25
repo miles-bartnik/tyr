@@ -7,14 +7,12 @@ class Coordinate(lineage._Function):
         self,
         lat,
         long,
-        macro_group: str = "",
     ):
         super().__init__(
             name="ST_POINT",
             args=[long, lat],
             data_type=lineage_values.Datatype("GEOMETRY"),
             var_type="geometry",
-            macro_group=macro_group,
         )
 
 
@@ -23,62 +21,64 @@ class Contains(lineage._Function):
         self,
         source,
         bounds,
-        macro_group: str = "",
     ):
         super().__init__(
             name="ST_CONTAINS",
             args=[bounds, source],
             data_type=lineage_values.Datatype("BOOLEAN"),
             var_type="categorical",
-            macro_group=macro_group,
         )
 
 
 class AsWKT(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="ST_ASTEXT",
             data_type=lineage_values.Datatype("VARCHAR"),
-            macro_group=macro_group,
         )
 
 
 class AsGeoJSON(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="ST_ASGEOJSON",
             data_type=lineage_values.Datatype("JSON"),
-            macro_group=macro_group,
         )
 
 
 class FromWKT(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="ST_GEOMFROMTEXT",
             data_type=lineage_values.Datatype("GEOMETRY"),
-            macro_group=macro_group,
         )
 
 
 class H3LatLongToCell(lineage._Function):
-    def __init__(self, lat, long, precision, macro_group: str = ""):
+    def __init__(self, lat, long, precision):
         super().__init__(
             args=[lat, long, precision],
             name="H3_LATLNG_TO_CELL",
             data_type=lineage_values.Datatype("VARCHAR"),
-            macro_group=macro_group,
+        )
+
+
+class H3CellToLatLong(lineage._Function):
+    def __init__(self, source):
+        super().__init__(
+            args=[source],
+            name="H3_CELL_TO_LATLNG",
+            data_type=lineage_values.Datatype("DOUBLE[]"),
         )
 
 
 class H3CellToBoundaryWKT(lineage._Function):
-    def __init__(self, cell, macro_group: str = ""):
+    def __init__(self, cell):
         super().__init__(
             args=[cell],
             name="H3_CELL_TO_BOUNDARY_WKT",
             data_type=lineage_values.Datatype("GEOMETRY"),
-            macro_group=macro_group,
         )

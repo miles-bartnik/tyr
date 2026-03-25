@@ -1,4 +1,4 @@
-import units
+from ..lineage.units.core import Unit
 import time
 from . import duckdb as duckdb_syntax
 
@@ -85,15 +85,15 @@ def selector(item):
         elif "lineage.values.Struct" in str(type(item)):
             function_name = "values_struct"
 
-        elif "lineage.values.Decimal" in str(type(item)):
-            function_name = "values_decimal"
+        elif "lineage.values.FixedPoint" in str(type(item)):
+            function_name = "values_fixed_point"
 
         elif "lineage.values.Raw" in str(type(item)):
             function_name = "values_raw"
 
     # UNITS
 
-    elif str(type(item)) is units.core.Unit:
+    elif str(type(item)) is Unit:
         function_name = "core_unit"
 
     # TABLES
@@ -130,19 +130,17 @@ def selector(item):
             [
                 bh_type in str(type(item))
                 for bh_type in [
-                    "lineage.functions.data_type.ToInterval",
                     "lineage.functions.array.ListExtract",
                     "lineage.functions.json.JSONExtract",
                     "lineage.functions.window.RowNumber",
                     "lineage.functions.union.UnionColumn",
                     "lineage.functions.string.StringExtract",
                     "lineage.functions.utility.SourceWildToStagingColumn",
+                    "lineage.functions.aggregate.Array",
                 ]
             ]
         ):
             function_name = "core_function"
-        elif "lineage.functions.data_type.ToInterval" in str(type(item)):
-            function_name = "functions_to_interval"
         elif "lineage.functions.array.ListExtract" in str(type(item)):
             function_name = "functions_list_extract"
         elif "lineage.functions.json.JSONExtract" in str(type(item)):
@@ -155,6 +153,8 @@ def selector(item):
             function_name = "functions_list_extract"
         elif "lineage.functions.utility.SourceWildToStagingColumn" in str(type(item)):
             function_name = "functions_source_wild_to_staging"
+        elif "lineage.functions.aggregate.Array" in str(type(item)):
+            function_name = "functions_array"
 
     # EXPRESSIONS
     elif "lineage.core._Expression" in str(type(item).__bases__[0]):
@@ -186,6 +186,9 @@ def selector(item):
 
     elif "lineage.core.AppendOperator" in str(type(item)):
         function_name = "core_append_operator"
+
+    elif "lineage.core.PrependOperator" in str(type(item)):
+        function_name = "core_prepend_operator"
 
     elif "lineage.schema.core._SchemaSettings" in str(type(item).__bases__[0]):
         function_name = "schema_settings"

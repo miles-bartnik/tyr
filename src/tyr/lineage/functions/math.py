@@ -2,6 +2,7 @@ import warnings
 
 from ...lineage import core as lineage
 from ...lineage import values as lineage_values
+from ...lineage import units
 
 
 class Divide(lineage._Function):
@@ -9,10 +10,12 @@ class Divide(lineage._Function):
         self,
         left,
         right,
-        macro_group: str = "",
     ):
         if any(
-            [left.data_type.value == "INTERVAL", right.data_type.value == "INTERVAL"]
+            [
+                left.data_type == lineage_values.Datatype("INTERVAL"),
+                right.data_type == lineage_values.Datatype("INTERVAL"),
+            ]
         ):
             data_type = lineage_values.Datatype("INTERVAL")
         else:
@@ -22,8 +25,7 @@ class Divide(lineage._Function):
             name="DIVIDE",
             args=[left, right],
             data_type=data_type,
-            unit=lineage.units.core.divide(left.unit, right.unit),
-            macro_group=macro_group,
+            unit=units.core.divide(left.unit, right.unit),
         )
 
 
@@ -32,10 +34,12 @@ class Multiply(lineage._Function):
         self,
         left,
         right,
-        macro_group: str = "",
     ):
         if any(
-            [left.data_type.value == "INTERVAL", right.data_type.value == "INTERVAL"]
+            [
+                left.data_type == lineage_values.Datatype("INTERVAL"),
+                right.data_type == lineage_values.Datatype("INTERVAL"),
+            ]
         ):
             data_type = lineage_values.Datatype("INTERVAL")
         elif all(
@@ -49,8 +53,7 @@ class Multiply(lineage._Function):
             name="MULTIPLY",
             args=[left, right],
             data_type=data_type,
-            unit=lineage.units.core.multiply(left.unit, right.unit),
-            macro_group=macro_group,
+            unit=units.core.multiply(left.unit, right.unit),
         )
 
 
@@ -59,14 +62,19 @@ class Add(lineage._Function):
         self,
         left,
         right,
-        macro_group: str = "",
     ):
         if all(
-            [left.data_type.value == "INTERVAL", right.data_type.value == "INTERVAL"]
+            [
+                left.data_type == lineage_values.Datatype("INTERVAL"),
+                right.data_type == lineage_values.Datatype("INTERVAL"),
+            ]
         ):
             data_type = lineage_values.Datatype("INTERVAL")
         elif all(
-            [left.data_type.value == "INTEGER", right.data_type.value == "INTEGER"]
+            [
+                left.data_type == lineage_values.Datatype("INTERVAL"),
+                right.data_type == lineage_values.Datatype("INTERVAL"),
+            ]
         ):
             data_type = lineage_values.Datatype("INTEGER")
         else:
@@ -76,8 +84,7 @@ class Add(lineage._Function):
             name="ADD",
             args=[left, right],
             data_type=lineage_values.Datatype("FLOAT"),
-            unit=lineage.units.core.add_subtract(left.unit, right.unit),
-            macro_group=macro_group,
+            unit=units.core.add_subtract(left.unit, right.unit),
         )
 
 
@@ -86,14 +93,19 @@ class Subtract(lineage._Function):
         self,
         left,
         right,
-        macro_group: str = "",
     ):
         if all(
-            [left.data_type.value == "INTERVAL", right.data_type.value == "INTERVAL"]
+            [
+                left.data_type == lineage_values.Datatype("INTERVAL"),
+                right.data_type == lineage_values.Datatype("INTERVAL"),
+            ]
         ):
             data_type = lineage_values.Datatype("INTERVAL")
         elif all(
-            [left.data_type.value == "INTEGER", right.data_type.value == "INTEGER"]
+            [
+                left.data_type == lineage_values.Datatype("INTERVAL"),
+                right.data_type == lineage_values.Datatype("INTERVAL"),
+            ]
         ):
             data_type = lineage_values.Datatype("INTEGER")
         else:
@@ -103,8 +115,7 @@ class Subtract(lineage._Function):
             name="SUBTRACT",
             args=[left, right],
             data_type=lineage_values.Datatype("FLOAT"),
-            unit=lineage.units.core.add_subtract(left.unit, right.unit),
-            macro_group=macro_group,
+            unit=units.core.add_subtract(left.unit, right.unit),
         )
 
 
@@ -113,20 +124,18 @@ class Exponent(lineage._Function):
         self,
         source,
         exponent,
-        macro_group: str = "",
     ):
         if any(
             [
                 isinstance(exponent, lineage_values.Integer),
-                isinstance(exponent, lineage_values.Float),
+                isinstance(exponent, lineage_values.FloatingPoint),
             ]
         ):
             super().__init__(
                 name="POW",
                 args=[source, exponent],
                 data_type=lineage_values.Datatype("FLOAT"),
-                unit=lineage.units.core.exponent(source.unit, exponent.value),
-                macro_group=macro_group,
+                unit=units.core.exponent(source.unit, exponent.value),
             )
 
         else:
@@ -139,88 +148,79 @@ class Exponent(lineage._Function):
                 args=[source, exponent],
                 data_type=lineage_values.Datatype("FLOAT"),
                 unit=source.unit,
-                macro_group=macro_group,
             )
 
 
 class Sin(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="SIN",
             data_type=lineage_values.Datatype("FLOAT"),
-            macro_group=macro_group,
         )
 
 
 class Cos(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="COS",
             data_type=lineage_values.Datatype("FLOAT"),
-            macro_group=macro_group,
         )
 
 
 class Tan(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="TAN",
             data_type=lineage_values.Datatype("FLOAT"),
-            macro_group=macro_group,
         )
 
 
 class ATan2(lineage._Function):
-    def __init__(self, x, y, macro_group: str = ""):
+    def __init__(self, x, y):
         super().__init__(
             args=[x, y],
             name="ATAN2",
             data_type=lineage_values.Datatype("FLOAT"),
-            macro_group=macro_group,
         )
 
 
 class ASin(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="ASIN",
             data_type=lineage_values.Datatype("FLOAT"),
-            macro_group=macro_group,
         )
 
 
 class Radians(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="RADIANS",
             data_type=lineage_values.Datatype("FLOAT"),
-            macro_group=macro_group,
         )
 
 
 class Degrees(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="DEGREES",
             data_type=lineage_values.Datatype("FLOAT"),
-            macro_group=macro_group,
         )
 
 
 class Round(lineage._Function):
-    def __init__(self, source, precision, macro_group: str = ""):
+    def __init__(self, source, precision):
         super().__init__(
             args=[source, precision],
             name="ROUND",
             data_type=source.data_type,
             unit=source.unit,
-            macro_group=macro_group,
         )
 
 
@@ -228,14 +228,12 @@ class Ceiling(lineage._Function):
     def __init__(
         self,
         source,
-        macro_group: str = "",
     ):
         super().__init__(
             args=[source],
             name="CEIL",
             data_type=lineage_values.Datatype("INTEGER"),
             var_type="numeric",
-            macro_group=macro_group,
         )
 
 
@@ -243,14 +241,12 @@ class Floor(lineage._Function):
     def __init__(
         self,
         source,
-        macro_group: str = "",
     ):
         super().__init__(
             args=[source],
             name="FLOOR",
             data_type=lineage_values.Datatype("INTEGER"),
             var_type="numeric",
-            macro_group=macro_group,
             unit=source.unit,
         )
 
@@ -259,14 +255,12 @@ class Log10(lineage._Function):
     def __init__(
         self,
         source,
-        macro_group: str = "",
     ):
         super().__init__(
             args=[source],
             name="LOG10",
             data_type=lineage_values.Datatype("FLOAT"),
             var_type="numeric",
-            macro_group=macro_group,
         )
 
 
@@ -274,45 +268,40 @@ class AbsoluteValue(lineage._Function):
     def __init__(
         self,
         source,
-        macro_group: str = "",
     ):
         super().__init__(
             args=[source],
             name="ABS",
             data_type=source.data_type,
             var_type="numeric",
-            macro_group=macro_group,
         )
 
 
 class Pi(lineage._Function):
-    def __init__(self, macro_group: str = ""):
+    def __init__(self):
         super().__init__(
             args=[],
             name="PI",
             data_type=lineage_values.Datatype("FLOAT"),
             var_type="numeric",
-            macro_group=macro_group,
         )
 
 
 class Mod(lineage._Function):
-    def __init__(self, x, y, macro_group: str = ""):
+    def __init__(self, x, y):
         super().__init__(
             args=[x, y],
             name="FMOD",
             data_type=lineage_values.Datatype("DOUBLE"),
             var_type="numeric",
-            macro_group=macro_group,
         )
 
 
 class Sign(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="SIGN",
             data_type=lineage_values.Datatype("INTEGER"),
             var_type="numeric",
-            macro_group=macro_group,
         )

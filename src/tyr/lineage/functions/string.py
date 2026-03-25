@@ -1,83 +1,93 @@
+import typing
+
 from ...lineage import core as lineage
 from ...lineage import values as lineage_values
 from typing import List as TypingList, Any
 
 
 class Upper(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             name="UPPER",
             args=[source],
             var_type=source.var_type,
             data_type=source.data_type,
-            macro_group=macro_group,
+        )
+
+
+class Lower(lineage._Function):
+    def __init__(self, source):
+        super().__init__(
+            name="LOWER",
+            args=[source],
+            var_type=source.var_type,
+            data_type=source.data_type,
         )
 
 
 class RegExpExtract(lineage._Function):
-    def __init__(self, source, regex, match_number=None, macro_group: str = ""):
+    def __init__(
+        self,
+        source,
+        regex,
+        match_number: lineage_values.Integer = None,
+        name_list: typing.List[str] = None,
+    ):
         if match_number:
             self.match_number = match_number
         else:
-            match_number = lineage_values.Integer(1)
+            match_number = lineage_values.Integer(0)
 
         super().__init__(
             name="REGEXP_EXTRACT",
             args=[source, regex, match_number],
             var_type=source.var_type,
             data_type=source.data_type,
-            macro_group=macro_group,
         )
 
 
 class RegExpExtractAll(lineage._Function):
-    def __init__(self, source, regex, macro_group: str = ""):
+    def __init__(self, source, regex):
         super().__init__(
             name="REGEXP_EXTRACT_ALL",
             args=[source, regex],
             var_type=source.var_type,
             data_type=lineage_values.Datatype(source.data_type.value + "[]"),
-            macro_group=macro_group,
         )
 
 
 class RegExpContains(lineage._Function):
-    def __init__(self, source, regex, macro_group: str = ""):
+    def __init__(self, source, regex):
         super().__init__(
             name="REGEXP_MATCHES",
             args=[source, regex],
             var_type="categorical",
             data_type=lineage_values.Datatype("BOOLEAN"),
-            macro_group=macro_group,
         )
 
 
 class RegExpMatch(lineage._Function):
-    def __init__(self, source, regex, macro_group: str = ""):
+    def __init__(self, source, regex):
         super().__init__(
             name="REGEXP_FULL_MATCH",
             args=[source, regex],
             var_type="categorical",
             data_type=lineage_values.Datatype("BOOLEAN"),
-            macro_group=macro_group,
         )
 
 
 class RegExpReplace(lineage._Function):
-    def __init__(self, source, regex, value, macro_group: str = ""):
+    def __init__(self, source, regex, value):
         super().__init__(
             name="REGEXP_REPLACE",
             args=[source, regex, value],
             data_type=lineage_values.Datatype("VARCHAR"),
             var_type=source.var_type,
-            macro_group=macro_group,
         )
 
 
 class Concatenate(lineage._Function):
-    def __init__(
-        self, strings: TypingList[Any], join_string=None, macro_group: str = ""
-    ):
+    def __init__(self, strings: TypingList[Any], join_string=None):
         if join_string:
             args = [
                 x for y in [[string, join_string] for string in strings[:-1]] for x in y
@@ -85,39 +95,36 @@ class Concatenate(lineage._Function):
         else:
             args = strings
 
-        super().__init__(args=args, name="CONCAT", macro_group=macro_group)
+        super().__init__(args=args, name="CONCAT")
 
 
 class StringExtract(lineage._Function):
-    def __init__(self, source, element: lineage_values.Integer, macro_group: str = ""):
+    def __init__(self, source, elements: lineage_values.List):
         super().__init__(
-            args=[source, element],
+            args=[source, elements],
             name="ARRAY_EXTRACT",
             data_type=lineage_values.Datatype("VARCHAR"),
             var_type=source.var_type,
-            macro_group=macro_group,
         )
 
 
 class Length(lineage._Function):
-    def __init__(self, source, macro_group: str = ""):
+    def __init__(self, source):
         super().__init__(
             args=[source],
             name="LENGTH",
             data_type=lineage_values.Datatype("INTEGER"),
             var_type="numeric",
-            macro_group=macro_group,
         )
 
 
 class Character(lineage._Function):
-    def __init__(self, value: lineage_values.Integer, macro_group: str = ""):
+    def __init__(self, value: lineage_values.Integer):
         super().__init__(
             args=[value],
             name="CHR",
             data_type=lineage_values.Datatype("VARCHAR"),
             var_type="string",
-            macro_group=macro_group,
         )
 
 
@@ -127,14 +134,12 @@ class LeftPad(lineage._Function):
         source,
         length: lineage_values.Integer,
         character: lineage_values.Varchar,
-        macro_group: str = "",
     ):
         super().__init__(
             args=[source, length, character],
             name="LPAD",
             data_type=lineage_values.Datatype("VARCHAR"),
             var_type="string",
-            macro_group=macro_group,
         )
 
 
@@ -144,34 +149,40 @@ class RightPad(lineage._Function):
         source,
         length: lineage_values.Integer,
         character: lineage_values.Varchar,
-        macro_group: str = "",
     ):
         super().__init__(
             args=[source, length, character],
             name="RPAD",
             data_type=lineage_values.Datatype("VARCHAR"),
             var_type="string",
-            macro_group=macro_group,
         )
 
 
 class LeftExtract(lineage._Function):
-    def __init__(self, source, index: lineage_values.Integer, macro_group: str = ""):
+    def __init__(self, source, index: lineage_values.Integer):
         super().__init__(
             args=[source, index],
             name="LEFT",
             data_type=lineage_values.Datatype("VARCHAR"),
             var_type="string",
-            macro_group=macro_group,
         )
 
 
 class RightExtract(lineage._Function):
-    def __init__(self, source, index: lineage_values.Integer, macro_group: str = ""):
+    def __init__(self, source, index: lineage_values.Integer):
         super().__init__(
             args=[source, index],
             name="RIGHT",
             data_type=lineage_values.Datatype("VARCHAR"),
             var_type="string",
-            macro_group=macro_group,
+        )
+
+
+class Contains(lineage._Function):
+    def __init__(self, source, string: lineage_values.Varchar):
+        super().__init__(
+            args=[source, string],
+            name="CONTAINS",
+            data_type=lineage_values.Datatype("VARCHAR"),
+            var_type="string",
         )

@@ -8,8 +8,5 @@ class Limit(lineage._Transformation):
         source,
         limit: lineage_values.Integer,
         offset: lineage_values.Integer = lineage_values.Integer(0),
-        macro_group: str = "",
     ):
-        super().__init__(
-            name="LIMIT", source=source, args=[limit, offset], macro_group=macro_group
-        )
+        super().__init__(name="LIMIT", source=source, args=[limit, offset])

@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 import re
@@ -34,13 +36,13 @@ def get_build_order(schema: _Schema):
     print("Retrieving build order...")
 
     build_order = pd.DataFrame(
-        columns=["table"] + schema.tables.list_names_()
+        columns=["table"] + schema.tables.list_names()
     ).set_index("table")
 
-    for table in schema.tables.list_tables_():
+    for table in schema.tables.list_tables():
         records = {"table": table.name}
 
-        records.update({table: 0 for table in schema.tables.list_names_()})
+        records.update({table: 0 for table in schema.tables.list_names()})
 
         records = [records]
 
@@ -54,7 +56,7 @@ def get_build_order(schema: _Schema):
     build_order = build_order.set_index("table")
 
     print("Iterating through build order...")
-    for table in schema.tables.list_tables_():
+    for table in schema.tables.list_tables():
         print(table.name)
 
         try:
@@ -181,15 +183,21 @@ def create_tables(
 
                 conn.execute(rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}")
 
-                conn.execute(
-                    rf"""
-                    PRAGMA enable_profiling='json';
-                    PRAGMA profiling_output='/home/miles/F1/profile_staging_car_telemetry.json';
-                    PRAGMA custom_profiling_settings = '{{"CPU_TIME": "false", "EXTRA_INFO": "true", "OPERATOR_CARDINALITY": "true", "OPERATOR_TIMING": "true"}}';
-                    
-                    EXPLAIN (ANALYZE, format json) {schema.tables[table].sql}
-                """
-                )
+                try:
+                    conn.execute(
+                        rf"""
+                        PRAGMA enable_profiling='json';
+                        PRAGMA profiling_output='{os.getcwd()}/profiling.json';
+                        PRAGMA custom_profiling_settings = '{{"CPU_TIME": "false", "EXTRA_INFO": "true", "OPERATOR_CARDINALITY": "true", "OPERATOR_TIMING": "true"}}';
+                        
+                        EXPLAIN (ANALYZE, format json) {schema.tables[table].sql}
+                    """
+                    )
+                except:
+                    conn.execute(schema.tables[table].sql)
+                    raise ValueError(
+                        "Likely bad value encountered in above query. Check date specifiers and regex"
+                    )
 
                 conn.execute(
                     rf"""

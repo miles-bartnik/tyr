@@ -2,14 +2,14 @@
 DataFrame intro
 """
 
-import units
+from .units.core import Unit
 
 from ..lineage import core as lineage
 import typing
 
 
 class DataFrameColumn(lineage._Column):
-    def __init__(self, source: lineage._Column, macro_group: str = ""):
+    def __init__(self, source: lineage._Column):
         super().__init__(
             source=source,
             name=source.name,
@@ -18,7 +18,6 @@ class DataFrameColumn(lineage._Column):
             on_null=source.on_null,
             is_event_time=source.is_event_time,
             is_primary_key=source.is_primary_key,
-            macro_group=macro_group,
         )
 
 
@@ -30,8 +29,7 @@ class LambdaFunction(lineage._Function):
         args: typing.Dict[str, any],
         data_type,
         var_type=None,
-        unit=units.core.Unit(),
-        macro_group: str = "",
+        unit=Unit(),
     ):
         super().__init__(
             name=name,
@@ -39,7 +37,6 @@ class LambdaFunction(lineage._Function):
             data_type=data_type,
             var_type=var_type,
             unit=unit,
-            macro_group=macro_group,
         )
 
         self.function = function
@@ -56,7 +53,7 @@ class LambdaFunction(lineage._Function):
 
 
 class LambdaOutput(lineage._Column):
-    def __init__(self, name: str, source: LambdaFunction, macro_group: str = ""):
+    def __init__(self, name: str, source: LambdaFunction):
         super().__init__(
             name=name,
             source=source,
@@ -65,7 +62,6 @@ class LambdaOutput(lineage._Column):
             is_event_time=False,
             is_primary_key=False,
             on_null="PASS",
-            macro_group=macro_group,
         )
 
 
@@ -75,7 +71,6 @@ class DataFrame(lineage._Table):
         name: str,
         source: lineage._Table,
         columns: lineage.ColumnList,
-        macro_group: str = "",
     ):
         if any(
             [
@@ -99,9 +94,8 @@ class DataFrame(lineage._Table):
             primary_key=lineage.ColumnList(
                 [
                     columns[column_name]
-                    for column_name in source.primary_key.list_names_()
+                    for column_name in source.primary_key.list_names()
                 ]
             ),
             event_time=event_time,
-            macro_group=macro_group,
         )

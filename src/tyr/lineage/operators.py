@@ -2,142 +2,140 @@ from ..lineage import core as lineage
 
 
 class _Equal(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="=", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="=")
 
 
 class _NotEqual(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="!=", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="!=")
 
 
 class _GreaterThan(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name=">", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name=">")
 
 
 class _LessThan(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="<", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="<")
 
 
 class _GreaterThanOrEqual(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name=">=", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name=">=")
 
 
 class _LessThanOrEqual(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="<=", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="<=")
 
 
 class _Add(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="+", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="+")
 
 
 class _Subtract(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="-", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="-")
 
 
 class _Divide(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="/", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="/")
 
 
 class _Multiply(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="*", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="*")
 
 
 class _Exponent(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="**", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="**")
 
 
 class _Join(lineage._Operator):
-    def __init__(self, how: str, macro_group: str = ""):
-        super().__init__(
-            name=rf"{how.upper().strip(' JOIN')} JOIN", macro_group=macro_group
-        )
+    def __init__(self, how: str):
+        super().__init__(name=rf"{how.upper().strip(' JOIN')} JOIN")
 
 
 class _As(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="AS", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="AS")
 
 
 class Descending(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="DESC", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="DESC")
 
 
 class Ascending(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="ASC", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="ASC")
 
 
 class WildCard(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="*", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="*")
 
 
 class And(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="AND", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="AND")
 
 
 class Or(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="OR", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="OR")
 
 
 class _In(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="IN", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="IN")
 
 
 class _Is(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="IS", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="IS")
 
 
-class _Not(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="NOT", macro_group=macro_group)
+class Not(lineage._Operator):
+    def __init__(self):
+        super().__init__(name="NOT")
 
 
 class _Like(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="LIKE", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="LIKE")
 
 
 class _Between(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="BETWEEN", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="BETWEEN")
 
 
 class Preceding(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="PRECEDING", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="PRECEDING")
 
 
 class Following(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="FOLLOWING", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="FOLLOWING")
 
 
 class Rows(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="ROWS", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="ROWS")
 
 
 class Range(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="RANGE", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="RANGE")
 
 
 class Groups(lineage._Operator):
-    def __init__(self, macro_group: str = ""):
-        super().__init__(name="GROUPS", macro_group=macro_group)
+    def __init__(self):
+        super().__init__(name="GROUPS")

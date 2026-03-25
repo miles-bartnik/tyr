@@ -1,1 +1,1 @@
-from . import database, lineage, syntax, interpreter, network
+from . import database, lineage, syntax, interpreter

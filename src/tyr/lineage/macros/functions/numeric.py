@@ -19,7 +19,7 @@ def significant_figures(source, value):
                 checks=[
                     lineage_expressions.NotEqual(
                         left=lineage_functions.math.AbsoluteValue(source),
-                        right=lineage_values.Float(0),
+                        right=lineage_values.FloatingPoint(0),
                     ),
                 ],
             ),

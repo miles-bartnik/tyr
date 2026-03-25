@@ -436,9 +436,7 @@ class Unit:
         return {}
 
     def __eq__(self, other):
-
         if isinstance(other, Unit):
-
             if self.sub_units.empty:
                 if other.sub_units.empty:
                     return True
@@ -459,6 +457,9 @@ class Unit:
                 )
         else:
             return False
+
+    def __repr__(self):
+        return self.name
 
 
 def get_conversion_plan(source_unit, target_unit):
@@ -550,19 +551,16 @@ def get_conversion_plan(source_unit, target_unit):
 
 
 def round_to_n_sf(value, n: int):
-
     return float("{:g}".format(float("{:.{p}g}".format(value, p=n))))
 
 
 def convert_unit_value(value, source_unit, target_unit, precision=None):
-
     conversion_plan = get_conversion_plan(source_unit, target_unit)
 
     if (
         len(conversion_plan.unit_type.unique()) == 1
         and conversion_plan.unit_type.unique()[0] == "temperature"
     ):
-
         for index, row in conversion_plan.iterrows():
             value = (value * row["apply_prefix"] + row["apply_pre_shift"]) * row[
                 "apply_conversion"
@@ -575,7 +573,6 @@ def convert_unit_value(value, source_unit, target_unit, precision=None):
                 value = round_to_n_sf(value, int(precision[:-2]))
 
     else:
-
         value = (
             value
             * conversion_plan["apply_prefix"].product()
@@ -586,7 +583,6 @@ def convert_unit_value(value, source_unit, target_unit, precision=None):
 
 
 def add_subtract(left, right):
-
     if (left.sub_units.empty) and (right.sub_units.empty):
         unit = Unit()
     elif left.sub_units.empty:
@@ -614,21 +610,17 @@ def add_subtract(left, right):
 
 
 def multiply(left, right):
-
     return Unit(left.name + right.name)
 
 
 def divide(left, right):
-
     return Unit(left.name + right.reciprocal().name)
 
 
 def exponent(unit, exponent):
-
     new_unit_str = ""
 
     for index, row in unit.sub_units.iterrows():
-
         new_unit_str += row["symbol"] + "^" + str(row["exponent"] * exponent)
 
     return Unit(new_unit_str)

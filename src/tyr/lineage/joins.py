@@ -16,15 +16,12 @@ class Join:
     :type condition: lineage.Condition
     :param condition: Condition to join on
     :type condition: lineage.Condition
-    :param macro_group: Used to group multiple pre-fabricated lineage objects into the same custom node collection - default value [""]
-    :type macro_group: str
     """
 
     def __init__(
         self,
         join_expression: lineage._Expression,
         condition: lineage.Condition,
-        macro_group: str = "",
     ) -> None:
         self.join_expression = join_expression
         self.condition = condition
@@ -35,23 +32,23 @@ class Join:
         left_columns = lineage.ColumnList(
             [
                 lineage_columns.Select(column)
-                for column in self.join_expression.left.columns.list_columns_()
+                for column in self.join_expression.left.columns.list_columns()
             ]
         )
 
         right_columns = lineage.ColumnList(
             [
                 lineage_columns.Select(column)
-                for column in self.join_expression.right.columns.list_columns_(
-                    filter_regex=rf"^(?!{'|'.join([column for column in left_columns.list_names_()])}).*"
+                for column in self.join_expression.right.columns.list_columns(
+                    filter_regex=rf"^(?!{'|'.join([column for column in left_columns.list_names()])}).*"
                 )
             ]
         )
 
         self.columns = left_columns + right_columns
 
-        left_ctes = self.join_expression.left.ctes.list_tables_()
-        right_ctes = self.join_expression.right.ctes.list_tables_()
+        left_ctes = self.join_expression.left.ctes.list_tables()
+        right_ctes = self.join_expression.right.ctes.list_tables()
 
         self.ctes = lineage.TableList(left_ctes + right_ctes)
         self.sql = sqlparse.format(
@@ -60,7 +57,6 @@ class Join:
         self._node_data = {
             "type": str(type(self)),
             "base": str(type(self)),
-            "macro_group": macro_group,
             "sql": self.sql,
         }
 
@@ -97,11 +93,9 @@ class CompoundJoin:
 
     :param joins: List of joins to combine
     :type joins: List[Join]
-    :param macro_group: Used to group multiple pre-fabricated lineage objects into the same custom node collection - default value [""]
-    :type macro_group: str
     """
 
-    def __init__(self, joins: List[Join], macro_group: str = ""):
+    def __init__(self, joins: List[Join]):
         self.name = rf"COMPOUND JOIN - {id(self)}"
         self.joins = joins
 
@@ -114,25 +108,24 @@ class CompoundJoin:
             if not any(
                 [
                     column.current_table.name == column_name
-                    for column_name in self.columns.list_names_()
-                    for column in join.columns.list_columns_()
+                    for column_name in self.columns.list_names()
+                    for column in join.columns.list_columns()
                 ]
             ):
-                for column in join.columns.list_columns_():
-                    if column.name not in self.columns.list_names_():
-                        self.columns.add_(column)
+                for column in join.columns.list_columns():
+                    if column.name not in self.columns.list_names():
+                        self.columns.add(column)
 
         for join in joins:
-            for cte in join.ctes.list_tables_():
-                if cte.name not in self.ctes.list_names_():
-                    self.ctes.add_(cte)
+            for cte in join.ctes.list_tables():
+                if cte.name not in self.ctes.list_names():
+                    self.ctes.add(cte)
         self.sql = sqlparse.format(
             lineage._interpreters["beeswax_duckdb"].to_sql(self), reindent=True
         )
         self._node_data = {
             "type": str(type(self)),
             "base": str(type(self)),
-            "macro_group": macro_group,
             "sql": self.sql,
         }
 

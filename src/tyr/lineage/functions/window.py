@@ -9,7 +9,6 @@ class Lag(lineage._Function):
         source,
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(columns=lineage.ColumnList([])),
-        macro_group: str = "",
     ):
         self.source = source
 
@@ -21,7 +20,6 @@ class Lag(lineage._Function):
             var_type=source.var_type,
             data_type=source.data_type,
             unit=source.unit,
-            macro_group=macro_group,
         )
 
 
@@ -31,7 +29,6 @@ class Lead(lineage._Function):
         source,
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(columns=lineage.ColumnList([])),
-        macro_group: str = "",
     ):
         self.source = source
 
@@ -43,7 +40,6 @@ class Lead(lineage._Function):
             var_type=source.var_type,
             data_type=source.data_type,
             unit=source.unit,
-            macro_group=macro_group,
         )
 
 
@@ -53,7 +49,6 @@ class Rank(lineage._Function):
         source,
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(columns=lineage.ColumnList([])),
-        macro_group: str = "",
     ):
         self.source = source
 
@@ -64,7 +59,6 @@ class Rank(lineage._Function):
             order_by=order_by,
             var_type=source.var_type,
             data_type=source.data_type,
-            macro_group=macro_group,
         )
 
 
@@ -73,7 +67,6 @@ class RowNumber(lineage._Function):
         self,
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
         order_by: lineage.OrderBy = lineage.OrderBy(columns=lineage.ColumnList([])),
-        macro_group: str = "",
     ):
         self.source = None
 
@@ -84,5 +77,4 @@ class RowNumber(lineage._Function):
             order_by=order_by,
             var_type=None,
             data_type=lineage_values.Datatype("INTEGER"),
-            macro_group=macro_group,
         )

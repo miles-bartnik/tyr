@@ -7,7 +7,6 @@ class UnionColumn(lineage._Function):
     def __init__(
         self,
         source: typing.List[lineage._Column],
-        macro_group: str = "",
     ):
         if not len(set([column.name for column in source])) == 1:
             raise ValueError(
@@ -39,5 +38,4 @@ class UnionColumn(lineage._Function):
             args=source,
             var_type=source[0].var_type,
             data_type=source[0].data_type,
-            macro_group=macro_group,
         )
