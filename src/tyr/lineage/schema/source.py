@@ -16,6 +16,12 @@ import ast
 _interpreters = {"beeswax_duckdb": Interpreter()}
 
 
+def _truthy(value):
+    """Parse a metadata bool cell. TSV columns arrive as strings, so `bool('False')`
+    would be True -- match the literal truthy tokens instead. NaN/blank -> False."""
+    return str(value).strip().lower() in ("true", "1", "yes", "t")
+
+
 def read_column_metadata(filepath: str, separator: str = "\t"):
     column_metadata = pd.read_csv(filepath, sep=separator)
 
@@ -23,8 +29,8 @@ def read_column_metadata(filepath: str, separator: str = "\t"):
         int
     )
 
-    column_metadata["is_primary_key"] = column_metadata["is_primary_key"].astype(bool)
-    column_metadata["is_event_time"] = column_metadata["is_event_time"].astype(bool)
+    # NB: is_primary_key / is_event_time are left as their raw string form here and
+    # parsed with _truthy in ColumnMetadata -- astype(bool) on 'False' would be True.
     column_metadata["filter_values"] = column_metadata["filter_values"].fillna("[]")
 
     for column in [
@@ -50,8 +56,8 @@ def read_column_metadata(filepath: str, separator: str = "\t"):
 def read_file_metadata(filepath: str, separator: str = "\t"):
     file_metadata = pd.read_csv(filepath, sep=separator)
 
-    file_metadata["distinct"] = file_metadata["distinct"].astype(bool)
-
+    # `distinct` stays a string here and is parsed with _truthy in FileMetadata --
+    # astype(bool) on the string 'False' would be True (a forced SELECT DISTINCT).
     for column in file_metadata.columns.tolist():
         file_metadata[column] = file_metadata[column].fillna("")
         file_metadata[column] = file_metadata[column].astype(str)
@@ -148,8 +154,8 @@ class ColumnMetadata:
         else:
             self.default_value = Null(data_type=self.data_type)
 
-        self.is_primary_key = bool(column_metadata["is_primary_key"])
-        self.is_event_time = bool(column_metadata["is_event_time"])
+        self.is_primary_key = _truthy(column_metadata["is_primary_key"])
+        self.is_event_time = _truthy(column_metadata["is_event_time"])
         self.regex = str(column_metadata["regex"])
         self.ordinal_position = int(column_metadata["ordinal_position"])
         self.schema = str(column_metadata["schema"])
@@ -201,7 +207,7 @@ class FileMetadata:
         self.dataset = str(file_metadata["dataset"])
         self.file_regex = str(file_metadata["file_regex"])
         self.delim = str(file_metadata["delim"])
-        self.distinct = bool(file_metadata["distinct"])
+        self.distinct = _truthy(file_metadata["distinct"])
         self.schema = str(file_metadata["schema"])
         self._node_data = {
             "dataset": self.dataset,
@@ -280,7 +286,10 @@ class ReadGeoJson(_Transformation):
         source_file: SourceFile,
     ):
         if source_file.extension.value in ["json", "geojson"]:
-            super().__init__(name="ST_READ", source=source_file, args={})
+            if "*" in source_file.file_regex.value:
+                super().__init__(name="ST_READ_MULTI", source=source_file, args={})
+            else:
+                super().__init__(name="ST_READ", source=source_file, args={})
         else:
             raise ValueError(
                 rf"SourceFile extension not compatible with ReadGeoJson: {source_file.extension.value}"
