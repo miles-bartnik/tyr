@@ -1,0 +1,12 @@
+duckdb
+python-json-logger
+nbformat
+nbconvert
+networkx
+numpy
+pandas
+rustworkx
+sqlparse
+
+[dev]
+pytest

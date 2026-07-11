@@ -12,6 +12,22 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "duckdb",
+    "python-json-logger",
+    "nbformat",
+    "nbconvert",
+    "networkx",
+    "numpy",
+    "pandas",
+    "rustworkx",
+    "sqlparse",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
 
 [project.urls]
 #Homepage = "https://github.com/pypa/sampleproject"

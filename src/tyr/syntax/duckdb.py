@@ -10,7 +10,9 @@ def schema_settings(item):
 
     base_sql.extend(
         [
-            rf"""INSTALL '{package['name']}' FROM community; LOAD '{package['name']}'"""
+            rf"""INSTALL 'spatial'; LOAD 'spatial'; INSTALL 'st_read_multi' FROM community; LOAD 'st_read_multi'"""
+            if package['name'] == 'spatial'
+            else rf"""INSTALL '{package['name']}' FROM community; LOAD '{package['name']}'"""
             if package["origin"] == "duckdb_ce"
             else rf"""INSTALL '{package['name']}'; LOAD '{package['name']}'"""
             for package in item.extensions
@@ -37,7 +39,11 @@ def source_column(item):
 
 def source_file(item):
     if item.file_regex.value.split(".")[-1] == "geojson":
-        base_sql = rf""" st_read('{item.file_regex.value}')"""
+        if "*" in item.file_regex.value:
+            base_sql = rf""" ST_READ_MULTI('{item.file_regex.value}')"""
+
+        else:
+            base_sql = rf""" ST_READ('{item.file_regex.value}')"""
     else:
         if item.delim.value in ["t"]:
             delim = rf"\{item.delim.value}"

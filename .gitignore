@@ -2,3 +2,7 @@
 /tests/datasets/
 /Tutorials
 /tests/test.duckdb
+
+# Python build cruft
+__pycache__/
+*.py[cod]

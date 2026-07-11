@@ -5,6 +5,7 @@ src/tyr/interpreter.py
 src/tyr.egg-info/PKG-INFO
 src/tyr.egg-info/SOURCES.txt
 src/tyr.egg-info/dependency_links.txt
+src/tyr.egg-info/requires.txt
 src/tyr.egg-info/top_level.txt
 src/tyr/database/__init__.py
 src/tyr/database/connections.py

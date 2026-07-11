@@ -8,3 +8,14 @@ Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
+Requires-Dist: duckdb
+Requires-Dist: python-json-logger
+Requires-Dist: nbformat
+Requires-Dist: nbconvert
+Requires-Dist: networkx
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: rustworkx
+Requires-Dist: sqlparse
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
