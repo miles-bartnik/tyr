@@ -53,6 +53,13 @@ def reference():
                 ]
                 # the class's OWN docstring (not the inherited _Function base one)
                 own_doc = (obj.__dict__.get("__doc__") or "").strip()
+                # the appended 'DuckDB: <url>' documentation link, if any
+                url = ""
+                for line in own_doc.split("\n"):
+                    line = line.strip()
+                    if line.startswith("DuckDB:"):
+                        url = line[len("DuckDB:"):].strip()
+                        break
                 out.append(
                     {
                         "category": category,
@@ -60,6 +67,7 @@ def reference():
                         "sql": obj.constructor_sql(),
                         "params": params,
                         "doc": own_doc.split("\n")[0],
+                        "url": url,
                     }
                 )
     return sorted(out, key=lambda r: (r["category"], r["sql"]))
