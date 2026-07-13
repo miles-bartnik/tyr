@@ -1246,6 +1246,49 @@ class _Function:
 
         return graph
 
+    @classmethod
+    def _constructor_name(cls):
+        """The SQL keyword this function constructs -- the ``name="..."`` literal passed
+        to ``super().__init__`` in the subclass ``__init__`` -- read statically from the
+        source (no instantiation). ``None`` if it is not a plain string literal."""
+        import ast
+        import inspect
+        import textwrap
+
+        try:
+            tree = ast.parse(textwrap.dedent(inspect.getsource(cls.__init__)))
+        except (OSError, TypeError, SyntaxError):
+            return None
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                for kw in node.keywords:
+                    if (
+                        kw.arg == "name"
+                        and isinstance(kw.value, ast.Constant)
+                        and isinstance(kw.value.value, str)
+                    ):
+                        return kw.value.value
+        return None
+
+    @classmethod
+    def constructor_sql(cls):
+        """The SQL template this function class constructs, WITHOUT creating an object:
+        the SQL keyword (from the ``name="..."`` literal in ``__init__``) applied to the
+        constructor's parameter names, e.g. ``REGEXP_REPLACE(source, regex, value)``.
+        Falls back to the class name uppercased if no ``name`` literal is present."""
+        import inspect
+
+        try:
+            params = [
+                p
+                for p in inspect.signature(cls.__init__).parameters
+                if p != "self"
+            ]
+        except (ValueError, TypeError):
+            params = []
+        keyword = cls._constructor_name() or cls.__name__.upper()
+        return f"{keyword}({', '.join(params)})"
+
 
 class CaseWhen:
     def __init__(
