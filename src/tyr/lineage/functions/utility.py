@@ -5,11 +5,21 @@ import pandas as pd
 
 
 class Error(lineage._Function):
+    """
+    Raise an error with the given message (SQL error).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/utility#errormessage
+    """
     def __init__(self, message: lineage_values.Varchar):
         super().__init__(args=[message], name="ERROR")
 
 
 class Coalesce(lineage._Function):
+    """
+    Return the first non-NULL argument (SQL coalesce).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/utility#coalesceexpr-
+    """
     def __init__(self, args: TypingList[Any]):
         if not all([arg.unit == args[0].unit for arg in args]):
             raise ValueError(

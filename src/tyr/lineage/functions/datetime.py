@@ -3,6 +3,11 @@ from ...lineage import values as lineage_values
 
 
 class EpochMSToTimestamp(lineage._Function):
+    """
+    Convert epoch milliseconds to a TIMESTAMP (SQL epoch_ms).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#epoch_mstimestamp
+    """
     def __init__(
         self,
         source,
@@ -16,6 +21,11 @@ class EpochMSToTimestamp(lineage._Function):
 
 
 class EpochToTimestamp(lineage._Function):
+    """
+    Convert epoch seconds to a TIMESTAMP WITH TIME ZONE (SQL to_timestamp).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamptz
+    """
     def __init__(
         self,
         source,
@@ -29,6 +39,11 @@ class EpochToTimestamp(lineage._Function):
 
 
 class TimestampToEpochMS(lineage._Function):
+    """
+    Epoch milliseconds of a TIMESTAMP (SQL epoch_ms).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#epoch_mstimestamp
+    """
     def __init__(
         self,
         source,
@@ -41,6 +56,11 @@ class TimestampToEpochMS(lineage._Function):
 
 
 class StringToTimestamp(lineage._Function):
+    """
+    Parse a string into a TIMESTAMP using a strptime format (SQL strptime).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#strptimetext-format
+    """
     def __init__(
         self,
         source,
@@ -55,6 +75,11 @@ class StringToTimestamp(lineage._Function):
 
 
 class TruncateTimestamp(lineage._Function):
+    """
+    Truncate a timestamp to a given precision (SQL date_trunc).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#date_truncpart-timestamp
+    """
     def __init__(
         self,
         source,
@@ -71,6 +96,11 @@ class TruncateTimestamp(lineage._Function):
 
 
 class DatePart(lineage._Function):
+    """
+    Extract a sub-field (year, month, ...) from a timestamp (SQL date_part).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#date_partpart-timestamp
+    """
     def __init__(self, source, part: lineage_values.Varchar):
         super().__init__(
             args=[part, source],
@@ -80,6 +110,11 @@ class DatePart(lineage._Function):
 
 
 class DateDiff(lineage._Function):
+    """
+    Number of partition boundaries crossed between two timestamps (SQL date_diff).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#date_diffpart-starttimestamp-endtimestamp
+    """
     def __init__(self, start, end, unit):
         super().__init__(
             args=[
@@ -94,6 +129,11 @@ class DateDiff(lineage._Function):
 
 
 class DateBin(lineage._Function):
+    """
+    Truncate a timestamp into fixed-width buckets (SQL time_bucket).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#time_bucketbucket_width-timestamp-offset
+    """
     def __init__(self, source, interval, offset=None):
         super().__init__(
             args=[arg for arg in [interval, source, offset] if arg],
@@ -103,6 +143,11 @@ class DateBin(lineage._Function):
 
 
 class DateAdd(lineage._Function):
+    """
+    Add an interval to a date/timestamp (SQL date_add).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/date
+    """
     def __init__(self, source, interval):
         super().__init__(
             args=[source, interval],

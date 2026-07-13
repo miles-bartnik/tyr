@@ -5,6 +5,11 @@ from ..units.core import Unit
 
 
 class Cast(lineage._Function):
+    """
+    Cast a value to another data type (SQL CAST).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/expressions/cast
+    """
     def __init__(
         self,
         source,
@@ -20,6 +25,11 @@ class Cast(lineage._Function):
 
 
 class TryCast(lineage._Function):
+    """
+    Cast a value to another type, returning NULL on failure (SQL TRY_CAST).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/expressions/cast#try_cast
+    """
     def __init__(
         self,
         source,
@@ -35,6 +45,11 @@ class TryCast(lineage._Function):
 
 
 class IntegerToHex(lineage._Function):
+    """
+    Hexadecimal string of an integer (SQL hex).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/text
+    """
     def __init__(self, source):
         if source.data_type.value != "INTEGER":
             raise ValueError("source must be INTEGER")

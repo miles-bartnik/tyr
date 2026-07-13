@@ -4,6 +4,9 @@ from ...lineage import core as lineage
 
 
 class UnionColumn(lineage._Function):
+    """
+    tyr construct: stack identically named/typed columns from unioned source tables into one staging column. Not a DuckDB built-in.
+    """
     def __init__(
         self,
         source: typing.List[lineage._Column],

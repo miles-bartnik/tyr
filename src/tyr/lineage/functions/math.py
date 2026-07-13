@@ -6,6 +6,11 @@ from ...lineage import units
 
 
 class Divide(lineage._Function):
+    """
+    Divide two numbers (SQL / operator).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric
+    """
     def __init__(
         self,
         left,
@@ -30,6 +35,11 @@ class Divide(lineage._Function):
 
 
 class Multiply(lineage._Function):
+    """
+    Multiply two numbers (SQL * operator).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric
+    """
     def __init__(
         self,
         left,
@@ -58,6 +68,11 @@ class Multiply(lineage._Function):
 
 
 class Add(lineage._Function):
+    """
+    Add two numbers (SQL + operator).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric
+    """
     def __init__(
         self,
         left,
@@ -89,6 +104,11 @@ class Add(lineage._Function):
 
 
 class Subtract(lineage._Function):
+    """
+    Subtract two numbers (SQL - operator).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric
+    """
     def __init__(
         self,
         left,
@@ -120,6 +140,11 @@ class Subtract(lineage._Function):
 
 
 class Exponent(lineage._Function):
+    """
+    Raise a number to a power (SQL pow).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#powx-y
+    """
     def __init__(
         self,
         source,
@@ -152,6 +177,11 @@ class Exponent(lineage._Function):
 
 
 class Sin(lineage._Function):
+    """
+    Sine (SQL sin).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#sinx
+    """
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -161,6 +191,11 @@ class Sin(lineage._Function):
 
 
 class Cos(lineage._Function):
+    """
+    Cosine (SQL cos).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#cosx
+    """
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -170,6 +205,11 @@ class Cos(lineage._Function):
 
 
 class Tan(lineage._Function):
+    """
+    Tangent (SQL tan).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#tanx
+    """
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -179,6 +219,11 @@ class Tan(lineage._Function):
 
 
 class ATan2(lineage._Function):
+    """
+    Arc tangent of y/x, using signs to pick the quadrant (SQL atan2).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#atan2y-x
+    """
     def __init__(self, x, y):
         super().__init__(
             args=[x, y],
@@ -188,6 +233,11 @@ class ATan2(lineage._Function):
 
 
 class ASin(lineage._Function):
+    """
+    Arc sine (SQL asin).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#asinx
+    """
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -197,6 +247,11 @@ class ASin(lineage._Function):
 
 
 class Radians(lineage._Function):
+    """
+    Convert degrees to radians (SQL radians).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#radiansx
+    """
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -206,6 +261,11 @@ class Radians(lineage._Function):
 
 
 class Degrees(lineage._Function):
+    """
+    Convert radians to degrees (SQL degrees).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#degreesx
+    """
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -215,6 +275,11 @@ class Degrees(lineage._Function):
 
 
 class Round(lineage._Function):
+    """
+    Round to a number of decimal places (SQL round).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#roundv-numeric-s-integer
+    """
     def __init__(self, source, precision):
         super().__init__(
             args=[source, precision],
@@ -225,6 +290,11 @@ class Round(lineage._Function):
 
 
 class Ceiling(lineage._Function):
+    """
+    Round up to the nearest integer (SQL ceil).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#ceilx
+    """
     def __init__(
         self,
         source,
@@ -238,6 +308,11 @@ class Ceiling(lineage._Function):
 
 
 class Floor(lineage._Function):
+    """
+    Round down to the nearest integer (SQL floor).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#floorx
+    """
     def __init__(
         self,
         source,
@@ -252,6 +327,11 @@ class Floor(lineage._Function):
 
 
 class Log10(lineage._Function):
+    """
+    Base-10 logarithm (SQL log10).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#log10x
+    """
     def __init__(
         self,
         source,
@@ -265,6 +345,11 @@ class Log10(lineage._Function):
 
 
 class AbsoluteValue(lineage._Function):
+    """
+    Absolute value (SQL abs).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#absx
+    """
     def __init__(
         self,
         source,
@@ -278,6 +363,11 @@ class AbsoluteValue(lineage._Function):
 
 
 class Pi(lineage._Function):
+    """
+    The constant pi (SQL pi).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#pi
+    """
     def __init__(self):
         super().__init__(
             args=[],
@@ -288,6 +378,11 @@ class Pi(lineage._Function):
 
 
 class Mod(lineage._Function):
+    """
+    Floating-point remainder of a division (SQL fmod).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#fmodx-y
+    """
     def __init__(self, x, y):
         super().__init__(
             args=[x, y],
@@ -298,6 +393,11 @@ class Mod(lineage._Function):
 
 
 class Sign(lineage._Function):
+    """
+    Sign of a number: -1, 0 or 1 (SQL sign).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#signx
+    """
     def __init__(self, source):
         super().__init__(
             args=[source],

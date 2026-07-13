@@ -22,6 +22,8 @@ class Average(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#avgarg
     """
 
     def __init__(
@@ -56,6 +58,8 @@ class Minimum(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#minarg
     """
 
     def __init__(
@@ -90,6 +94,8 @@ class First(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#firstarg
     """
 
     def __init__(
@@ -124,6 +130,8 @@ class Last(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#lastarg
     """
 
     def __init__(
@@ -158,6 +166,8 @@ class Maximum(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#maxarg
     """
 
     def __init__(
@@ -192,6 +202,8 @@ class Array(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates
     """
 
     def __init__(
@@ -230,6 +242,8 @@ class StandardDeviation(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#stddevx
     """
 
     def __init__(
@@ -264,6 +278,8 @@ class PopulationStandardDeviation(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#stddev_popx
     """
 
     def __init__(
@@ -298,6 +314,8 @@ class SampleStandardDeviation(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#stddev_sampx
     """
 
     def __init__(
@@ -332,6 +350,8 @@ class PopulationVariance(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#var_popx
     """
 
     def __init__(
@@ -366,6 +386,8 @@ class SampleVariance(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates
     """
 
     def __init__(
@@ -400,6 +422,8 @@ class Sum(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#sumarg
     """
 
     def __init__(
@@ -436,6 +460,8 @@ class Count(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#countarg
     """
 
     def __init__(
@@ -471,6 +497,8 @@ class Correlation(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#corry-x
     """
 
     def __init__(
@@ -505,6 +533,8 @@ class PopulationCovariance(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#covar_popy-x
     """
 
     def __init__(
@@ -539,6 +569,8 @@ class SampleCovariance(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#covar_sampy-x
     """
 
     def __init__(
@@ -573,6 +605,8 @@ class AbsoluteMedian(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#madx
     """
 
     def __init__(
@@ -607,6 +641,8 @@ class Median(lineage._Function):
     :type order_by: lineage.OrderBy
     :param framing: Default: ``None``
     :type framing: lineage.expressions.Between
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/aggregates#medianx
     """
 
     def __init__(

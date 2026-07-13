@@ -4,6 +4,11 @@ from ...lineage import operators
 
 
 class Lag(lineage._Function):
+    """
+    Value from a row a given offset BEFORE the current row in the window (SQL lag).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/window_functions#lagexpr-offset-default-order-by-ordering-ignore-nulls
+    """
     def __init__(
         self,
         source,
@@ -24,6 +29,11 @@ class Lag(lineage._Function):
 
 
 class Lead(lineage._Function):
+    """
+    Value from a row a given offset AFTER the current row in the window (SQL lead).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/window_functions#leadexpr-offset-default-order-by-ordering-ignore-nulls
+    """
     def __init__(
         self,
         source,
@@ -44,6 +54,11 @@ class Lead(lineage._Function):
 
 
 class Rank(lineage._Function):
+    """
+    Rank within the window, leaving gaps after ties (SQL rank).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/window_functions#rankorder-by-ordering
+    """
     def __init__(
         self,
         source,
@@ -63,6 +78,11 @@ class Rank(lineage._Function):
 
 
 class RowNumber(lineage._Function):
+    """
+    Sequential row number within the window partition (SQL row_number).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/window_functions#row_numberorder-by-ordering
+    """
     def __init__(
         self,
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),
