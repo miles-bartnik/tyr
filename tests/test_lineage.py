@@ -14,6 +14,10 @@ def init_connection():
 
     conn.execute(staging.settings.sql)
 
+    tyr.database.core.create_tables(source, conn)
+
+    tyr.database.core.create_tables(staging, conn)
+
     return conn
 
 
@@ -46,7 +50,7 @@ def test_select():
 
     test = tyr.lineage.tables.Core(
         name="sessions",
-        source=tyr.lineage.tables.Select(staging.tables.sessions),
+        source=tyr.lineage.tables.Select(staging.tables["sessions"]),
         columns=tyr.lineage.core.ColumnList([tyr.lineage.columns.WildCard()]),
     )
 
@@ -69,40 +73,40 @@ def test_groupby():
             [
                 tyr.lineage.columns.Core(
                     source=tyr.lineage.columns.Select(
-                        staging.tables.car_telemetry.columns.driver_number
+                        staging.tables["car_telemetry"].columns["driver_number"]
                     ),
-                    name=staging.tables.car_telemetry.columns.driver_number.name,
+                    name=staging.tables["car_telemetry"].columns["driver_number"].name,
                 ),
                 tyr.lineage.columns.Core(
                     source=tyr.lineage.columns.Select(
-                        staging.tables.car_telemetry.columns.n_gear
+                        staging.tables["car_telemetry"].columns["n_gear"]
                     ),
-                    name=staging.tables.car_telemetry.columns.n_gear.name,
+                    name=staging.tables["car_telemetry"].columns["n_gear"].name,
                 ),
                 tyr.lineage.columns.Core(
                     source=tyr.lineage.functions.aggregate.Average(
                         tyr.lineage.columns.Select(
-                            staging.tables.car_telemetry.columns.kmh
+                            staging.tables["car_telemetry"].columns["kmh"]
                         )
                     ),
                     name="average_kmh",
                 ),
             ]
         ),
-        source=tyr.lineage.tables.Select(staging.tables.car_telemetry),
+        source=tyr.lineage.tables.Select(staging.tables["car_telemetry"]),
         primary_key=tyr.lineage.core.ColumnList(
             [
                 tyr.lineage.columns.Core(
                     source=tyr.lineage.columns.Select(
-                        staging.tables.car_telemetry.columns.driver_number
+                        staging.tables["car_telemetry"].columns["driver_number"]
                     ),
-                    name=staging.tables.car_telemetry.columns.driver_number.name,
+                    name=staging.tables["car_telemetry"].columns["driver_number"].name,
                 ),
                 tyr.lineage.columns.Core(
                     source=tyr.lineage.columns.Select(
-                        staging.tables.car_telemetry.columns.n_gear
+                        staging.tables["car_telemetry"].columns["n_gear"]
                     ),
-                    name=staging.tables.car_telemetry.columns.n_gear.name,
+                    name=staging.tables["car_telemetry"].columns["n_gear"].name,
                 ),
             ]
         ),
@@ -111,10 +115,10 @@ def test_groupby():
             columns=tyr.lineage.core.ColumnList(
                 [
                     tyr.lineage.columns.Select(
-                        staging.tables.car_telemetry.columns.driver_number
+                        staging.tables["car_telemetry"].columns["driver_number"]
                     ),
                     tyr.lineage.columns.Select(
-                        staging.tables.car_telemetry.columns.n_gear
+                        staging.tables["car_telemetry"].columns["n_gear"]
                     ),
                 ]
             ),
