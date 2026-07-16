@@ -3,7 +3,6 @@ Core intro
 """
 
 import copy
-import os.path
 import rustworkx as rx
 
 from typing import List, Any, Dict, AnyStr, OrderedDict

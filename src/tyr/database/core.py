@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -187,7 +187,7 @@ def create_tables(
                     conn.execute(
                         rf"""
                         PRAGMA enable_profiling='json';
-                        PRAGMA profiling_output='{os.getcwd()}/profiling.json';
+                        PRAGMA profiling_output='{(Path.cwd() / "profiling.json").as_posix()}';
                         PRAGMA custom_profiling_settings = '{{"CPU_TIME": "false", "EXTRA_INFO": "true", "OPERATOR_CARDINALITY": "true", "OPERATOR_TIMING": "true"}}';
                         
                         EXPLAIN (ANALYZE, format json) {schema.tables[table].sql}

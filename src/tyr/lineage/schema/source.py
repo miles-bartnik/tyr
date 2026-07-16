@@ -8,7 +8,7 @@ from .core import _Schema, _SchemaSettings
 from ..units.core import Unit
 import json
 import typing
-import os
+from pathlib import Path
 import re
 import rustworkx as rx
 import ast
@@ -20,6 +20,14 @@ def _truthy(value):
     """Parse a metadata bool cell. TSV columns arrive as strings, so `bool('False')`
     would be True -- match the literal truthy tokens instead. NaN/blank -> False."""
     return str(value).strip().lower() in ("true", "1", "yes", "t")
+
+
+def _resolve_file_regex(file_regex: str) -> str:
+    """Normalise a file_metadata path so it works on Windows or Linux. Relative
+    paths are resolved against the current working directory; absolute paths pass
+    through. Always returned as a POSIX string (forward slashes) -- DuckDB's readers
+    accept those on every platform. The trailing glob (``*``) is preserved."""
+    return (Path.cwd() / file_regex).as_posix()
 
 
 def read_column_metadata(filepath: str, separator: str = "\t"):
@@ -205,7 +213,7 @@ class ColumnMetadata:
 class FileMetadata:
     def __init__(self, file_metadata: pd.Series):
         self.dataset = str(file_metadata["dataset"])
-        self.file_regex = str(file_metadata["file_regex"])
+        self.file_regex = _resolve_file_regex(str(file_metadata["file_regex"]))
         self.delim = str(file_metadata["delim"])
         self.distinct = _truthy(file_metadata["distinct"])
         self.schema = str(file_metadata["schema"])
@@ -388,25 +396,20 @@ def init_column_metadata(
 
     if not file_metadata.empty:
         for index, row in file_metadata.iterrows():
-            if not [
-                "/".join(row["file_regex"].split("/")[:-1]) + "/" + file
-                for file in os.listdir("/".join(row["file_regex"].split("/")[:-1]))
-                if re.search(
-                    row["file_regex"].replace(".", "\.").replace("*", ".*"),
-                    "/".join(row["file_regex"].split("/")[:-1]) + "/" + file,
-                )
-            ]:
+            resolved = _resolve_file_regex(row["file_regex"])
+            directory = Path(resolved).parent
+            file_pattern = resolved.replace(".", r"\.").replace("*", ".*")
+            matches = [
+                candidate.as_posix()
+                for candidate in directory.iterdir()
+                if re.search(file_pattern, candidate.as_posix())
+            ]
+
+            if not matches:
                 print(rf"""Nothing found for - {row['file_regex']}""")
                 return column_metadata_df
 
-            file = [
-                "/".join(row["file_regex"].split("/")[:-1]) + "/" + file
-                for file in os.listdir("/".join(row["file_regex"].split("/")[:-1]))
-                if re.search(
-                    row["file_regex"].replace(".", "\.").replace("*", ".*"),
-                    "/".join(row["file_regex"].split("/")[:-1]) + "/" + file,
-                )
-            ][0]
+            file = matches[0]
 
             if row["delim"] == "t":
                 delim = "\t"
@@ -469,10 +472,9 @@ def init_file_metadata(
     path: str = None,
 ):
     if not path:
-        if not "configurations" in os.listdir(os.getcwd()):
-            os.mkdir("configurations")
-
-        path = rf"{os.getcwd()}/configurations/file_metadata.tsv"
+        configurations = Path.cwd() / "configurations"
+        configurations.mkdir(exist_ok=True)
+        path = configurations / "file_metadata.tsv"
 
     pd.DataFrame(
         columns=[

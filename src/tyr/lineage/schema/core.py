@@ -1,7 +1,7 @@
 from ..core import TableList, _interpreters, LineageGraph
 from ..tables import Core
 import pickle
-import os
+from pathlib import Path
 import pandas as pd
 import rustworkx as rx
 from typing import Dict, List
@@ -9,8 +9,7 @@ import sqlparse
 
 
 def load_schema_from_pkl(filepath):
-    with open(filepath, "rb") as f:
-        return pickle.load(f)
+    return pickle.loads(Path(filepath).read_bytes())
 
 
 class _SchemaSettings:
@@ -83,18 +82,18 @@ class _Schema:
         self._outbound_edge_data = {}
         self._inbound_edge_data = {}
 
-    def save(self, output_directory: str = os.getcwd()):
+    def save(self, output_directory: str = None):
         """
         Save schema to pickle object
 
-        :param output_directory:str = os.path.expanduser(rf"~/")
+        :param output_directory:str - defaults to the current working directory
         :return:
         """
 
-        with open(
-            rf"{output_directory.rstrip('/')}/{self.settings.name}.pkl", "wb"
-        ) as f:
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+        directory = Path(output_directory) if output_directory else Path.cwd()
+        (directory / f"{self.settings.name}.pkl").write_bytes(
+            pickle.dumps(self, pickle.HIGHEST_PROTOCOL)
+        )
 
     def add_table(self, table: Core, override: bool = False):
         setattr(table, "schema", self)

@@ -29,6 +29,16 @@ dev = [
     "pytest",
 ]
 
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+# NB: no `testpaths` -- tests/conftest.py chdirs into tests/ at collection time so the
+# suite's cwd-relative config/dataset paths resolve. A `testpaths = ["tests"]` would be
+# re-evaluated against that new cwd (-> tests/tests) and warn. Discovery from the pinned
+# cwd finds the tests; .venv and dotdirs are excluded by pytest's defaults.
+
+addopts = ""
+python_files = ["test_*.py", "*_test.py", "test_*.ipynb"]
+
 [project.urls]
 #Homepage = "https://github.com/pypa/sampleproject"
 #Issues = "https://github.com/pypa/sampleproject/issues"
