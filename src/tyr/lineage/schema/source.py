@@ -22,12 +22,16 @@ def _truthy(value):
     return str(value).strip().lower() in ("true", "1", "yes", "t")
 
 
-def _resolve_file_regex(file_regex: str) -> str:
-    """Normalise a file_metadata path so it works on Windows or Linux. Relative
-    paths are resolved against the current working directory; absolute paths pass
-    through. Always returned as a POSIX string (forward slashes) -- DuckDB's readers
-    accept those on every platform. The trailing glob (``*``) is preserved."""
-    return (Path.cwd() / file_regex).as_posix()
+def _resolve_file_regex(file_regex: str, base_dir=None) -> str:
+    """Normalise a file_metadata path so it works on Windows or Linux, independent of
+    the process working directory. Relative paths are resolved against ``base_dir``
+    (the directory of the file_metadata file that declared them -- so paths are written
+    relative to that file, e.g. ``../datasets/foo_*.tsv``); absolute paths pass through.
+    ``base_dir`` defaults to the cwd when not supplied. Always returned as a POSIX string
+    (forward slashes) -- DuckDB's readers accept those on every platform. The trailing
+    glob (``*``) is preserved."""
+    base = Path(base_dir) if base_dir else Path.cwd()
+    return (base / file_regex).resolve().as_posix()
 
 
 def read_column_metadata(filepath: str, separator: str = "\t"):
@@ -70,8 +74,12 @@ def read_file_metadata(filepath: str, separator: str = "\t"):
         file_metadata[column] = file_metadata[column].fillna("")
         file_metadata[column] = file_metadata[column].astype(str)
 
+    # file_regex paths are resolved relative to this file's directory, so the metadata
+    # is portable regardless of where the process is run from.
+    base_dir = Path(filepath).parent
     return {
-        file.dataset: FileMetadata(file) for index, file in file_metadata.iterrows()
+        file.dataset: FileMetadata(file, base_dir=base_dir)
+        for index, file in file_metadata.iterrows()
     }
 
 
@@ -211,9 +219,11 @@ class ColumnMetadata:
 
 
 class FileMetadata:
-    def __init__(self, file_metadata: pd.Series):
+    def __init__(self, file_metadata: pd.Series, base_dir=None):
         self.dataset = str(file_metadata["dataset"])
-        self.file_regex = _resolve_file_regex(str(file_metadata["file_regex"]))
+        self.file_regex = _resolve_file_regex(
+            str(file_metadata["file_regex"]), base_dir
+        )
         self.delim = str(file_metadata["delim"])
         self.distinct = _truthy(file_metadata["distinct"])
         self.schema = str(file_metadata["schema"])
@@ -372,6 +382,7 @@ class Source(_Schema):
 def init_column_metadata(
     path: str = None,
     file_metadata: pd.DataFrame = pd.DataFrame(),
+    base_dir=None,
 ):
     column_metadata_df = pd.DataFrame(
         columns=[
@@ -396,7 +407,7 @@ def init_column_metadata(
 
     if not file_metadata.empty:
         for index, row in file_metadata.iterrows():
-            resolved = _resolve_file_regex(row["file_regex"])
+            resolved = _resolve_file_regex(row["file_regex"], base_dir)
             directory = Path(resolved).parent
             file_pattern = resolved.replace(".", r"\.").replace("*", ".*")
             matches = [

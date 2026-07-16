@@ -929,7 +929,9 @@ class ColumnList(OrderedDict):
     :type columns: List[columns.Core|columns.Select|columns.Record]
     """
 
-    def __init__(self, columns: List[Any]) -> None:
+    def __init__(self, columns: List[Any] = ()) -> None:
+        # NB: default must stay -- OrderedDict's pickle protocol reconstructs via
+        # ColumnList() (no args) then restores items; a required arg breaks unpickling.
         super().__init__([(column.name, column) for column in columns])
 
     def __getitem__(self, item):
@@ -1034,7 +1036,11 @@ class PartitionBy(ColumnList):
     :param columns: lineage.core.ColumnList
     """
 
-    def __init__(self, columns: ColumnList):
+    def __init__(self, columns: ColumnList = None):
+        if columns is None:
+            # no-arg path for unpickling (see ColumnList note); pickle restores state
+            super().__init__()
+            return
         super().__init__(columns=columns.list_columns())
         self.sql = sqlparse.format(
             _interpreters["beeswax_duckdb"].to_sql(self), reindent=True
@@ -1680,7 +1686,10 @@ class _Table:
 
 
 class TableList(OrderedDict):
-    def __init__(self, tables: List[Any]) -> None:
+    def __init__(self, tables: List[Any] = ()) -> None:
+        # NB: default must stay -- OrderedDict's pickle protocol reconstructs via
+        # TableList() (no args) then restores items, so a required `tables` arg makes
+        # every saved schema unpicklable (load_schema_from_pkl).
         super().__init__([(table.name, table) for table in tables])
 
     def list_tables(self):
