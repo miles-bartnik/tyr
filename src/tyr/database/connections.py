@@ -9,6 +9,11 @@ class Response:
         self.response = response
         self.connection_type = connection_type
 
+    def __repr__(self):
+        # Deterministic repr -- the default object repr embeds a memory address, which
+        # makes notebook/test output non-reproducible.
+        return f"Response(connection_type={self.connection_type!r})"
+
     def df(self):
         if type(self.response) is pd.DataFrame:
             return self.response

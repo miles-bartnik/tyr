@@ -69,11 +69,11 @@ class Core(lineage._Table):
                     print(table.__dict__)
                     raise ValueError("cte must be either Core or Select")
 
-        if (inherit_primary_key) and not (primary_key):
-            raise ValueError(
-                "inherit_primary_key=True contradicted by primary_key=None"
-            )
-        elif inherit_primary_key:
+        if inherit_primary_key:
+            # Overrides any explicit primary_key (per the docstring): inherit the
+            # source table's primary key as Select objects. The previous guard raised
+            # whenever primary_key was empty -- i.e. on the normal inherit case -- which
+            # made the feature unusable.
             primary_key = lineage.ColumnList(
                 [
                     lineage_columns.Select(column)

@@ -91,7 +91,7 @@ class H3LatLongToCell(lineage._Function):
     def __init__(self, lat, long, precision):
         super().__init__(
             args=[lat, long, precision],
-            name="H3_LATLNG_TO_CELL",
+            name="H3_LATLNG_TO_CELL_STRING",
             data_type=lineage_values.Datatype("VARCHAR"),
         )
 

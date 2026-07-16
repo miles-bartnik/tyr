@@ -434,7 +434,7 @@ def functions_list_extract(item):
 
     if any(
         [
-            value not in str(type(item.args[1]))
+            value not in str(type(item.args[0]))
             for value in [
                 "lineage.values.List",
                 "lineage.values.GeoCoordinate",
