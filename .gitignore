@@ -1,8 +1,13 @@
+# Regenerable by running Tutorials/test_1 (which are themselves local-only, below).
+# The test suite builds its schemas fresh, so it does not need these.
 /tests/saved_schema/
-/tests/datasets/
+# Local-only, output-heavy tutorial notebooks (not versioned).
 /Tutorials
 /tests/test.duckdb
+
+# NB: /tests/datasets/ is intentionally tracked -- the test suite reads its fixtures.
 
 # Python build cruft
 __pycache__/
 *.py[cod]
+*.egg-info/
