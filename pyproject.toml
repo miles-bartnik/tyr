@@ -37,7 +37,7 @@ pythonpath = ["src"]
 # cwd finds the tests; .venv and dotdirs are excluded by pytest's defaults.
 
 addopts = ""
-python_files = ["test_*.py", "*_test.py", "test_*.ipynb"]
+python_files = ["test_*.py", "*_test.py"]
 
 [project.urls]
 #Homepage = "https://github.com/pypa/sampleproject"
