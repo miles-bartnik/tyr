@@ -337,7 +337,7 @@ def event_time_interval_transform(
                             ),
                         ],
                         else_value=lineage_values.List(
-                            values=[
+                            value=[
                                 lineage_functions.datetime.DateBin(
                                     source=lineage_columns.Select(base.event_time),
                                     interval=interval,
