@@ -645,7 +645,15 @@ SUPPORTED_DATA_TYPES = {
     "Geometry": [
         {
             "extension": "spatial",
-            "data_type_regex": r"^(?P<data_type>GEOMETRY)$",
+            # bare GEOMETRY or CRS-parameterised, e.g. GEOMETRY('EPSG:4326')
+            # (DuckDB ST_Read emits the parameterised form). The full string is
+            # captured as data_type so the CRS flows into DDL as-is. NOTE: the
+            # regex must keep its closing ")$" tail -- SUPPORTED_DATA_TYPES
+            # derives the List entry's regex by string-replacing a terminal
+            # ")$" with ")[]$", and a "?$"-suffixed regex defeats that
+            # replacement, leaving List with a regex identical to this one
+            # (List then overwrites Geometry on match).
+            "data_type_regex": r"^(?P<data_type>GEOMETRY(?:\('[^']+'\))?)$",
             "value_class": "Geometry",
             "unit": False,
         }
