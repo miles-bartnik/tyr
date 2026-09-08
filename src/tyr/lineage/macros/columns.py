@@ -1,3 +1,4 @@
+import json
 import warnings
 
 from ..units.core import Unit
@@ -108,11 +109,10 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
 
     # Casting
 
-    if column_metadata.on_null == "FAIL":
-        CastFunction = lineage_functions.data_type.Cast
-
-    else:
-        CastFunction = lineage_functions.data_type.TryCast
+    # Use TryCast so that nulls and filter-matched values survive the initial cast
+    # and are handled explicitly below (FAIL errors, SKIP becomes a WHERE clause,
+    # DEFAULT swaps in the default value).
+    CastFunction = lineage_functions.data_type.TryCast
 
     if column_metadata.data_type == lineage_values.Datatype("INTERVAL"):
         if column_metadata.regex:
@@ -163,6 +163,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
 
     elif column_metadata.regex and column_metadata.var_type not in [
         "timestamp",
+        "datetime",
         "date",
     ]:
         source_column = lineage.CaseWhen(
@@ -187,7 +188,7 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
             else_value=lineage_values.Null(data_type=column_metadata.data_type),
         )
 
-    elif column_metadata.regex != "" and column_metadata.var_type == "timestamp":
+    elif column_metadata.regex != "" and column_metadata.var_type in ("timestamp", "datetime"):
         if (column_metadata.regex == "datetime") & (
             column_metadata.data_type.value == "TIMESTAMP"
         ):
@@ -286,54 +287,125 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
             data_type=column_metadata.data_type,
         )
     else:
-        source_column = CastFunction(
-            source=source_column,
-            data_type=column_metadata.data_type,
-        )
+        # For timestamp / datetime columns with no strptime format provided,
+        # use a plain CAST so DuckDB raises a conversion error instead of the
+        # silent NULL that TRY_CAST would return. This makes format mismatches
+        # visible and points the user at the regex (strptime format) field.
+        if column_metadata.var_type in ("timestamp", "datetime"):
+            source_column = lineage_functions.data_type.Cast(
+                source=source_column,
+                data_type=column_metadata.data_type,
+            )
+        else:
+            source_column = CastFunction(
+                source=source_column,
+                data_type=column_metadata.data_type,
+            )
     # Filtering
 
+    # Value filtering.
+    # PASS / WARN / SKIP do no value-level transform. SKIP becomes a WHERE clause
+    # in staging_table_transform using the column attributes set at the end of this
+    # function. FAIL raises a runtime error. DEFAULT swaps in the configured default.
     if column_metadata.filter_values:
-        if column_metadata.on_filter == "PASS":
-            value = source_column
-        elif column_metadata.on_filter == "FAIL":
-            value = lineage_functions.utility.Error(
-                lineage_values.Varchar(
-                    rf"""
-            filter_value in [{', '.join(["'" + filter_value + "'" for filter_value in column_metadata.filter_values])}] encountered. Triggered on_filter=FAIL"""
-                )
+        if column_metadata.on_filter == "FAIL":
+            source_column = lineage.CaseWhen(
+                conditions=[
+                    lineage.Condition(
+                        checks=[
+                            lineage_expressions.In(
+                                source_column,
+                                lineage_values.List(
+                                    [
+                                        lineage_values.Varchar(value)
+                                        for value in column_metadata.filter_values
+                                    ]
+                                ),
+                            )
+                        ]
+                    )
+                ],
+                values=[
+                    lineage_functions.utility.Error(
+                        lineage_values.Varchar(
+                            rf"""
+                    filter_value in [{', '.join(["'" + filter_value + "'" for filter_value in column_metadata.filter_values])}] encountered. Triggered on_filter=FAIL"""
+                        )
+                    )
+                ],
+                else_value=source_column,
             )
-        elif column_metadata.on_filter == "WARN":
-            value = source_column
         elif (
             column_metadata.on_filter == "DEFAULT"
             and column_metadata.default_value
             != lineage_values.Null(column_metadata.data_type)
         ):
-            value = lineage_functions.utility.Coalesce(
-                [source_column, column_metadata.default_value]
+            source_column = lineage.CaseWhen(
+                conditions=[
+                    lineage.Condition(
+                        checks=[
+                            lineage_expressions.In(
+                                source_column,
+                                lineage_values.List(
+                                    [
+                                        lineage_values.Varchar(value)
+                                        for value in column_metadata.filter_values
+                                    ]
+                                ),
+                            )
+                        ]
+                    )
+                ],
+                values=[column_metadata.default_value],
+                else_value=source_column,
             )
-        else:
-            value = source_column
+        # PASS, SKIP, WARN: no value-level transform.
 
+    # Null filtering.
+    # PASS / WARN / SKIP do no value-level transform. SKIP becomes a WHERE clause
+    # in staging_table_transform. FAIL raises a runtime error. DEFAULT swaps in the
+    # configured default when the value is NULL.
+    if column_metadata.on_null == "FAIL":
         source_column = lineage.CaseWhen(
             conditions=[
                 lineage.Condition(
                     checks=[
-                        lineage_expressions.In(
+                        lineage_expressions.Is(
                             source_column,
-                            lineage_values.List(
-                                [
-                                    lineage_values.Varchar(value)
-                                    for value in column_metadata.filter_values
-                                ]
-                            ),
+                            lineage_values.Null(data_type=column_metadata.data_type),
                         )
                     ]
                 )
             ],
-            values=[value],
+            values=[
+                lineage_functions.utility.Error(
+                    lineage_values.Varchar(
+                        rf"NULL encountered in column: {column_metadata.column_name}"
+                    )
+                )
+            ],
             else_value=source_column,
         )
+    elif (
+        column_metadata.on_null == "DEFAULT"
+        and column_metadata.default_value
+        != lineage_values.Null(column_metadata.data_type)
+    ):
+        source_column = lineage.CaseWhen(
+            conditions=[
+                lineage.Condition(
+                    checks=[
+                        lineage_expressions.Is(
+                            source_column,
+                            lineage_values.Null(data_type=column_metadata.data_type),
+                        )
+                    ]
+                )
+            ],
+            values=[column_metadata.default_value],
+            else_value=source_column,
+        )
+    # PASS, SKIP, WARN: no value-level transform.
 
     if column_metadata.scale_factor:
         if column_metadata.scale_factor != 1:
@@ -376,3 +448,287 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
     setattr(output, "var_type", column_metadata.var_type)
 
     return output
+
+
+def _link_literal(value: str) -> lineage_values.Varchar:
+    # values_varchar renders CAST('{value}' AS VARCHAR) without escaping, so double
+    # single quotes here to bind the mapping strings as properly escaped literals.
+    return lineage_values.Varchar(str(value).replace("'", "''"))
+
+
+def parse_link_mapping(link_mapping: str):
+    """
+    Parse a link_mapping string of the form::
+
+        {"A":"value_1", "B":"value_2"} | "null_value"
+
+    The ``| "null_value"`` fallback segment is optional and its quotes optional.
+    Returns ``(mapping, null_value)`` where ``mapping`` is a ``dict`` of strings to
+    strings and ``null_value`` is ``None`` when the segment is omitted. Raises
+    ``ValueError`` when the dict part does not parse or is not str -> str.
+    """
+    if not link_mapping or not str(link_mapping).strip():
+        raise ValueError("link_mapping is empty")
+
+    dict_part = str(link_mapping).strip()
+    null_value = None
+
+    if " | " in dict_part:
+        dict_part, _, null_part = dict_part.rpartition(" | ")
+        null_part = null_part.strip()
+
+        if len(null_part) >= 2 and null_part[0] in "\"'" and null_part[-1] == null_part[0]:
+            null_part = null_part[1:-1]
+
+        if not null_part:
+            raise ValueError(rf"link_mapping fallback segment is empty: {link_mapping}")
+
+        null_value = null_part
+
+    try:
+        mapping = json.loads(dict_part)
+    except json.JSONDecodeError as error:
+        raise ValueError(rf"link_mapping dict is malformed: {link_mapping}") from error
+
+    if not isinstance(mapping, dict) or not all(
+        isinstance(key, str) and isinstance(value, str)
+        for key, value in mapping.items()
+    ):
+        raise ValueError(rf"link_mapping dict must map strings to strings: {link_mapping}")
+
+    if not mapping:
+        raise ValueError(rf"link_mapping dict is empty: {link_mapping}")
+
+    return mapping, null_value
+
+
+def validate_column_links(column_metadata: dict):
+    """
+    Build-time validation for linked-column config within one dataset's column
+    metadata (``{column_name: ColumnMetadata}``). Raises ``ValueError`` on the
+    first problem found; called when the staging schema is built.
+    """
+    for name, metadata in column_metadata.items():
+        # getattr: metadata pickled before linking existed has no link fields.
+        link_column = getattr(metadata, "link_column", "")
+
+        if not link_column:
+            if getattr(metadata, "link_mapping", "").strip():
+                raise ValueError(
+                    rf"link_mapping is set but link_column is empty: {metadata.dataset}.{name}"
+                )
+            continue
+
+        if not getattr(metadata, "link_mapping", "").strip():
+            raise ValueError(
+                rf"link_mapping is required when link_column is set: {metadata.dataset}.{name}"
+            )
+
+        parse_link_mapping(metadata.link_mapping)
+
+        if getattr(metadata, "link_behaviour", "") not in ["ON_NULL", "OVERWRITE"]:
+            raise ValueError(
+                rf"link_behaviour must be ON_NULL or OVERWRITE when link_column is set: {metadata.dataset}.{name}"
+            )
+
+        if link_column not in column_metadata:
+            raise ValueError(
+                rf"link_column '{link_column}' does not exist in dataset '{metadata.dataset}' columns (referenced by {name})"
+            )
+
+        link_target = column_metadata[link_column]
+
+        # A SKIP filter removes rows from the staging table, so the lookup key
+        # would differ between rows -- reject SKIP-style filtering on a link column.
+        if link_target.on_filter == "SKIP" and link_target.filter_values:
+            raise ValueError(
+                rf"link_column '{link_column}' uses on_filter=SKIP in dataset '{metadata.dataset}' (referenced by {name})"
+            )
+
+        if link_target.on_null == "SKIP":
+            raise ValueError(
+                rf"link_column '{link_column}' uses on_null=SKIP in dataset '{metadata.dataset}' (referenced by {name})"
+            )
+
+    # Reject any cycle among linked columns (A -> B -> ... -> A) in this dataset.
+    link_graph = {
+        name: metadata.link_column
+        for name, metadata in column_metadata.items()
+        if getattr(metadata, "link_column", "")
+    }
+
+    for start in link_graph:
+        visited = []
+        node = start
+
+        while node in link_graph:
+            if node in visited:
+                cycle = visited[visited.index(node):] + [node]
+                raise ValueError(
+                    rf"Cycle detected among linked columns in dataset '{column_metadata[start].dataset}': {' -> '.join(cycle)}"
+                )
+
+            visited.append(node)
+            node = link_graph[node]
+
+
+def staging_column_link_transform(column, column_metadata, link_key_expression):
+    """
+    Linked columns: the third value-transform phase, applied after the null-handling
+    phase and after filtering as a final CaseWhen wrapper around the (already
+    transformed) column expression, inside the staging SELECT.
+
+    The lookup key is the link column's own transformed staging expression (after its
+    null-handling/filtering phases, and including its own link phase when applied in
+    dependency order). Key found -> cast(mapped_value AS column data_type); key miss
+    -> runtime Error(); NULL key -> the mapping's null_value segment when present,
+    otherwise the target is left unchanged. Cast failures raise at runtime.
+    """
+    mapping, null_value = parse_link_mapping(column_metadata.link_mapping)
+
+    # Compare the key as a string against the mapping keys. Skip the cast when the
+    # link column is already VARCHAR.
+    if link_key_expression.data_type == lineage_values.Datatype("VARCHAR"):
+        link_key = link_key_expression
+    else:
+        link_key = lineage_functions.data_type.Cast(
+            source=link_key_expression,
+            data_type=lineage_values.Datatype("VARCHAR"),
+        )
+
+    conditions = []
+    values = []
+
+    # A NULL link key substitutes the mapping's null_value segment when present,
+    # otherwise the target is left unchanged.
+    conditions.append(
+        lineage.Condition(
+            checks=[
+                lineage_expressions.Is(
+                    link_key,
+                    lineage_values.Null(data_type=lineage_values.Datatype("VARCHAR")),
+                )
+            ]
+        )
+    )
+    if null_value is not None:
+        values.append(
+            lineage_functions.data_type.Cast(
+                _link_literal(null_value), column_metadata.data_type
+            )
+        )
+    else:
+        values.append(column)
+
+    for key, mapped_value in mapping.items():
+        conditions.append(
+            lineage.Condition(
+                checks=[
+                    lineage_expressions.Equal(link_key, _link_literal(key))
+                ]
+            )
+        )
+        values.append(
+            lineage_functions.data_type.Cast(
+                _link_literal(mapped_value), column_metadata.data_type
+            )
+        )
+
+    link_case = lineage.CaseWhen(
+        conditions=conditions,
+        values=values,
+        else_value=lineage_functions.utility.Error(
+            lineage_values.Varchar(
+                rf"Link key from column: {column_metadata.link_column} not found in link_mapping for column: {column_metadata.column_name}"
+            )
+        ),
+    )
+
+    if column_metadata.link_behaviour == "ON_NULL":
+        source_column = lineage.CaseWhen(
+            conditions=[
+                lineage.Condition(
+                    checks=[
+                        lineage_expressions.Is(
+                            column,
+                            lineage_values.Null(data_type=column_metadata.data_type),
+                        )
+                    ]
+                )
+            ],
+            values=[link_case],
+            else_value=column,
+        )
+    else:
+        # OVERWRITE: the link always fires.
+        source_column = link_case
+
+    output = lineage_columns.Core(source=source_column, name=column.name)
+
+    for attribute in [
+        "on_null",
+        "filter_values",
+        "on_filter",
+        "is_primary_key",
+        "is_event_time",
+        "var_type",
+    ]:
+        setattr(output, attribute, getattr(column, attribute))
+
+    return output
+
+
+def apply_column_links(columns, column_metadata_list):
+    """
+    Apply the linked-column phase to a dataset's already-built staging columns.
+    ``columns`` and ``column_metadata_list`` are aligned (same order). Columns are
+    wrapped in dependency order so a link key sees the link column's own link phase
+    when it has one; the returned list preserves the original column order.
+    """
+    built_by_name = {
+        metadata.column_name: column
+        for metadata, column in zip(column_metadata_list, columns)
+    }
+
+    wrapped = {}
+    result = dict(zip([metadata.column_name for metadata in column_metadata_list], columns))
+
+    linked = [
+        metadata
+        for metadata in column_metadata_list
+        if getattr(metadata, "link_column", "")
+    ]
+
+    column_metadata_by_name = {
+        metadata.column_name: metadata for metadata in column_metadata_list
+    }
+
+    # Dependency order: a linked column is wrapped only after its link target.
+    ordered = []
+    visited = set()
+
+    def visit(metadata):
+        if metadata.column_name in visited:
+            return
+
+        visited.add(metadata.column_name)
+        target = column_metadata_by_name.get(metadata.link_column)
+
+        if target and getattr(target, "link_column", ""):
+            visit(target)
+
+        ordered.append(metadata)
+
+    for metadata in linked:
+        visit(metadata)
+
+    for metadata in ordered:
+        link_key_expression = wrapped.get(
+            metadata.link_column, built_by_name[metadata.link_column]
+        )
+        result[metadata.column_name] = staging_column_link_transform(
+            result[metadata.column_name], metadata, link_key_expression
+        )
+        wrapped[metadata.column_name] = result[metadata.column_name]
+
+    return [result[metadata.column_name] for metadata in column_metadata_list]

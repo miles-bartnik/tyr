@@ -41,6 +41,12 @@ def read_column_metadata(filepath: str, separator: str = "\t"):
         int
     )
 
+    # Linked-column fields may be absent in metadata files written before linking
+    # existed -- default them to empty (no linking) rather than failing the read.
+    for link_field in ["link_column", "link_mapping", "link_behaviour"]:
+        if link_field not in column_metadata.columns:
+            column_metadata[link_field] = ""
+
     # NB: is_primary_key / is_event_time are left as their raw string form here and
     # parsed with _truthy in ColumnMetadata -- astype(bool) on 'False' would be True.
     column_metadata["filter_values"] = column_metadata["filter_values"].fillna("[]")
@@ -84,7 +90,6 @@ def read_file_metadata(filepath: str, separator: str = "\t"):
 
 
 class ColumnMetadata:
-
     """
     The ColumnMetadata object takes the following pd.Series as an argument
 
@@ -116,6 +121,12 @@ class ColumnMetadata:
     :type on_filter: str
     :param on_null: Behaviour on NULL value. Options: ``'PASS'``/``'FAIL'``/``'WARN'``/``'SKIP'`` Default: ``'PASS'``
     :type on_null: str
+    :param link_column: Name of another column in the same dataset to link this column to. Empty = no linking. Default: ``''``
+    :type link_column: str
+    :param link_mapping: Mapping for linked columns: ``'{"A":"value_1", "B":"value_2"} | "null_value"'``. The ``| "null_value"`` fallback segment is optional. Default: ``''``
+    :type link_mapping: str
+    :param link_behaviour: When linking fires. Options: ``'ON_NULL'``/``'OVERWRITE'``. Required when ``link_column`` is set. Default: ``''``
+    :type link_behaviour: str
     :param is_primary_key: Default: ``False``
     :type is_primary_key: bool
     :param is_event_time: Default: ``False``
@@ -151,6 +162,9 @@ class ColumnMetadata:
             self.filter_values = []
         self.on_filter = str(column_metadata["on_filter"])
         self.on_null = str(column_metadata["on_null"])
+        self.link_column = str(column_metadata["link_column"])
+        self.link_mapping = str(column_metadata["link_mapping"])
+        self.link_behaviour = str(column_metadata["link_behaviour"])
 
         if column_metadata["default_value"]:
             if "[]" in self.data_type.value:
@@ -188,6 +202,9 @@ class ColumnMetadata:
             "filter_values": str(self.filter_values),
             "on_filter": self.on_filter,
             "on_null": self.on_null,
+            "link_column": self.link_column,
+            "link_mapping": self.link_mapping,
+            "link_behaviour": self.link_behaviour,
             "is_primary_key": str(self.is_primary_key),
             "is_event_time": str(self.is_event_time),
             "regex": self.regex,
@@ -379,6 +396,75 @@ class Source(_Schema):
         return
 
 
+def _var_type_for(data_type: str) -> str:
+    """Map a DuckDB / SQL data-type string to a tyr var_type."""
+    d = str(data_type).upper()
+    if any(k in d for k in ("INT", "DOUBLE", "DECIMAL", "FLOAT", "REAL", "BIGINT", "NUMERIC")):
+        return "numeric"
+    if "TIMESTAMP" in d or "DATE" in d or "TIME" in d:
+        return "timestamp"
+    return "categorical"
+
+
+def _match_files(resolved_path: str):
+    """Return all files matching a resolved path that may contain shell-style
+    glob wildcards (*, ?). Matches are against filenames only, so a pattern like
+    ``dir/foo*`` only matches ``foo*`` files inside ``dir`` and never a parent
+    directory named ``foodir``."""
+    directory = Path(resolved_path).parent
+    filename_pattern = Path(resolved_path).name
+    # Escape regex metacharacters, then restore * and ? as wildcards.
+    escaped = re.escape(filename_pattern).replace(r"\*", ".*").replace(r"\?", ".")
+    regex = re.compile(f"^{escaped}$")
+    return [p.as_posix() for p in directory.iterdir() if regex.match(p.name)]
+
+
+def _detect_columns(file_pattern: str, delim: str, ext: str):
+    """Infer (name, data_type) columns for a source file pattern using DuckDB.
+
+    CSV/TSV files use ``read_csv_auto``; GeoJSON/JSON use ``ST_Read``. The
+    spatial extension is loaded on demand. If DuckDB cannot read a GeoJSON file,
+    the first feature's property keys are returned as VARCHAR columns.
+    """
+    import duckdb
+
+    con = duckdb.connect()
+    try:
+        if ext in ("json", "geojson"):
+            con.execute("INSTALL spatial; LOAD spatial;")
+            safe = str(file_pattern).replace("'", "''")
+            return con.execute(
+                f"DESCRIBE SELECT * FROM ST_Read('{safe}')"
+            ).fetchall()
+
+        reader = f"read_csv_auto('{str(file_pattern).replace(chr(39), chr(39)+chr(39))}'"
+        if delim:
+            reader += f", delim='{delim}'"
+        reader += ")"
+        return con.execute(f"DESCRIBE SELECT * FROM {reader}").fetchall()
+    except Exception:
+        # Fallback for GeoJSON when the spatial extension is unavailable.
+        if ext in ("json", "geojson"):
+            matches = _match_files(file_pattern)
+            if matches:
+                return _geojson_property_columns(matches[0])
+        raise
+    finally:
+        con.close()
+
+
+def _geojson_property_columns(path: str):
+    """Return (name, 'VARCHAR') tuples from the first feature's properties."""
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    first = next(
+        (feat for feat in data.get("features", []) if feat.get("properties")),
+        None,
+    )
+    props = first.get("properties", {}) if first else {}
+    return [(k, "VARCHAR") for k in props.keys()]
+
+
 def init_column_metadata(
     path: str = None,
     file_metadata: pd.DataFrame = pd.DataFrame(),
@@ -397,86 +483,86 @@ def init_column_metadata(
             "is_event_time",
             "filter_values",
             "on_filter",
+            "link_column",
+            "link_mapping",
+            "link_behaviour",
             "regex",
             "source_unit",
             "target_unit",
             "precision",
+            "scale_factor",
+            "default_value",
             "ordinal_position",
         ]
     )
 
-    if not file_metadata.empty:
-        for index, row in file_metadata.iterrows():
-            resolved = _resolve_file_regex(row["file_regex"], base_dir)
-            directory = Path(resolved).parent
-            file_pattern = resolved.replace(".", r"\.").replace("*", ".*")
-            matches = [
-                candidate.as_posix()
-                for candidate in directory.iterdir()
-                if re.search(file_pattern, candidate.as_posix())
-            ]
+    if file_metadata.empty:
+        if not path:
+            return column_metadata_df
+        column_metadata_df.to_csv(path, sep="\t", header=True, index=False)
+        return
 
-            if not matches:
-                print(rf"""Nothing found for - {row['file_regex']}""")
-                return column_metadata_df
+    for index, row in file_metadata.iterrows():
+        resolved = _resolve_file_regex(row["file_regex"], base_dir)
+        matches = _match_files(resolved)
 
-            file = matches[0]
+        if not matches:
+            print(rf"""Nothing found for - {row['file_regex']}""")
+            continue
 
-            if row["delim"] == "t":
-                delim = "\t"
-            elif row["delim"] == "c":
-                delim = ","
-            else:
-                delim = row["delim"]
+        if row["delim"] == "t":
+            delim = "\t"
+        elif row["delim"] == "c":
+            delim = ","
+        else:
+            delim = row["delim"]
 
-            ext = row["file_regex"].split(".")[-1]
+        ext = str(row["file_regex"]).split(".")[-1].lower()
 
-            if delim:
-                df = pd.read_csv(file, delimiter=delim, nrows=10)
-            elif ext == "json":
-                df = pd.read_json(file, nrows=10)
-            elif ext == "geojson":
-                df = pd.read_json(file, nrows=10)
-            else:
-                df = pd.DataFrame
+        try:
+            info = _detect_columns(resolved, delim, ext)
+        except Exception as e:
+            print(rf"""Column detection failed for {row['file_regex']}: {e}""")
+            continue
 
-            columns = df.columns.tolist()
+        rows = []
+        for i, (name, dtype, *_rest) in enumerate(info):
+            rows.append(
+                {
+                    "schema": row["schema"],
+                    "dataset": row["dataset"],
+                    "column_name": name,
+                    "column_alias": None,
+                    "var_type": _var_type_for(dtype),
+                    "data_type": str(dtype),
+                    "on_null": "PASS",
+                    "is_primary_key": False,
+                    "is_event_time": False,
+                    "filter_values": None,
+                    "on_filter": "PASS",
+                    "link_column": None,
+                    "link_mapping": None,
+                    "link_behaviour": None,
+                    "regex": None,
+                    "source_unit": None,
+                    "target_unit": None,
+                    "precision": None,
+                    "scale_factor": None,
+                    "default_value": None,
+                    "ordinal_position": i,
+                }
+            )
 
+        if rows:
             column_metadata_df = pd.concat(
-                [
-                    column_metadata_df,
-                    pd.DataFrame.from_records(
-                        [
-                            {
-                                "schema": row["schema"],
-                                "dataset": row["dataset"],
-                                "column_name": columns[i],
-                                "column_alias": None,
-                                "var_type": None,
-                                "data_type": None,
-                                "on_null": "PASS",
-                                "is_primary_key": False,
-                                "is_event_time": False,
-                                "filter_values": None,
-                                "on_filter": "PASS",
-                                "regex": None,
-                                "source_unit": None,
-                                "target_unit": None,
-                                "precision": None,
-                                "ordinal_position": i,
-                            }
-                            for i in range(len(columns))
-                        ]
-                    ),
-                ],
+                [column_metadata_df, pd.DataFrame.from_records(rows)],
                 ignore_index=True,
             )
 
     if not path:
         return column_metadata_df
 
-    else:
-        column_metadata_df.to_csv(path, sep="\t", header=True, index=False)
+    column_metadata_df.to_csv(path, sep="\t", header=True, index=False)
 
 
 def init_file_metadata(

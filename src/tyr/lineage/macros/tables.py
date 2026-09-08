@@ -13,6 +13,8 @@ from .columns import (
     select_all,
     select_static_primary_key,
     select_primary_key,
+    validate_column_links,
+    apply_column_links,
 )
 
 
@@ -863,6 +865,58 @@ def staging_table_transform(source: lineage_tables.Core, settings=None):
     else:
         pass
 
+    # Build columns once; primary key is a subset. Reusing the same column objects
+    # lets us attach SKIP conditions to the staging table's WHERE clause.
+    columns = [
+        staging_column_transform(
+            source_column=source.columns.list_columns()[0],
+            column_metadata=column_metadata,
+        )
+        for column_metadata in expected_column_metadata.values()
+    ]
+
+    # Linked columns: third value-transform phase, after null-handling and
+    # filtering. Wrapped here so a link key can reference the link column's own
+    # transformed expression within the same staging SELECT.
+    if any(
+        getattr(column_metadata, "link_column", "")
+        for column_metadata in expected_column_metadata.values()
+    ):
+        validate_column_links(expected_column_metadata)
+        columns = apply_column_links(columns, list(expected_column_metadata.values()))
+
+        # Keep the table's event_time pointing at the same (linked) expression.
+        if event_time:
+            for column, column_metadata in zip(
+                columns, expected_column_metadata.values()
+            ):
+                if column_metadata.is_event_time and getattr(
+                    column_metadata, "link_column", ""
+                ):
+                    event_time = column
+
+    # Collect row-level SKIP conditions from column attributes.
+    for column, column_metadata in zip(columns, expected_column_metadata.values()):
+        if column_metadata.on_filter == "SKIP" and column.filter_values:
+
+            if len(column.filter_values) == 1:
+                checks.append(
+                    lineage_expressions.NotEqual(column, lineage_functions.data_type.TryCast(lineage_values.Varchar(column.filter_values[0]), column.data_type))
+                )
+            else:
+                checks.append(
+                    lineage_expressions.NotIn(
+                        column, lineage_values.List([lineage_functions.data_type.TryCast(lineage_values.Varchar(value), column.data_type) for value in column.filter_values])
+                    )
+                )
+        if column_metadata.on_null == "SKIP":
+            checks.append(
+                lineage_expressions.Is(
+                    column,
+                    lineage_values.Raw("NOT NULL"),
+                )
+            )
+
     if checks:
         where_condition = lineage.Condition(
             checks=checks,
@@ -874,23 +928,14 @@ def staging_table_transform(source: lineage_tables.Core, settings=None):
     return lineage_tables.Core(
         name=source.name,
         source=lineage_tables.Select(source),
-        columns=lineage.ColumnList(
-            [
-                staging_column_transform(
-                    source_column=source.columns.list_columns()[0],
-                    column_metadata=column_metadata,
-                )
-                for column_metadata in expected_column_metadata.values()
-            ]
-        ),
+        columns=lineage.ColumnList(columns),
         distinct=source.distinct,
         primary_key=lineage.ColumnList(
             [
-                staging_column_transform(
-                    source_column=source.columns.list_columns()[0],
-                    column_metadata=column_metadata,
+                column
+                for column, column_metadata in zip(
+                    columns, expected_column_metadata.values()
                 )
-                for column_metadata in expected_column_metadata.values()
                 if column_metadata.is_primary_key
             ]
         ),
