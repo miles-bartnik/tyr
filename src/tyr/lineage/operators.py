@@ -96,6 +96,11 @@ class _In(lineage._Operator):
         super().__init__(name="IN")
 
 
+class _NotIn(lineage._Operator):
+    def __init__(self):
+        super().__init__(name="NOT IN")
+
+
 class _Is(lineage._Operator):
     def __init__(self):
         super().__init__(name="IS")

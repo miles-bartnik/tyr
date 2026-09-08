@@ -3,7 +3,6 @@ from ..lineage import operators
 
 
 class As(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -16,7 +15,6 @@ class As(lineage._Expression):
 
 
 class In(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -28,8 +26,19 @@ class In(lineage._Expression):
         super().__init__(left=left, right=right, operator=operators._In())
 
 
-class Is(lineage._Expression):
+class NotIn(lineage._Expression):
+    """
+    :param left:
+    :type right: _Column|_Value
+    :param right:
+    :type right: _Column|_Value
+    """
 
+    def __init__(self, left, right):
+        super().__init__(left=left, right=right, operator=operators._NotIn())
+
+
+class Is(lineage._Expression):
     """
     :param left:
     :type right: _Column|_Value
@@ -42,7 +51,6 @@ class Is(lineage._Expression):
 
 
 class Not(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -55,7 +63,6 @@ class Not(lineage._Expression):
 
 
 class Like(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -68,7 +75,6 @@ class Like(lineage._Expression):
 
 
 class Equal(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -81,7 +87,6 @@ class Equal(lineage._Expression):
 
 
 class NotEqual(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -98,7 +103,6 @@ class NotEqual(lineage._Expression):
 
 
 class GreaterThan(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -115,7 +119,6 @@ class GreaterThan(lineage._Expression):
 
 
 class LessThan(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -132,7 +135,6 @@ class LessThan(lineage._Expression):
 
 
 class GreaterThanOrEqual(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -149,7 +151,6 @@ class GreaterThanOrEqual(lineage._Expression):
 
 
 class LessThanOrEqual(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -166,7 +167,6 @@ class LessThanOrEqual(lineage._Expression):
 
 
 class LeftJoin(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -183,7 +183,6 @@ class LeftJoin(lineage._Expression):
 
 
 class RightJoin(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -200,7 +199,6 @@ class RightJoin(lineage._Expression):
 
 
 class InnerJoin(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -217,7 +215,6 @@ class InnerJoin(lineage._Expression):
 
 
 class FullOuterJoin(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -234,7 +231,6 @@ class FullOuterJoin(lineage._Expression):
 
 
 class And(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -247,7 +243,6 @@ class And(lineage._Expression):
 
 
 class Or(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
@@ -260,7 +255,6 @@ class Or(lineage._Expression):
 
 
 class Between(lineage._Expression):
-
     """
     :param left:
     :type right: _Column|_Value
