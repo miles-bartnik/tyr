@@ -8,6 +8,7 @@ class JSONExtract(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/data/json/json_functions#json-extraction-functions
     """
+
     def __init__(self, source, key):
         super().__init__(
             args=[source, key],

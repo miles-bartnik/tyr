@@ -8,6 +8,7 @@ class Coordinate(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/core_extensions/spatial/functions#st_point
     """
+
     def __init__(
         self,
         lat,
@@ -27,6 +28,7 @@ class Contains(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/core_extensions/spatial/functions#st_contains
     """
+
     def __init__(
         self,
         source,
@@ -46,6 +48,7 @@ class AsWKT(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/core_extensions/spatial/functions#st_astext
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -60,6 +63,7 @@ class AsGeoJSON(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/core_extensions/spatial/functions#st_asgeojson
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -74,6 +78,7 @@ class FromWKT(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/core_extensions/spatial/functions#st_geomfromtext
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -88,6 +93,7 @@ class H3LatLongToCell(lineage._Function):
 
     DuckDB: https://duckdb.org/community_extensions/extensions/h3.html#added-functions
     """
+
     def __init__(self, lat, long, precision):
         super().__init__(
             args=[lat, long, precision],
@@ -102,6 +108,7 @@ class H3CellToLatLong(lineage._Function):
 
     DuckDB: https://duckdb.org/community_extensions/extensions/h3.html#added-functions
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -116,6 +123,7 @@ class H3CellToBoundaryWKT(lineage._Function):
 
     DuckDB: https://duckdb.org/community_extensions/extensions/h3.html#added-functions
     """
+
     def __init__(self, cell):
         super().__init__(
             args=[cell],

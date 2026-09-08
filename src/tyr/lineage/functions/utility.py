@@ -10,6 +10,7 @@ class Error(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/utility#errormessage
     """
+
     def __init__(self, message: lineage_values.Varchar):
         super().__init__(args=[message], name="ERROR")
 
@@ -20,6 +21,7 @@ class Coalesce(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/utility#coalesceexpr-
     """
+
     def __init__(self, args: TypingList[Any]):
         if not all([arg.unit == args[0].unit for arg in args]):
             raise ValueError(
@@ -30,7 +32,6 @@ class Coalesce(lineage._Function):
 
 
 class SourceWildToStagingColumn(lineage._Function):
-
     """
     This is a solution to link the source wildcard select to the corresponding staging column.
     It is a weird solution. I'd like a better one.

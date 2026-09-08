@@ -13,7 +13,6 @@ import copy
 
 
 class Select(lineage._Column):
-
     """
     Select creates a new column object handle from an existing column object
 
@@ -106,7 +105,6 @@ class Select(lineage._Column):
 
 
 class Core(lineage._Column):
-
     """
     Core is the required object for columns within tables.
     Select cannot be used in this context.
@@ -166,7 +164,6 @@ class Core(lineage._Column):
 
 
 class Record(lineage._Blank):
-
     """
     Record creates a blank column for reading data into a table from records within sql
     It is required as records do not have a source.
@@ -203,7 +200,6 @@ class Record(lineage._Blank):
 
 
 class WildCard(lineage._Column):
-
     """
     WildCard selects all columns from associated table.
     Use of this class breaks lineage. Only use where appropriate.

@@ -47,9 +47,7 @@ def reference():
                 and obj.__module__ == module.__name__
             ):
                 params = [
-                    p
-                    for p in inspect.signature(obj.__init__).parameters
-                    if p != "self"
+                    p for p in inspect.signature(obj.__init__).parameters if p != "self"
                 ]
                 # the class's OWN docstring (not the inherited _Function base one)
                 own_doc = (obj.__dict__.get("__doc__") or "").strip()
@@ -58,7 +56,7 @@ def reference():
                 for line in own_doc.split("\n"):
                     line = line.strip()
                     if line.startswith("DuckDB:"):
-                        url = line[len("DuckDB:"):].strip()
+                        url = line[len("DuckDB:") :].strip()
                         break
                 out.append(
                     {

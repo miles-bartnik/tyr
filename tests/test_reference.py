@@ -6,8 +6,13 @@ from tyr.lineage.functions import string, datetime, math, reference
 
 def test_constructor_sql_reads_the_name_literal_and_params():
     # keyword from super().__init__(name="...") + the __init__ parameter names
-    assert string.RegExpReplace.constructor_sql() == "REGEXP_REPLACE(source, regex, value)"
-    assert datetime.StringToTimestamp.constructor_sql() == "STRPTIME(source, timestamp_format)"
+    assert (
+        string.RegExpReplace.constructor_sql() == "REGEXP_REPLACE(source, regex, value)"
+    )
+    assert (
+        datetime.StringToTimestamp.constructor_sql()
+        == "STRPTIME(source, timestamp_format)"
+    )
     assert string.Upper.constructor_sql() == "UPPER(source)"
 
 
@@ -29,4 +34,4 @@ def test_reference_enumerates_every_module_without_instantiating():
     # every row is well-formed
     for r in ref:
         assert r["sql"] and r["name"] and isinstance(r["params"], list)
-        assert r["sql"].startswith(r["sql"].split("(")[0])   # KEYWORD(...) shape
+        assert r["sql"].startswith(r["sql"].split("(")[0])  # KEYWORD(...) shape

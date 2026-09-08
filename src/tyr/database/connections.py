@@ -48,12 +48,10 @@ class Connection:
                         self.connection.cursor().execute(query), self.syntax
                     )
                 except:
-                    print(
-                        rf"""
+                    print(rf"""
                     ERROR RUNNING FOLLOWING QUERY:
                     {query}
-                    """
-                    )
+                    """)
                     self.connection.cursor().execute(query)
 
             else:

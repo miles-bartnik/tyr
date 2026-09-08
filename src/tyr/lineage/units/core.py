@@ -13,7 +13,6 @@ from . import supported
 import unicodedata
 import types
 
-
 currencies = [
     "\$",
     "\¢",
@@ -178,8 +177,7 @@ for target_unit in ["°C^1", "°F^1", "°R^1"]:
     )
 
 
-_combined_units = _harvestman.execute(
-    rf"""
+_combined_units = _harvestman.execute(rf"""
 WITH supported_units AS (
         SELECT *, 
                CASE 
@@ -266,8 +264,7 @@ SELECT CONCAT(prefix_name, name) AS prefixed_unit_name,
        is_si AS unit_is_si
 FROM combined_units 
 --LEFT JOIN _shift_factors
-"""
-).df()
+""").df()
 
 _harvestman.close()
 
@@ -308,8 +305,7 @@ class Unit:
 
                     _harvestman = duckdb.connect(":memory:")
 
-                    self.sub_units = _harvestman.execute(
-                        rf"""
+                    self.sub_units = _harvestman.execute(rf"""
                         WITH base AS (
                                 SELECT sub_units.order + 1 AS sub_unit_order,
                                        sub_units.symbol AS sub_unit_symbol,
@@ -353,8 +349,7 @@ class Unit:
                                prefix_exponent,
                                prefix_symbol,
                         FROM ordered
-                        """
-                    ).df()
+                        """).df()
 
                     _harvestman.close()
 

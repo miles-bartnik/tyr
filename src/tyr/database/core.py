@@ -157,16 +157,10 @@ def create_tables(
     else:
         conn.execute(schema.settings.sql)
 
-        pass_tables = (
-            conn.execute(
-                rf"""
+        pass_tables = conn.execute(rf"""
         SELECT name FROM 
         (SHOW ALL TABLES) WHERE schema = '{schema.settings.name}'
-        """
-            )
-            .df()["name"]
-            .tolist()
-        )
+        """).df()["name"].tolist()
 
         print(pass_tables)
 
@@ -184,26 +178,22 @@ def create_tables(
                 conn.execute(rf"DROP TABLE IF EXISTS {schema.settings.name}.{table}")
 
                 try:
-                    conn.execute(
-                        rf"""
+                    conn.execute(rf"""
                         PRAGMA enable_profiling='json';
                         PRAGMA profiling_output='{(Path.cwd() / "profiling.json").as_posix()}';
                         PRAGMA custom_profiling_settings = '{{"CPU_TIME": "false", "EXTRA_INFO": "true", "OPERATOR_CARDINALITY": "true", "OPERATOR_TIMING": "true"}}';
                         
                         EXPLAIN (ANALYZE, format json) {schema.tables[table].sql}
-                    """
-                    )
+                    """)
                 except:
                     conn.execute(schema.tables[table].sql)
                     raise ValueError(
                         "Likely bad value encountered in above query. Check date specifiers and regex"
                     )
 
-                conn.execute(
-                    rf"""
+                conn.execute(rf"""
                 DROP TABLE IF EXISTS {schema.settings.name}.{table}; CREATE TABLE {schema.settings.name}.{table} AS {schema.tables[table].sql}
-                """
-                )
+                """)
             except:
                 print(rf"""Error encountered in creation of {table}""")
         else:

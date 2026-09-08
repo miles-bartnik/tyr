@@ -10,11 +10,15 @@ def schema_settings(item):
 
     base_sql.extend(
         [
-            rf"""INSTALL 'spatial'; LOAD 'spatial'; INSTALL 'st_read_multi' FROM community; LOAD 'st_read_multi'"""
-            if package['name'] == 'spatial'
-            else rf"""INSTALL '{package['name']}' FROM community; LOAD '{package['name']}'"""
-            if package["origin"] == "duckdb_ce"
-            else rf"""INSTALL '{package['name']}'; LOAD '{package['name']}'"""
+            (
+                rf"""INSTALL 'spatial'; LOAD 'spatial'; INSTALL 'st_read_multi' FROM community; LOAD 'st_read_multi'"""
+                if package["name"] == "spatial"
+                else (
+                    rf"""INSTALL '{package['name']}' FROM community; LOAD '{package['name']}'"""
+                    if package["origin"] == "duckdb_ce"
+                    else rf"""INSTALL '{package['name']}'; LOAD '{package['name']}'"""
+                )
+            )
             for package in item.extensions
         ]
     )

@@ -3,7 +3,6 @@ from ...lineage import values as lineage_values
 
 
 class Length(lineage._Function):
-
     """
         Return the length of an array
 
@@ -23,7 +22,6 @@ class Length(lineage._Function):
 
 
 class QuantileCont(lineage._Function):
-
     """
         Return the quantile of an array
 
@@ -38,7 +36,7 @@ class QuantileCont(lineage._Function):
     def __init__(
         self,
         source,
-        quantile:lineage_values.FloatingPoint,
+        quantile: lineage_values.FloatingPoint,
     ):
         super().__init__(
             args=[source, quantile],
@@ -49,7 +47,6 @@ class QuantileCont(lineage._Function):
 
 
 class Unnest(lineage._Function):
-
     """
         Unnest a List or Array into a column
 
@@ -79,7 +76,6 @@ class Unnest(lineage._Function):
 
 
 class Range(lineage._Function):
-
     """
         Return an array of values between the start and end
         values spaced by an interval
@@ -108,7 +104,6 @@ class Range(lineage._Function):
 
 
 class List(lineage._Function):
-
     """
         Send a list of values to a List variable
 
@@ -131,7 +126,6 @@ class List(lineage._Function):
 
 
 class ListExtract(lineage._Function):
-
     """
         Extract a number of elements from a List
 
@@ -161,6 +155,7 @@ class Maximum(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/list#list_maxlist
     """
+
     def __init__(
         self,
         source,
@@ -179,6 +174,7 @@ class Minimum(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/list#list_minlist
     """
+
     def __init__(
         self,
         source,
@@ -197,6 +193,7 @@ class Contains(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/list#list_containslist-element
     """
+
     def __init__(self, source, element):
         super().__init__(
             name="LIST_CONTAINS",

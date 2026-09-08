@@ -11,6 +11,7 @@ class Upper(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#upperstring
     """
+
     def __init__(self, source):
         super().__init__(
             name="UPPER",
@@ -26,6 +27,7 @@ class Lower(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#lowerstring
     """
+
     def __init__(self, source):
         super().__init__(
             name="LOWER",
@@ -41,6 +43,7 @@ class RegExpExtract(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/regular_expressions#regexp_extractstring-pattern-group--0-options
     """
+
     def __init__(
         self,
         source,
@@ -67,6 +70,7 @@ class RegExpExtractAll(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/regular_expressions#regexp_extract_allstring-regex-group--0-options
     """
+
     def __init__(self, source, regex):
         super().__init__(
             name="REGEXP_EXTRACT_ALL",
@@ -82,6 +86,7 @@ class RegExpContains(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/regular_expressions#regexp_matchesstring-pattern-options
     """
+
     def __init__(self, source, regex):
         super().__init__(
             name="REGEXP_MATCHES",
@@ -97,6 +102,7 @@ class RegExpMatch(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/regular_expressions#regexp_full_matchstring-regex-options
     """
+
     def __init__(self, source, regex):
         super().__init__(
             name="REGEXP_FULL_MATCH",
@@ -112,6 +118,7 @@ class RegExpReplace(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/regular_expressions#regexp_replacestring-pattern-replacement-options
     """
+
     def __init__(self, source, regex, value):
         super().__init__(
             name="REGEXP_REPLACE",
@@ -127,6 +134,7 @@ class Concatenate(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#concatvalue-
     """
+
     def __init__(self, strings: TypingList[Any], join_string=None):
         if join_string:
             args = [
@@ -144,6 +152,7 @@ class StringExtract(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#array_extractstring-index
     """
+
     def __init__(self, source, elements: lineage_values.List):
         super().__init__(
             args=[source, elements],
@@ -159,6 +168,7 @@ class Length(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#lengthstring
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -174,6 +184,7 @@ class Character(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#chrcode_point
     """
+
     def __init__(self, value: lineage_values.Integer):
         super().__init__(
             args=[value],
@@ -189,6 +200,7 @@ class LeftPad(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#lpadstring-count-character
     """
+
     def __init__(
         self,
         source,
@@ -209,6 +221,7 @@ class RightPad(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#rpadstring-count-character
     """
+
     def __init__(
         self,
         source,
@@ -229,6 +242,7 @@ class LeftExtract(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#leftstring-count
     """
+
     def __init__(self, source, index: lineage_values.Integer):
         super().__init__(
             args=[source, index],
@@ -244,6 +258,7 @@ class RightExtract(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#rightstring-count
     """
+
     def __init__(self, source, index: lineage_values.Integer):
         super().__init__(
             args=[source, index],
@@ -259,6 +274,7 @@ class Contains(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text#containsstring-search_string
     """
+
     def __init__(self, source, string: lineage_values.Varchar):
         super().__init__(
             args=[source, string],

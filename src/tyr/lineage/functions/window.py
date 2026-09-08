@@ -9,6 +9,7 @@ class Lag(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/window_functions#lagexpr-offset-default-order-by-ordering-ignore-nulls
     """
+
     def __init__(
         self,
         source,
@@ -34,6 +35,7 @@ class Lead(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/window_functions#leadexpr-offset-default-order-by-ordering-ignore-nulls
     """
+
     def __init__(
         self,
         source,
@@ -59,6 +61,7 @@ class Rank(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/window_functions#rankorder-by-ordering
     """
+
     def __init__(
         self,
         source,
@@ -83,6 +86,7 @@ class RowNumber(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/window_functions#row_numberorder-by-ordering
     """
+
     def __init__(
         self,
         partition_by: lineage.PartitionBy = lineage.PartitionBy(lineage.ColumnList([])),

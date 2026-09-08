@@ -10,6 +10,7 @@ class Cast(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/expressions/cast
     """
+
     def __init__(
         self,
         source,
@@ -30,6 +31,7 @@ class TryCast(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/expressions/cast#try_cast
     """
+
     def __init__(
         self,
         source,
@@ -50,6 +52,7 @@ class IntegerToHex(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/text
     """
+
     def __init__(self, source):
         if source.data_type.value != "INTEGER":
             raise ValueError("source must be INTEGER")

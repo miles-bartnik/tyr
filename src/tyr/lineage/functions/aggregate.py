@@ -10,7 +10,6 @@ from . import math
 
 
 class Average(lineage._Function):
-
     """
     Take the average (arithmetic mean) of a set of values
 
@@ -46,7 +45,6 @@ class Average(lineage._Function):
 
 
 class Minimum(lineage._Function):
-
     """
     Take the minimum of a set of values
 
@@ -82,7 +80,6 @@ class Minimum(lineage._Function):
 
 
 class First(lineage._Function):
-
     """
     Take the first of a set of values
 
@@ -118,7 +115,6 @@ class First(lineage._Function):
 
 
 class Last(lineage._Function):
-
     """
     Take the last of a set of values
 
@@ -154,7 +150,6 @@ class Last(lineage._Function):
 
 
 class Maximum(lineage._Function):
-
     """
     Take the maximum of a set of values
 
@@ -190,7 +185,6 @@ class Maximum(lineage._Function):
 
 
 class Array(lineage._Function):
-
     """
     Return the set of values as an array
 
@@ -230,7 +224,6 @@ class Array(lineage._Function):
 
 
 class StandardDeviation(lineage._Function):
-
     """
     Take the standard deviation of a set of values
 
@@ -266,7 +259,6 @@ class StandardDeviation(lineage._Function):
 
 
 class PopulationStandardDeviation(lineage._Function):
-
     """
     Take the population standard deviation of a set of values
 
@@ -302,7 +294,6 @@ class PopulationStandardDeviation(lineage._Function):
 
 
 class SampleStandardDeviation(lineage._Function):
-
     """
     Take the sample standard deviation of a set of values
 
@@ -338,7 +329,6 @@ class SampleStandardDeviation(lineage._Function):
 
 
 class PopulationVariance(lineage._Function):
-
     """
     Take the population variance of a set of values
 
@@ -374,7 +364,6 @@ class PopulationVariance(lineage._Function):
 
 
 class SampleVariance(lineage._Function):
-
     """
     Take the sample variance of a set of values
 
@@ -410,7 +399,6 @@ class SampleVariance(lineage._Function):
 
 
 class Sum(lineage._Function):
-
     """
     Take the sum of a set of values
 
@@ -446,7 +434,6 @@ class Sum(lineage._Function):
 
 
 class Count(lineage._Function):
-
     """
     Return the number of values in the set
 
@@ -485,7 +472,6 @@ class Count(lineage._Function):
 
 
 class Correlation(lineage._Function):
-
     """
     Return the correlation between two sets of values
 
@@ -521,7 +507,6 @@ class Correlation(lineage._Function):
 
 
 class PopulationCovariance(lineage._Function):
-
     """
     Return the population covariance between two sets of values
 
@@ -557,7 +542,6 @@ class PopulationCovariance(lineage._Function):
 
 
 class SampleCovariance(lineage._Function):
-
     """
     Return the sample covariance between two sets of values
 
@@ -593,7 +577,6 @@ class SampleCovariance(lineage._Function):
 
 
 class AbsoluteMedian(lineage._Function):
-
     """
     Return the absolute median of values in the set
 
@@ -629,7 +612,6 @@ class AbsoluteMedian(lineage._Function):
 
 
 class Median(lineage._Function):
-
     """
     Return the median of values in the set
 

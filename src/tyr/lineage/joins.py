@@ -6,7 +6,6 @@ import sqlparse
 
 
 class Join:
-
     """
     Join object
 
@@ -87,7 +86,6 @@ class Join:
 
 
 class CompoundJoin:
-
     """
     CompounJoin object which chains multiple joins together
 

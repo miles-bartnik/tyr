@@ -12,7 +12,6 @@ import ast
 
 
 class Datatype(lineage._Value):
-
     """
     Datatype
 
@@ -124,7 +123,6 @@ class Timestamp(lineage._Value):
 
 
 class Date(lineage._Value):
-
     """
     Timestamp
 
@@ -137,7 +135,6 @@ class Date(lineage._Value):
 
 
 class Integer(lineage._Value):
-
     """
     Integer
 
@@ -183,7 +180,6 @@ class Integer(lineage._Value):
 
 
 class FloatingPoint(lineage._Value):
-
     """
     Single precision floating point
 
@@ -210,7 +206,6 @@ class FloatingPoint(lineage._Value):
 
 
 class FixedPoint(lineage._Value):
-
     """
     Decimal precision floating point
 
@@ -298,7 +293,6 @@ class Struct(lineage._Value):
 
 
 class Interval(lineage._Value):
-
     """
     Interval
 

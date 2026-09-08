@@ -13,7 +13,6 @@ from ..interpreter import Interpreter
 import collections
 import sqlparse
 
-
 DATE_SPECIFIERS = [
     {
         "specifier": "%a",
@@ -661,19 +660,21 @@ SUPPORTED_DATA_TYPES = {
 }
 
 SUPPORTED_DATA_TYPES["List"] = [
-    {
-        "extension": data_type["extension"],
-        "data_type_regex": data_type["data_type_regex"].replace("\)$", r"\)\[\]$"),
-        "value_class": "List",
-        "unit": False,
-    }
-    if data_type["data_type_regex"][-3:] == "\)$"
-    else {
-        "extension": data_type["extension"],
-        "data_type_regex": data_type["data_type_regex"].replace(")$", r")\[\]$"),
-        "value_class": "List",
-        "unit": False,
-    }
+    (
+        {
+            "extension": data_type["extension"],
+            "data_type_regex": data_type["data_type_regex"].replace("\)$", r"\)\[\]$"),
+            "value_class": "List",
+            "unit": False,
+        }
+        if data_type["data_type_regex"][-3:] == "\)$"
+        else {
+            "extension": data_type["extension"],
+            "data_type_regex": data_type["data_type_regex"].replace(")$", r")\[\]$"),
+            "value_class": "List",
+            "unit": False,
+        }
+    )
     for key, value in SUPPORTED_DATA_TYPES.items()
     for data_type in value
     if key not in ["Wildcard"]
@@ -1006,11 +1007,9 @@ class ColumnList(OrderedDict):
 
     def __add__(self, other):
         if list(set(self.list_names()).intersection(set(other.list_names()))):
-            raise ValueError(
-                rf"""
+            raise ValueError(rf"""
             Column name overlap: {list(set(self.list_names()).intersection(set(other.list_names())))}
-            """
-            )
+            """)
 
         return ColumnList(self.list_columns() + other.list_columns())
 
@@ -1293,9 +1292,7 @@ class _Function:
 
         try:
             params = [
-                p
-                for p in inspect.signature(cls.__init__).parameters
-                if p != "self"
+                p for p in inspect.signature(cls.__init__).parameters if p != "self"
             ]
         except (ValueError, TypeError):
             params = []
@@ -1748,7 +1745,6 @@ class _Transformation:
 
 
 class AppendOperator:
-
     """
     **AppendOperator** behaves similarly to an **Expression** object with only the right side.
 
@@ -1780,7 +1776,6 @@ class AppendOperator:
 
 
 class PrependOperator:
-
     """
     **PrependOperator** behaves similarly to an **Expression** object with only the left side.
 

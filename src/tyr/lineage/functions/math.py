@@ -11,6 +11,7 @@ class Divide(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric
     """
+
     def __init__(
         self,
         left,
@@ -40,6 +41,7 @@ class Multiply(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric
     """
+
     def __init__(
         self,
         left,
@@ -73,6 +75,7 @@ class Add(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric
     """
+
     def __init__(
         self,
         left,
@@ -109,6 +112,7 @@ class Subtract(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric
     """
+
     def __init__(
         self,
         left,
@@ -145,6 +149,7 @@ class Exponent(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#powx-y
     """
+
     def __init__(
         self,
         source,
@@ -182,6 +187,7 @@ class Sin(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#sinx
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -196,6 +202,7 @@ class Cos(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#cosx
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -210,6 +217,7 @@ class Tan(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#tanx
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -224,6 +232,7 @@ class ATan2(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#atan2y-x
     """
+
     def __init__(self, x, y):
         super().__init__(
             args=[x, y],
@@ -238,6 +247,7 @@ class ASin(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#asinx
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -252,6 +262,7 @@ class Radians(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#radiansx
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -266,6 +277,7 @@ class Degrees(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#degreesx
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],
@@ -280,6 +292,7 @@ class Round(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#roundv-numeric-s-integer
     """
+
     def __init__(self, source, precision):
         super().__init__(
             args=[source, precision],
@@ -295,6 +308,7 @@ class Ceiling(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#ceilx
     """
+
     def __init__(
         self,
         source,
@@ -313,6 +327,7 @@ class Floor(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#floorx
     """
+
     def __init__(
         self,
         source,
@@ -332,6 +347,7 @@ class Log10(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#log10x
     """
+
     def __init__(
         self,
         source,
@@ -350,6 +366,7 @@ class AbsoluteValue(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#absx
     """
+
     def __init__(
         self,
         source,
@@ -368,6 +385,7 @@ class Pi(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#pi
     """
+
     def __init__(self):
         super().__init__(
             args=[],
@@ -383,6 +401,7 @@ class Mod(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#fmodx-y
     """
+
     def __init__(self, x, y):
         super().__init__(
             args=[x, y],
@@ -398,6 +417,7 @@ class Sign(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#signx
     """
+
     def __init__(self, source):
         super().__init__(
             args=[source],

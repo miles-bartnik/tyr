@@ -4,7 +4,6 @@ from ..lineage import functions as lineage_functions
 
 
 class Core(lineage._Table):
-
     """
     Core Table object that is the main table type required for most internal applications (Schema, TableList, etc.)
 

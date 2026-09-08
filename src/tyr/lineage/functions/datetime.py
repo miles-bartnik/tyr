@@ -8,6 +8,7 @@ class EpochMSToTimestamp(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#epoch_mstimestamp
     """
+
     def __init__(
         self,
         source,
@@ -26,6 +27,7 @@ class EpochToTimestamp(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamptz
     """
+
     def __init__(
         self,
         source,
@@ -44,6 +46,7 @@ class TimestampToEpochMS(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#epoch_mstimestamp
     """
+
     def __init__(
         self,
         source,
@@ -61,6 +64,7 @@ class StringToTimestamp(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#strptimetext-format
     """
+
     def __init__(
         self,
         source,
@@ -80,6 +84,7 @@ class TruncateTimestamp(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#date_truncpart-timestamp
     """
+
     def __init__(
         self,
         source,
@@ -101,6 +106,7 @@ class DatePart(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#date_partpart-timestamp
     """
+
     def __init__(self, source, part: lineage_values.Varchar):
         super().__init__(
             args=[part, source],
@@ -115,6 +121,7 @@ class DateDiff(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#date_diffpart-starttimestamp-endtimestamp
     """
+
     def __init__(self, start, end, unit):
         super().__init__(
             args=[
@@ -134,6 +141,7 @@ class DateBin(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#time_bucketbucket_width-timestamp-offset
     """
+
     def __init__(self, source, interval, offset=None):
         super().__init__(
             args=[arg for arg in [interval, source, offset] if arg],
@@ -148,6 +156,7 @@ class DateAdd(lineage._Function):
 
     DuckDB: https://duckdb.org/docs/stable/sql/functions/date
     """
+
     def __init__(self, source, interval):
         super().__init__(
             args=[source, interval],
