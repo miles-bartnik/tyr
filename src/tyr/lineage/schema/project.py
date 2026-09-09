@@ -9,7 +9,7 @@ class ProjectSettings(_SchemaSettings):
         name,
         substitutions: Dict[Any, Any] = {},
         extensions: List[Dict[str, str]] = [],
-        connection: Dict = {},
+        connection=None,
     ):
         super().__init__(
             name=name,

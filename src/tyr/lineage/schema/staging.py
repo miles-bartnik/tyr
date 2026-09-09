@@ -12,7 +12,7 @@ class StagingSettings(_SchemaSettings):
         name,
         substitutions: Dict[Any, Any] = {},
         extensions: List[Dict[str, str]] = [],
-        connection: Dict = {},
+        connection=None,
         min_event_time: datetime.datetime = None,
         max_event_time: datetime.datetime = None,
     ):

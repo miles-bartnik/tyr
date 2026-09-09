@@ -6,7 +6,7 @@ def core_schema(item):
 
 
 def schema_settings(item):
-    base_sql = [rf"SET {key}={value}" for key, value in item.connection.items()]
+    base_sql = [rf"SET {key}={value}" for key, value in item.connection.config.items()]
 
     base_sql.extend(
         [

@@ -338,7 +338,7 @@ class SourceSettings(_SchemaSettings):
         expected_column_metadata: typing.Dict[str, typing.Dict[str, ColumnMetadata]],
         substitutions={},
         extensions: typing.List[typing.Dict[str, str]] = [],
-        connection={},
+        connection=None,
     ):
         super().__init__(
             name="source",

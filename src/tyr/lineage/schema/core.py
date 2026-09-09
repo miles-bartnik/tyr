@@ -19,7 +19,9 @@ class _SchemaSettings:
     :param name: str - Schema name
     :param substitutions: Dict - String substitutions to make in sql strings e.g. {'%run_id%':'abcdef_123456'}
     :param extensions: List[str] - List of extensions to install e.g. ['spatial']
-    :param connection: Dict - Connection settings e.g. {"enable_progress_bar": True, "threads": 4}
+    :param connection: tyr.database.connections.Connection - The connection this schema
+        runs on. Its `config` dict is rendered as DuckDB SET statements in the schema
+        preamble e.g. Connection(..., config={"enable_progress_bar": True, "threads": 4})
     :param configuration: Dict - Any additional settings used by the tables within the datamodel e.g. {"min_datetime": '2025-01-01'}
     """
 
@@ -28,9 +30,26 @@ class _SchemaSettings:
         name: str,
         substitutions: Dict = {},
         extensions: List[Dict[str, str]] = {},
-        connection: Dict = {"enable_progress_bar": True, "threads": 4},
+        connection=None,
         configuration: Dict = {},
     ) -> None:
+        # Lazy import: database/__init__ pulls in lineage (via database.core),
+        # so a module-level import here would be circular.
+        from ...database.connections import Connection
+
+        if connection is None:
+            connection = Connection(
+                name="default",
+                syntax="duckdb",
+                config={"enable_progress_bar": True, "threads": 4},
+            )
+        elif not isinstance(connection, Connection):
+            raise TypeError(
+                rf"connection must be a tyr.database.connections.Connection "
+                rf"(e.g. Connection(name='x', syntax='duckdb', config={{...}})), "
+                rf"got {type(connection).__name__}. "
+                rf"Session configuration lives on the connection's `config` dict."
+            )
         self.name = name
         self.substitutions = substitutions
         self.extensions = extensions

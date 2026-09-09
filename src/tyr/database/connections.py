@@ -28,12 +28,26 @@ class Response:
 
 class Connection:
     def __init__(
-        self, name: str, syntax: str, database: str = None, read_only: bool = False
+        self,
+        name: str,
+        syntax: str,
+        database: str = None,
+        read_only: bool = False,
+        config: dict = None,
     ):
+        """
+        :param name: Connection name
+        :param syntax: SQL dialect e.g. "duckdb"
+        :param database: Database file path (in-memory when None)
+        :param read_only: Open the database read-only
+        :param config: DuckDB session configuration, rendered as SET key=value
+            statements in the schema preamble e.g. {"enable_progress_bar": True, "threads": 4}
+        """
         self.name = name
         self.database = database
         self.syntax = syntax
         self.read_only = read_only
+        self.config = config or {}
 
         if database:
             self.connection = duckdb.connect(database, read_only=self.read_only)
