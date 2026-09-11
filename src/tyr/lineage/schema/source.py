@@ -424,7 +424,7 @@ def _detect_columns(file_pattern: str, delim: str, ext: str):
 
     CSV/TSV files use ``read_csv_auto``; GeoJSON/JSON use ``ST_Read``. The
     spatial extension is loaded on demand. If DuckDB cannot read a GeoJSON file,
-    the first feature's property keys are returned as VARCHAR columns.
+    the property keys are returned with types inferred from their JSON values.
     """
     import duckdb
 
@@ -454,15 +454,50 @@ def _detect_columns(file_pattern: str, delim: str, ext: str):
 
 
 def _geojson_property_columns(path: str):
-    """Return (name, 'VARCHAR') tuples from the first feature's properties."""
+    """Return (name, data_type) tuples for every property in the GeoJSON.
+
+    Types are inferred from the decoded JSON values across ALL features (not
+    just the first), mirroring DuckDB's inference: integral numbers -> INTEGER,
+    any fractional number -> DOUBLE, all-boolean -> BOOLEAN, and VARCHAR when
+    nothing better can be told (null-only, strings, or mixed kinds). A blanket
+    VARCHAR here used to strand numeric properties (e.g. a street width_m) with
+    a metadata type that disagreed with the data they actually carry.
+    """
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
-    first = next(
-        (feat for feat in data.get("features", []) if feat.get("properties")),
-        None,
-    )
-    props = first.get("properties", {}) if first else {}
-    return [(k, "VARCHAR") for k in props.keys()]
+
+    values_by_property = {}
+    for feature in data.get("features", []):
+        for key, value in (feature.get("properties") or {}).items():
+            values_by_property.setdefault(key, []).append(value)
+
+    return [
+        (key, _json_values_data_type(values))
+        for key, values in values_by_property.items()
+    ]
+
+
+def _json_values_data_type(values: list) -> str:
+    """Single DuckDB-style data type for a list of decoded JSON values."""
+    kinds = set()
+    for value in values:
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            kinds.add("BOOLEAN")
+        elif isinstance(value, int):
+            kinds.add("INTEGER")
+        elif isinstance(value, float):
+            kinds.add("DOUBLE")
+        else:
+            kinds.add("VARCHAR")
+
+    if kinds == {"BOOLEAN"}:
+        return "BOOLEAN"
+    if kinds and kinds <= {"INTEGER", "DOUBLE"}:
+        # any fractional value promotes the column, as read_csv/json auto do
+        return "DOUBLE" if "DOUBLE" in kinds else "INTEGER"
+    return "VARCHAR"
 
 
 def init_column_metadata(

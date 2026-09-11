@@ -35,6 +35,11 @@ class SourceWildToStagingColumn(lineage._Function):
     """
     This is a solution to link the source wildcard select to the corresponding staging column.
     It is a weird solution. I'd like a better one.
+
+    The column_metadata's data_type / var_type are carried on the function (not just
+    its args) so the lineage chain records the declared type crossing the wildcard
+    bridge into staging -- the cast that follows is observable as the place the
+    staged column's type is set.
     """
 
     def __init__(
@@ -55,5 +60,7 @@ class SourceWildToStagingColumn(lineage._Function):
         super().__init__(
             args=[source, column_metadata],
             name="SOURCE_WILD_TO_STAGING_COLUMN",
+            data_type=column_metadata.data_type,
+            var_type=column_metadata.var_type,
             unit=column_metadata.source_unit,
         )
