@@ -20,30 +20,6 @@ from tyr.lineage.schema import staging as staging_schema
 
 SPATIAL = [{"name": "spatial", "origin": "duckdb"}]
 
-COLUMN_HEADERS = [
-    "schema",
-    "dataset",
-    "column_name",
-    "column_alias",
-    "var_type",
-    "data_type",
-    "on_null",
-    "default_value",
-    "is_primary_key",
-    "is_event_time",
-    "filter_values",
-    "on_filter",
-    "link_column",
-    "link_mapping",
-    "link_behaviour",
-    "regex",
-    "source_unit",
-    "target_unit",
-    "scale_factor",
-    "precision",
-    "ordinal_position",
-]
-
 
 def _write_geojson(tmp_path, properties_by_feature):
     path = tmp_path / "roads.geojson"
