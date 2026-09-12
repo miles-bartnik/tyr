@@ -50,6 +50,7 @@ class Core(lineage._Table):
         having_condition: lineage.Condition = None,
         order_by: lineage.OrderBy = None,
         ctes=None,
+        required: bool = True,
     ) -> None:
         if not all(
             [isinstance(column, lineage._Column) for column in columns.list_columns()]
@@ -99,6 +100,7 @@ class Core(lineage._Table):
             having_condition=having_condition,
             ctes=ctes,
             order_by=order_by,
+            required=required,
         )
 
         self._node_data = self._node_data | {"schema": ""}
@@ -116,6 +118,7 @@ class Core(lineage._Table):
             having_condition=self.having_condition,
             ctes=self.ctes,
             order_by=self.order_by,
+            required=getattr(self, "required", True),
         )
 
 
@@ -167,6 +170,10 @@ class Select(lineage._Table):
                 source=source,
                 schema=source.schema,
             )
+
+        # A Select wraps its source table: the required/optional contract
+        # rides along unless set explicitly afterwards.
+        self.required = getattr(source, "required", True)
 
     def __deepcopy__(self, memodict={}):
         return Select(

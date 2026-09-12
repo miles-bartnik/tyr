@@ -941,6 +941,8 @@ def staging_table_transform(source: lineage_tables.Core, settings=None):
         ),
         event_time=event_time,
         where_condition=where_condition,
+        # The staging table inherits its source's required/optional contract.
+        required=getattr(source, "required", True),
     )
 
 
@@ -955,6 +957,7 @@ def clone_select(
     having_condition: lineage.Condition = None,
     order_by: lineage.OrderBy = None,
     distinct: bool = False,
+    required: bool = None,
 ):
     if name:
         name = name
@@ -984,4 +987,9 @@ def clone_select(
         having_condition=having_condition,
         order_by=order_by,
         distinct=distinct,
+        # Inherit the source's contract unless explicitly overridden — e.g.
+        # an output-schema table that must exist even when its staging source
+        # is optional, or vice versa.
+        required=(getattr(source, "required", True)
+                  if required is None else required),
     )

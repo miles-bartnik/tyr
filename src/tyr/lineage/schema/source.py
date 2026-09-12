@@ -244,12 +244,21 @@ class FileMetadata:
         self.delim = str(file_metadata["delim"])
         self.distinct = _truthy(file_metadata["distinct"])
         self.schema = str(file_metadata["schema"])
+        # 'required' boolean flag (file_metadata TSV column). Absent column
+        # (older TSVs) and empty values mean required -- the file MUST exist
+        # for the schema to be complete. Only an explicit false/0/no marks an
+        # optional dataset: the consumer skips a missing file instead of
+        # failing. Mirrors apian tyrbuild's required parsing exactly.
+        self.required = (str(file_metadata["required"]).strip().lower()
+                         not in ("false", "0", "no")
+                         if "required" in file_metadata else True)
         self._node_data = {
             "dataset": self.dataset,
             "file_regex": self.file_regex,
             "delim": self.delim,
             "distinct": str(self.distinct),
             "schema": self.schema,
+            "required": str(self.required),
             "type": str(type(self)),
             "base": str(type(self)),
             "label": rf"{self.dataset} - {self.file_regex}",
@@ -369,6 +378,7 @@ class Source(_Schema):
                     columns=ColumnList([WildCard()]),
                     source=ReadGeoJson(source_file),
                     distinct=source_file.distinct,
+                    required=file.required,
                 )
             else:
                 source_table = tables.Core(
@@ -381,6 +391,7 @@ class Source(_Schema):
                         all_varchar=Boolean(True),
                     ),
                     distinct=source_file.distinct,
+                    required=file.required,
                 )
 
             setattr(

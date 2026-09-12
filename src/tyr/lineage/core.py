@@ -1489,6 +1489,7 @@ class _Table:
         order_by: OrderBy = None,
         ctes=None,
         schema=None,
+        required: bool = True,
     ) -> None:
         self.name = name
         self.source = source
@@ -1496,6 +1497,14 @@ class _Table:
         self.primary_key = primary_key
         self.event_time = event_time
         self.schema = schema
+        # Required tables MUST exist for the schema to be complete (a missing
+        # file/table is a hard failure); optional tables may legitimately be
+        # absent (an optional dataset not ingested, a not-yet-generated
+        # layer) and the consumer skips them. Propagates through every
+        # transform (staging, clone_select) and is settable directly on Core
+        # objects, e.g. for output-schema tables. Older pickled schemas lack
+        # the attribute: consumers should getattr(obj, "required", True).
+        self.required = bool(required)
 
         if self.event_time:
             self.static_primary_key = ColumnList(
