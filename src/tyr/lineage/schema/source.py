@@ -34,8 +34,21 @@ def _resolve_file_regex(file_regex: str, base_dir=None) -> str:
     return (base / file_regex).resolve().as_posix()
 
 
-def read_column_metadata(filepath: str, separator: str = "\t"):
+def read_column_metadata(filepath: str, separator: str = "\t", schema: str = None):
+    """Read column metadata into {dataset: {column: ColumnMetadata}}.
+
+    ``schema`` optionally selects the schema whose rows apply: a row tagged
+    with a different non-empty schema belongs to another schema's build and is
+    excluded (rows with an empty schema are untagged and always kept). Without
+    it, every row drives the build, so a stray foreign-schema row could
+    override the staging transform's behaviour for the same dataset/column."""
     column_metadata = pd.read_csv(filepath, sep=separator)
+
+    if schema is not None and "schema" in column_metadata.columns:
+        column_metadata = column_metadata[
+            (column_metadata["schema"].fillna("").astype(str) == "")
+            | (column_metadata["schema"].fillna("").astype(str) == schema)
+        ]
 
     column_metadata["ordinal_position"] = column_metadata["ordinal_position"].astype(
         int

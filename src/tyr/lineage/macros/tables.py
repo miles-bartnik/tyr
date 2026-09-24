@@ -895,20 +895,29 @@ def staging_table_transform(source: lineage_tables.Core, settings=None):
                 ):
                     event_time = column
 
-    # Collect row-level SKIP conditions from column attributes.
+    # Collect row-level SKIP conditions from column attributes. on_filter=SKIP
+    # only skips rows matching a listed value; NULL rows must survive (NULL
+    # NOT IN (...) evaluates to NULL and would otherwise filter them out,
+    # contradicting on_null=PASS), so each check admits NULL explicitly.
+    # The Or is parenthesized after construction: expressions render without
+    # parens, and an unparenthesized `a OR b AND c` would bind the AND first.
     for column, column_metadata in zip(columns, expected_column_metadata.values()):
         if column_metadata.on_filter == "SKIP" and column.filter_values:
 
             if len(column.filter_values) == 1:
-                checks.append(
-                    lineage_expressions.NotEqual(column, lineage_functions.data_type.TryCast(lineage_values.Varchar(column.filter_values[0]), column.data_type))
+                check = lineage_expressions.Or(
+                    lineage_expressions.NotEqual(column, lineage_functions.data_type.TryCast(lineage_values.Varchar(column.filter_values[0]), column.data_type)),
+                    lineage_expressions.Is(column, lineage_values.Raw("NULL")),
                 )
             else:
-                checks.append(
+                check = lineage_expressions.Or(
                     lineage_expressions.NotIn(
                         column, lineage_values.List([lineage_functions.data_type.TryCast(lineage_values.Varchar(value), column.data_type) for value in column.filter_values])
-                    )
+                    ),
+                    lineage_expressions.Is(column, lineage_values.Raw("NULL")),
                 )
+            check.sql = f"({check.sql})"
+            checks.append(check)
         if column_metadata.on_null == "SKIP":
             checks.append(
                 lineage_expressions.Is(
