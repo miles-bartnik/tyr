@@ -102,7 +102,7 @@ staging	pit_stops	lap_number		numeric	INTEGER	PASS		False	False		PASS		s^1				4
 staging	position	date	event_ts	timestamp	TIMESTAMP	PASS		True	True		PASS						0
 staging	position	session_key		key	INTEGER	PASS		True	False		PASS						1
 staging	position	driver_number		key	INTEGER	PASS		True	False		PASS						2
-staging	position	position		numeric	INTEGER	PASS		False	False		PASS	%Y-%m-%dT%H:%M:%S.%g000%z					3
+staging	position	position		numeric	INTEGER	PASS		False	False		PASS						3
 staging	intervals	date	event_ts	timestamp	TIMESTAMP	PASS		True	True		PASS						0
 staging	intervals	session_key		key	INTEGER	PASS		True	False		PASS						1
 staging	intervals	driver_number		key	INTEGER	PASS		True	False		PASS						2

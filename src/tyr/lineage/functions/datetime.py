@@ -78,6 +78,27 @@ class StringToTimestamp(lineage._Function):
         )
 
 
+class TryStrptime(lineage._Function):
+    """
+    Parse a string into a TIMESTAMP using a strptime format, returning NULL
+    instead of raising on a format mismatch (SQL try_strptime).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/timestamp#try_strptimetext-format
+    """
+
+    def __init__(
+        self,
+        source,
+        timestamp_format,
+    ):
+        super().__init__(
+            name="TRY_STRPTIME",
+            args=[source, timestamp_format],
+            var_type=source.var_type,
+            data_type=lineage_values.Datatype("TIMESTAMP"),
+        )
+
+
 class TruncateTimestamp(lineage._Function):
     """
     Truncate a timestamp to a given precision (SQL date_trunc).

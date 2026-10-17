@@ -42,7 +42,12 @@ def read_column_metadata(filepath: str, separator: str = "\t", schema: str = Non
     excluded (rows with an empty schema are untagged and always kept). Without
     it, every row drives the build, so a stray foreign-schema row could
     override the staging transform's behaviour for the same dataset/column."""
-    column_metadata = pd.read_csv(filepath, sep=separator)
+    # keep_default_na=False so a cell holding the literal policy value "NULL"
+    # survives as a string -- pandas' default NA tokens would eat it. Empty
+    # cells stay the only NA (so every fillna below behaves as before).
+    column_metadata = pd.read_csv(
+        filepath, sep=separator, keep_default_na=False, na_values=[""]
+    )
 
     if schema is not None and "schema" in column_metadata.columns:
         column_metadata = column_metadata[
@@ -59,6 +64,11 @@ def read_column_metadata(filepath: str, separator: str = "\t", schema: str = Non
     for link_field in ["link_column", "link_mapping", "link_behaviour"]:
         if link_field not in column_metadata.columns:
             column_metadata[link_field] = ""
+
+    # on_regex_mismatch may be absent in metadata files written before the field
+    # existed -- default to FAIL (strict) rather than failing the read.
+    if "on_regex_mismatch" not in column_metadata.columns:
+        column_metadata["on_regex_mismatch"] = "FAIL"
 
     # NB: is_primary_key / is_event_time are left as their raw string form here and
     # parsed with _truthy in ColumnMetadata -- astype(bool) on 'False' would be True.
@@ -146,6 +156,14 @@ class ColumnMetadata:
     :type is_event_time: bool
     :param regex: Default: ``''``
     :type regex: str
+    :param on_regex_mismatch: Behaviour when a non-NULL value fails the ``regex``
+     check (no check at all when ``regex`` is empty). Options: ``'FAIL'`` (abort) /
+     ``'SKIP'`` (drop the row) / ``'NULL'`` (null the cell). ``var_type``
+     ``'timestamp'``/``'datetime'`` treats ``regex`` as a strptime format parsed
+     with ``try_strptime``; every other var_type treats it as a literal regular
+     expression matched with ``regexp_matches``. Cannot be ``'NULL'`` on a primary
+     key. Default: ``'FAIL'``
+    :type on_regex_mismatch: str
     :param ordinal_position: Column order
     :type ordinal_position: int
     """
@@ -200,6 +218,9 @@ class ColumnMetadata:
         self.is_primary_key = _truthy(column_metadata["is_primary_key"])
         self.is_event_time = _truthy(column_metadata["is_event_time"])
         self.regex = str(column_metadata["regex"])
+        # Empty / missing cell (or a Series from before the field existed)
+        # means FAIL -- the strict behaviour that predates this field.
+        self.on_regex_mismatch = str(column_metadata.get("on_regex_mismatch", "")) or "FAIL"
         self.ordinal_position = int(column_metadata["ordinal_position"])
         self.schema = str(column_metadata["schema"])
         self._node_data = {
@@ -221,6 +242,7 @@ class ColumnMetadata:
             "is_primary_key": str(self.is_primary_key),
             "is_event_time": str(self.is_event_time),
             "regex": self.regex,
+            "on_regex_mismatch": self.on_regex_mismatch,
             "ordinal_position": str(self.ordinal_position),
             "schema": self.schema,
             "type": str(type(self)),
@@ -546,6 +568,7 @@ def init_column_metadata(
             "link_mapping",
             "link_behaviour",
             "regex",
+            "on_regex_mismatch",
             "source_unit",
             "target_unit",
             "precision",
@@ -603,6 +626,7 @@ def init_column_metadata(
                     "link_mapping": None,
                     "link_behaviour": None,
                     "regex": None,
+                    "on_regex_mismatch": "FAIL",
                     "source_unit": None,
                     "target_unit": None,
                     "precision": None,

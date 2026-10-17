@@ -7,6 +7,7 @@ from .. import operators as lineage_operators
 from .. import tables as lineage_tables
 from .. import joins as lineage_combinations
 from .. import functions as lineage_functions
+from . import functions as macro_functions
 from .functions import interpolate
 from .columns import (
     staging_column_transform,
@@ -925,6 +926,51 @@ def staging_table_transform(source: lineage_tables.Core, settings=None):
                     lineage_values.Raw("NOT NULL"),
                 )
             )
+        # on_regex_mismatch=SKIP drops rows whose non-NULL value fails the
+        # regex check; NULL rows survive (they contradict no format). The check
+        # must run on the RAW source column, not the transformed staging
+        # expression: regex extraction above already nulls mismatches, so a
+        # transformed-column check could never see them.
+        if getattr(column, "on_regex_mismatch", "FAIL") == "SKIP" and column.regex:
+            raw_source_column = lineage_values.Raw(
+                rf'"{column_metadata.column_name}"'
+            )
+            regex_literal = lineage_values.Varchar(
+                column_metadata.regex.replace("'", "''")
+            )
+
+            if column_metadata.var_type in ("timestamp", "datetime") and (
+                column_metadata.regex not in ["datetime", "epoch_ms", "epoch_s"]
+            ):
+                strptime_source = lineage_functions.data_type.TryCast(
+                    raw_source_column, lineage_values.Datatype("VARCHAR")
+                )
+                if column_metadata.regex[-5:] == "%S.%g":
+                    # Mirror the cast phase: %S.%g formats are zero-padded
+                    # before strptime.
+                    strptime_source = macro_functions.datetime.zero_pad_timestamp(
+                        strptime_source
+                    )
+                matches = lineage_expressions.Is(
+                    lineage_functions.datetime.TryStrptime(
+                        strptime_source, regex_literal
+                    ),
+                    lineage_values.Raw("NOT NULL"),
+                )
+            else:
+                matches = lineage_functions.string.RegExpMatches(
+                    lineage_functions.data_type.TryCast(
+                        raw_source_column, lineage_values.Datatype("VARCHAR")
+                    ),
+                    regex_literal,
+                )
+
+            check = lineage_expressions.Or(
+                matches,
+                lineage_expressions.Is(raw_source_column, lineage_values.Raw("NULL")),
+            )
+            check.sql = f"({check.sql})"
+            checks.append(check)
 
     if checks:
         where_condition = lineage.Condition(

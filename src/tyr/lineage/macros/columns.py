@@ -107,6 +107,86 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
         source_column, column_metadata
     )
 
+    # Regex-mismatch compile check. A primary key can never be nulled, so
+    # on_regex_mismatch=NULL on a PK column is a metadata conflict that must
+    # fail the build, not a data error.
+    if column_metadata.on_regex_mismatch == "NULL" and column_metadata.is_primary_key:
+        raise ValueError(
+            rf"on_regex_mismatch=NULL cannot be applied to a primary key column: {column_metadata.dataset}.{column_metadata.column_name}"
+        )
+
+    # Regex-mismatch policy.
+    # Only applies when a regex is declared. With an empty regex there is no
+    # check at all. SKIP does no value-level transform; it becomes a WHERE
+    # clause in staging_table_transform via the attributes set below. FAIL
+    # raises a runtime error; NULL swaps NULL in for the mismatched cell.
+    # The check runs on the raw staged value, before the regex-extraction
+    # casts below (extraction already turns a mismatch into NULL, so checking
+    # after it could never fire).
+    # Timestamp/datetime columns hold a strptime format in the regex cell --
+    # except the sentinel formats ("datetime", "epoch_ms", "epoch_s") the
+    # cast phase handles without strptime, which can never be try_strptime'd.
+    # cast phase below skips its own padding, which would otherwise
+    # re-embed the whole mismatch CASE ~15x and blow the SQL renderer.
+    regex_check_zero_padded = False
+
+    if column_metadata.regex and column_metadata.on_regex_mismatch in ["FAIL", "NULL"]:
+        CastToVarchar = lambda value: lineage_functions.data_type.TryCast(
+            value, lineage_values.Datatype("VARCHAR")
+        )
+        regex_literal = lineage_values.Varchar(
+            column_metadata.regex.replace("'", "''")
+        )
+
+        if column_metadata.var_type in ("timestamp", "datetime") and (
+            column_metadata.regex not in ["datetime", "epoch_ms", "epoch_s"]
+        ):
+            strptime_source = CastToVarchar(source_column)
+            if column_metadata.regex[-5:] == "%S.%g":
+                strptime_source = macro_functions.datetime.zero_pad_timestamp(
+                    strptime_source
+                )
+                regex_check_zero_padded = True
+            mismatch_check = lineage_expressions.Is(
+                lineage_functions.datetime.TryStrptime(
+                    strptime_source, regex_literal
+                ),
+                lineage_values.Null(data_type=lineage_values.Datatype("TIMESTAMP")),
+            )
+        else:
+            strptime_source = None
+            mismatch_check = lineage_expressions.Is(
+                lineage_functions.string.RegExpMatches(
+                    CastToVarchar(source_column), regex_literal
+                ),
+                lineage_values.Boolean(False),
+            )
+
+        mismatch = lineage_expressions.And(
+            lineage_expressions.Is(
+                source_column, lineage_values.Raw("NOT NULL")
+            ),
+            mismatch_check,
+        )
+
+        if column_metadata.on_regex_mismatch == "FAIL":
+            mismatch_value = lineage_functions.utility.Error(
+                lineage_values.Varchar(
+                    rf"regex mismatch encountered in column: {column_metadata.dataset}.{column_metadata.column_name}. regex: {column_metadata.regex}"
+                )
+            )
+        else:
+            mismatch_value = lineage_values.Null(
+                data_type=column_metadata.data_type
+            )
+
+        source_column = lineage.CaseWhen(
+            conditions=[lineage.Condition(checks=[mismatch])],
+            values=[mismatch_value],
+            # Already-padded rows flow into the %S.%g cast phase unpadded.
+            else_value=strptime_source if regex_check_zero_padded else source_column,
+        )
+
     # Casting
 
     # Use TryCast so that nulls and filter-matched values survive the initial cast
@@ -218,13 +298,19 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
                 ),
             )
         elif column_metadata.regex[-5:] == "%S.%g":
-            source_column = lineage_functions.datetime.StringToTimestamp(
-                macro_functions.datetime.zero_pad_timestamp(
+            if regex_check_zero_padded:
+                # The regex-mismatch check above already zero-padded (its else
+                # value); padding again would re-embed the whole CASE.
+                padded_source = source_column
+            else:
+                padded_source = macro_functions.datetime.zero_pad_timestamp(
                     CastFunction(
                         source=source_column,
                         data_type=lineage_values.Datatype("VARCHAR"),
                     )
-                ),
+                )
+            source_column = lineage_functions.datetime.StringToTimestamp(
+                padded_source,
                 timestamp_format=lineage_values.Varchar(column_metadata.regex),
             )
         else:
@@ -446,6 +532,8 @@ def staging_column_transform(source_column: lineage_columns.WildCard, column_met
     setattr(output, "is_primary_key", column_metadata.is_primary_key)
     setattr(output, "is_event_time", column_metadata.is_event_time)
     setattr(output, "var_type", column_metadata.var_type)
+    setattr(output, "regex", column_metadata.regex)
+    setattr(output, "on_regex_mismatch", column_metadata.on_regex_mismatch)
 
     return output
 
@@ -672,6 +760,8 @@ def staging_column_link_transform(column, column_metadata, link_key_expression):
         "is_primary_key",
         "is_event_time",
         "var_type",
+        "regex",
+        "on_regex_mismatch",
     ]:
         setattr(output, attribute, getattr(column, attribute))
 

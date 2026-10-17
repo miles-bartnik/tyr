@@ -112,6 +112,23 @@ class RegExpMatch(lineage._Function):
         )
 
 
+class RegExpMatches(lineage._Function):
+    """
+    Whether a regex matches anywhere in the string, as a BOOLEAN that is FALSE
+    (not NULL) on a mismatch of a non-NULL input (SQL regexp_matches).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/regular_expressions#regexp_matchesstring-pattern-options
+    """
+
+    def __init__(self, source, regex):
+        super().__init__(
+            name="REGEXP_MATCHES",
+            args=[source, regex],
+            var_type="categorical",
+            data_type=lineage_values.Datatype("BOOLEAN"),
+        )
+
+
 class RegExpReplace(lineage._Function):
     """
     Replace regex matches in a string (SQL regexp_replace).
