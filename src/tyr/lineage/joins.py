@@ -84,6 +84,14 @@ class Join:
         graph = rx.union(left, right, merge_nodes=True, merge_edges=True)
         self.graph = lineage.LineageGraph(rx_graph=graph)
 
+    def root_graph(self):
+        graph = self.graph
+
+        graph.union([self.join_expression.root_graph()])
+        graph.union([self.condition.root_graph()])
+
+        return graph
+
 
 class CompoundJoin:
     """
@@ -135,3 +143,10 @@ class CompoundJoin:
             )
 
         self.graph = lineage.LineageGraph(rx_graph=graph)
+
+    def root_graph(self):
+        graph = self.graph
+
+        graph.union([join.root_graph() for join in self.joins])
+
+        return graph

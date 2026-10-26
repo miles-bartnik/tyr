@@ -762,6 +762,9 @@ class _Operator:
         graph.add_node(self._node_data)
         self.graph = LineageGraph(rx_graph=graph)
 
+    def root_graph(self):
+        return self.graph
+
 
 class _Expression:
     """
@@ -1164,7 +1167,8 @@ class Condition:
                 check_graph.add_child(1, self._node_data)
                 check_graphs.append(check_graph)
 
-            self.graph = self.graph.union(check_graphs)
+            # union() mutates in place and returns None — do not reassign.
+            self.graph.union(check_graphs)
 
         else:
             self.graph.add_node(checks[0]._node_data)
@@ -1173,7 +1177,8 @@ class Condition:
     def root_graph(self):
         graph = self.graph
 
-        graph.union([LineageGraph(check.root_graph()) for check in self.checks])
+        graph.union([check.root_graph() for check in self.checks])
+        graph.union([operator.root_graph() for operator in self.link_operators])
 
         return graph
 
@@ -1346,6 +1351,16 @@ class CaseWhen:
         graph.add_node(self._node_data)
         self.graph = LineageGraph(rx_graph=graph)
 
+    def root_graph(self):
+        graph = self.graph
+
+        graph.union([condition.root_graph() for condition in self.conditions])
+        graph.union([value.root_graph() for value in self.values])
+        if self.else_value:
+            graph.union([self.else_value.root_graph()])
+
+        return graph
+
 
 class _Blank:
     def __init__(
@@ -1412,6 +1427,9 @@ class Record:
         graph.add_node(self._node_data)
         self.graph = LineageGraph(rx_graph=graph)
 
+    def root_graph(self):
+        return self.graph
+
 
 class RecordList:
     def __init__(self, name: str, records: List[Record]):
@@ -1441,6 +1459,9 @@ class RecordList:
         graph = rx.PyDiGraph()
         graph.add_node(self._node_data)
         self.graph = LineageGraph(rx_graph=graph)
+
+    def root_graph(self):
+        return self.graph
 
 
 class RecordGenerator:
@@ -1472,6 +1493,9 @@ class RecordGenerator:
         graph = rx.PyDiGraph()
         graph.add_node(self._node_data)
         self.graph = LineageGraph(rx_graph=graph)
+
+    def root_graph(self):
+        return self.graph
 
 
 class _Table:
@@ -1752,6 +1776,13 @@ class _Transformation:
 
         self.graph = LineageGraph(rx_graph=graph)
 
+    def root_graph(self):
+        graph = self.graph
+
+        graph.union([self.source.root_graph()])
+
+        return graph
+
 
 class AppendOperator:
     """
@@ -1783,6 +1814,13 @@ class AppendOperator:
 
         self.graph = LineageGraph(rx_graph=graph)
 
+    def root_graph(self):
+        graph = self.graph
+
+        graph.union([self.source.root_graph(), self.operator.root_graph()])
+
+        return graph
+
 
 class PrependOperator:
     """
@@ -1813,3 +1851,10 @@ class PrependOperator:
         graph.add_child(0, self.source._node_data, {})
 
         self.graph = LineageGraph(rx_graph=graph)
+
+    def root_graph(self):
+        graph = self.graph
+
+        graph.union([self.source.root_graph(), self.operator.root_graph()])
+
+        return graph

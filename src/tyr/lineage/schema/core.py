@@ -163,6 +163,6 @@ class _Schema:
     def root_graph(self):
         graph = self.graph
 
-        graph.union([table.graph for table in self.tables.list_tables()])
+        graph.union([table.root_graph() for table in self.tables.list_tables()])
 
         return graph

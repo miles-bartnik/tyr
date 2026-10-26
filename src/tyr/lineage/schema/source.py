@@ -304,6 +304,9 @@ class FileMetadata:
 
         self.graph = LineageGraph(rx_graph=graph)
 
+    def root_graph(self):
+        return self.graph
+
     def __getitem__(self, item):
         if isinstance(item, list):
             return [getattr(self, value) for value in item]
@@ -337,6 +340,9 @@ class SourceFile:
 
         for column in self.expected_column_metadata.values():
             self.graph.add_child(0, column._node_data, column._edge_data)
+
+    def root_graph(self):
+        return self.graph
 
 
 class ReadCSV(_Transformation):
