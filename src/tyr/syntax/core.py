@@ -215,6 +215,9 @@ def selector(item):
     elif "lineage.schema.source.ReadGeoJson" in str(type(item)):
         function_name = "core_transformation"
 
+    elif "lineage.schema.source.ReadBulk" in str(type(item)):
+        function_name = "source_bulk"
+
     # DATAFRAMES
     elif "lineage.dataframes.DataFrame" in str(type(item)):
         function_name = "dataframes_data_frame"
