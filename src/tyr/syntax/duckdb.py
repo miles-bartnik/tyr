@@ -41,6 +41,13 @@ def source_column(item):
     return base_sql
 
 
+def source_bulk(item):
+    # Bulk-ingestion leaf: the node's name IS the registered relation
+    # placeholder (_tyr_bulk_<dataset>) -- a bare FROM reference, no
+    # function call. The executor registers the relation before the build.
+    return item.name
+
+
 def source_file(item):
     if item.file_regex.value.split(".")[-1] == "geojson":
         if "*" in item.file_regex.value:

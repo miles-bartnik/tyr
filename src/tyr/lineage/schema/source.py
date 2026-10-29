@@ -381,6 +381,34 @@ class ReadGeoJson(_Transformation):
             )
 
 
+class ReadBulk(_Transformation):
+    """Bulk-ingestion leaf: instead of tyr reading a source FILE via
+    READ_CSV/ST_READ, the dataset's rows are supplied programmatically
+    (pyarrow Table, pandas DataFrame, or list of dicts) and registered with
+    DuckDB as the relation ``_tyr_bulk_<dataset>`` before the schema build
+    (see tyr.database.bulk.register_bulk_sources). The staging transform
+    chain downstream -- column_metadata TRY_CAST/CASE policies, filters,
+    links -- is unchanged; only the FROM leaf differs.
+
+    The node's NAME is the placeholder relation itself, so the rendered SQL
+    is a bare relation reference (``FROM _tyr_bulk_<dataset>``) and the
+    executor-side registration name is derivable from the dataset alone.
+    NULL handling is the caller's transport concern: pyarrow tables (or
+    nullable-dtype DataFrames) preserve real NULLs, which the column
+    policies then see exactly like file-read NULLs.
+    """
+
+    def __init__(
+        self,
+        source_file: SourceFile,
+    ):
+        super().__init__(
+            name=rf"_tyr_bulk_{source_file.dataset.value}",
+            source=source_file,
+            args={},
+        )
+
+
 class SourceSettings(_SchemaSettings):
     def __init__(
         self,
@@ -389,6 +417,7 @@ class SourceSettings(_SchemaSettings):
         substitutions={},
         extensions: typing.List[typing.Dict[str, str]] = [],
         connection=None,
+        bulk: typing.Dict[str, typing.Any] = None,
     ):
         super().__init__(
             name="source",
@@ -399,11 +428,17 @@ class SourceSettings(_SchemaSettings):
 
         self.file_metadata = file_metadata
         self.expected_column_metadata = expected_column_metadata
+        # Bulk-ingestion datasets: dataset -> rows (pyarrow Table, pandas
+        # DataFrame, or list of dicts). Declared datasets keep their
+        # file_metadata row (the file_regex is never read for them); the
+        # staging transforms still key off expected_column_metadata.
+        self.bulk = dict(bulk or {})
 
 
 class Source(_Schema):
     def __init__(self, settings: SourceSettings):
         source_tables = TableList([])
+        self.bulk_sources = dict(settings.bulk)
 
         for file in settings.file_metadata.values():
             source_file = SourceFile(
@@ -413,7 +448,15 @@ class Source(_Schema):
                 ],
             )
 
-            if source_file.extension.value in ["json", "geojson"]:
+            if file.dataset in settings.bulk:
+                source_table = tables.Core(
+                    name=source_file.dataset.value,
+                    columns=ColumnList([WildCard()]),
+                    source=ReadBulk(source_file),
+                    distinct=source_file.distinct,
+                    required=file.required,
+                )
+            elif source_file.extension.value in ["json", "geojson"]:
                 source_table = tables.Core(
                     name=source_file.dataset.value,
                     columns=ColumnList([WildCard()]),
