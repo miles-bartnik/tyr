@@ -381,6 +381,41 @@ class ReadGeoJson(_Transformation):
             )
 
 
+class ReadJson(_Transformation):
+    """JSON records reader: a .json source holding a top-level array of
+    objects (e.g. the Apian vegetation catalog) stages via DuckDB's
+    read_json_auto. GeoJSON FeatureCollections keep the ST_Read path
+    (ReadGeoJson) -- the routing peeks the file content, not just the
+    extension."""
+
+    def __init__(
+        self,
+        source_file: SourceFile,
+    ):
+        if source_file.extension.value != "json":
+            raise ValueError(
+                rf"SourceFile extension not compatible with ReadJson: {source_file.extension.value}"
+            )
+        super().__init__(name="read_json_auto", source=source_file, args={})
+
+
+def _json_file_is_geojson(source_file: SourceFile) -> bool:
+    """Content peek for a .json source: True when the file is a GeoJSON
+    FeatureCollection (dict with a features list). A top-level array of
+    objects is a records file -> False. Unreadable/missing files default to
+    False (records); a dataset the sniffer could not declare never reaches
+    the build."""
+    try:
+        matches = _match_files(source_file.file_regex.value)
+        if not matches:
+            return False
+        with open(matches[0], encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception:
+        return False
+    return isinstance(data, dict) and isinstance(data.get("features"), list)
+
+
 class ReadBulk(_Transformation):
     """Bulk-ingestion leaf: instead of tyr reading a source FILE via
     READ_CSV/ST_READ, the dataset's rows are supplied programmatically
@@ -456,11 +491,23 @@ class Source(_Schema):
                     distinct=source_file.distinct,
                     required=file.required,
                 )
-            elif source_file.extension.value in ["json", "geojson"]:
+            elif source_file.extension.value == "geojson":
                 source_table = tables.Core(
                     name=source_file.dataset.value,
                     columns=ColumnList([WildCard()]),
                     source=ReadGeoJson(source_file),
+                    distinct=source_file.distinct,
+                    required=file.required,
+                )
+            elif source_file.extension.value == "json":
+                # .json by content: FeatureCollection -> ST_Read; a plain
+                # records file (array of objects) -> read_json_auto.
+                reader = (ReadGeoJson(source_file) if _json_file_is_geojson(source_file)
+                          else ReadJson(source_file))
+                source_table = tables.Core(
+                    name=source_file.dataset.value,
+                    columns=ColumnList([WildCard()]),
+                    source=reader,
                     distinct=source_file.distinct,
                     required=file.required,
                 )
