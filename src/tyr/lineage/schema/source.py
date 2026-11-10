@@ -287,6 +287,15 @@ class FileMetadata:
         self.required = (str(file_metadata["required"]).strip().lower()
                          not in ("false", "0", "no")
                          if "required" in file_metadata else True)
+        # 'lock_source' boolean flag (file_metadata TSV column, owner call
+        # 2026-11-10): True means the SOURCE refresh SKIPS this dataset --
+        # staging is not rebuilt from the file, so a staging->project carry
+        # leaves the existing project table untouched (user edits survive a
+        # re-source). Absent column (older TSVs) and empty values mean
+        # unlocked -- the dataset stages from its file as usual.
+        self.lock_source = (str(file_metadata["lock_source"]).strip().lower()
+                            in ("true", "1", "yes")
+                            if "lock_source" in file_metadata else False)
         self._node_data = {
             "dataset": self.dataset,
             "file_regex": self.file_regex,
@@ -294,6 +303,7 @@ class FileMetadata:
             "distinct": str(self.distinct),
             "schema": self.schema,
             "required": str(self.required),
+            "lock_source": str(self.lock_source),
             "type": str(type(self)),
             "base": str(type(self)),
             "label": rf"{self.dataset} - {self.file_regex}",
@@ -476,6 +486,13 @@ class Source(_Schema):
         self.bulk_sources = dict(settings.bulk)
 
         for file in settings.file_metadata.values():
+            # lock_source=True (owner call 2026-11-10): the SOURCE refresh
+            # SKIPS this dataset -- no staging table is built from the file,
+            # so a staging->project carry leaves the existing project table
+            # untouched (user edits survive a re-source). The lock lives in
+            # the file_metadata TSV and is honored here at schema-build time.
+            if file.lock_source:
+                continue
             source_file = SourceFile(
                 file_metadata=file,
                 expected_column_metadata=settings.expected_column_metadata[
