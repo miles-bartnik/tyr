@@ -7,6 +7,7 @@ from . import (
     dataframes,
     expressions,
     joins,
+    link_formula,
     operators,
     tables,
     transformations,

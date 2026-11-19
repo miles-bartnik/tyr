@@ -8,6 +8,7 @@ from .. import values as lineage_values
 from .. import columns as lineage_columns
 from .. import functions as lineage_functions
 from .. import expressions as lineage_expressions
+from .. import link_formula
 from . import functions as macro_functions
 from . import values as macro_values
 
@@ -612,7 +613,12 @@ def validate_column_links(column_metadata: dict):
                 rf"link_mapping is required when link_column is set: {metadata.dataset}.{name}"
             )
 
-        parse_link_mapping(metadata.link_mapping)
+        # Formula form ([...]/{...}) validates through the link_formula parser;
+        # anything else is the dict form.
+        if link_formula.is_link_formula(metadata.link_mapping):
+            link_formula.parse_link_formula(metadata.link_mapping)
+        else:
+            parse_link_mapping(metadata.link_mapping)
 
         if getattr(metadata, "link_behaviour", "") not in ["ON_NULL", "OVERWRITE"]:
             raise ValueError(
@@ -668,9 +674,66 @@ def staging_column_link_transform(column, column_metadata, link_key_expression):
 
     The lookup key is the link column's own transformed staging expression (after its
     null-handling/filtering phases, and including its own link phase when applied in
-    dependency order). Key found -> cast(mapped_value AS column data_type); key miss
-    -> runtime Error(); NULL key -> the mapping's null_value segment when present,
+    dependency order).
+
+    Dict form: key found -> cast(mapped_value AS column data_type); key miss ->
+    runtime Error(); NULL key -> the mapping's null_value segment when present,
     otherwise the target is left unchanged. Cast failures raise at runtime.
+
+    Formula form (see lineage.link_formula): a non-NULL key evaluates the formula
+    against the key expression; NULL key -> the fallback segment when present,
+    otherwise the target is left unchanged. Division by zero raises a runtime
+    Error(); cast failures raise at runtime.
+    """
+    if link_formula.is_link_formula(column_metadata.link_mapping):
+        link_case = _staging_link_formula_case(
+            column, column_metadata, link_key_expression
+        )
+    else:
+        link_case = _staging_link_dict_case(
+            column, column_metadata, link_key_expression
+        )
+
+    if column_metadata.link_behaviour == "ON_NULL":
+        source_column = lineage.CaseWhen(
+            conditions=[
+                lineage.Condition(
+                    checks=[
+                        lineage_expressions.Is(
+                            column,
+                            lineage_values.Null(data_type=column_metadata.data_type),
+                        )
+                    ]
+                )
+            ],
+            values=[link_case],
+            else_value=column,
+        )
+    else:
+        # OVERWRITE: the link always fires.
+        source_column = link_case
+
+    output = lineage_columns.Core(source=source_column, name=column.name)
+
+    for attribute in [
+        "on_null",
+        "filter_values",
+        "on_filter",
+        "is_primary_key",
+        "is_event_time",
+        "var_type",
+        "regex",
+        "on_regex_mismatch",
+    ]:
+        setattr(output, attribute, getattr(column, attribute))
+
+    return output
+
+
+def _staging_link_dict_case(column, column_metadata, link_key_expression):
+    """
+    Dict-form link_case: one condition per mapping key, a runtime Error() on a
+    key miss, and the null_value segment (or the unchanged target) on a NULL key.
     """
     mapping, null_value = parse_link_mapping(column_metadata.link_mapping)
 
@@ -722,7 +785,7 @@ def staging_column_link_transform(column, column_metadata, link_key_expression):
             )
         )
 
-    link_case = lineage.CaseWhen(
+    return lineage.CaseWhen(
         conditions=conditions,
         values=values,
         else_value=lineage_functions.utility.Error(
@@ -732,40 +795,44 @@ def staging_column_link_transform(column, column_metadata, link_key_expression):
         ),
     )
 
-    if column_metadata.link_behaviour == "ON_NULL":
-        source_column = lineage.CaseWhen(
-            conditions=[
-                lineage.Condition(
-                    checks=[
-                        lineage_expressions.Is(
-                            column,
-                            lineage_values.Null(data_type=column_metadata.data_type),
-                        )
-                    ]
+
+def _staging_link_formula_case(column, column_metadata, link_key_expression):
+    """
+    Formula-form link_case: a NULL link key substitutes the fallback segment when
+    present (otherwise the target is left unchanged); a non-NULL key evaluates the
+    formula against the key expression, cast to the target column's data_type.
+    """
+    expression, _, null_value = link_formula.parse_link_formula(
+        column_metadata.link_mapping, link_key_expression
+    )
+
+    conditions = [
+        lineage.Condition(
+            checks=[
+                lineage_expressions.Is(
+                    link_key_expression,
+                    lineage_values.Null(data_type=link_key_expression.data_type),
                 )
-            ],
-            values=[link_case],
-            else_value=column,
+            ]
         )
+    ]
+
+    if null_value is not None:
+        values = [
+            lineage_functions.data_type.Cast(
+                _link_literal(null_value), column_metadata.data_type
+            )
+        ]
     else:
-        # OVERWRITE: the link always fires.
-        source_column = link_case
+        values = [column]
 
-    output = lineage_columns.Core(source=source_column, name=column.name)
-
-    for attribute in [
-        "on_null",
-        "filter_values",
-        "on_filter",
-        "is_primary_key",
-        "is_event_time",
-        "var_type",
-        "regex",
-        "on_regex_mismatch",
-    ]:
-        setattr(output, attribute, getattr(column, attribute))
-
-    return output
+    return lineage.CaseWhen(
+        conditions=conditions,
+        values=values,
+        else_value=lineage_functions.data_type.Cast(
+            expression, column_metadata.data_type
+        ),
+    )
 
 
 def apply_column_links(columns, column_metadata_list):
