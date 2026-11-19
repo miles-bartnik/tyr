@@ -1,5 +1,23 @@
 from ..lineage import core as lineage
 from ..lineage import operators
+from ..lineage import values as lineage_values
+from .units.core import Unit
+
+
+class Concat(lineage._Expression):
+    """
+    Concatenate two strings (SQL || operator).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/text
+    """
+
+    def __init__(self, left, right):
+        super().__init__(left=left, right=right, operator=operators.Concat())
+        # _Expression carries no type attributes of its own; a concat is always
+        # a plain VARCHAR so the result can feed typed lineage nodes (Cast etc.).
+        self.data_type = lineage_values.Datatype("VARCHAR")
+        self.var_type = "string"
+        self.unit = Unit()
 
 
 class As(lineage._Expression):

@@ -425,3 +425,35 @@ class Sign(lineage._Function):
             data_type=lineage_values.Datatype("INTEGER"),
             var_type="numeric",
         )
+
+
+class Least(lineage._Function):
+    """
+    Smallest of the given values, row-wise (SQL least).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#leastarg1-arg2-
+    """
+
+    def __init__(self, args):
+        super().__init__(
+            args=args,
+            name="LEAST",
+            data_type=args[0].data_type,
+            var_type="numeric",
+        )
+
+
+class Greatest(lineage._Function):
+    """
+    Largest of the given values, row-wise (SQL greatest).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/numeric#greatestarg1-arg2-
+    """
+
+    def __init__(self, args):
+        super().__init__(
+            args=args,
+            name="GREATEST",
+            data_type=args[0].data_type,
+            var_type="numeric",
+        )

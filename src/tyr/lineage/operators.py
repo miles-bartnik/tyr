@@ -116,6 +116,11 @@ class _Like(lineage._Operator):
         super().__init__(name="LIKE")
 
 
+class Concat(lineage._Operator):
+    def __init__(self):
+        super().__init__(name="||")
+
+
 class _Between(lineage._Operator):
     def __init__(self):
         super().__init__(name="BETWEEN")

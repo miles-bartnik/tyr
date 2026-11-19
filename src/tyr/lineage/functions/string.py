@@ -299,3 +299,35 @@ class Contains(lineage._Function):
             data_type=lineage_values.Datatype("VARCHAR"),
             var_type="string",
         )
+
+
+class Trim(lineage._Function):
+    """
+    Remove leading and trailing whitespace (SQL trim).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/text#trimstring
+    """
+
+    def __init__(self, source):
+        super().__init__(
+            args=[source],
+            name="TRIM",
+            data_type=lineage_values.Datatype("VARCHAR"),
+            var_type="string",
+        )
+
+
+class Replace(lineage._Function):
+    """
+    Replace every occurrence of a substring (SQL replace).
+
+    DuckDB: https://duckdb.org/docs/stable/sql/functions/text#replacesource-search-replace
+    """
+
+    def __init__(self, source, search, replace):
+        super().__init__(
+            args=[source, search, replace],
+            name="REPLACE",
+            data_type=lineage_values.Datatype("VARCHAR"),
+            var_type="string",
+        )

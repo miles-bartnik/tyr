@@ -146,7 +146,7 @@ class ColumnMetadata:
     :type on_null: str
     :param link_column: Name of another column in the same dataset to link this column to. Empty = no linking. Default: ``''``
     :type link_column: str
-    :param link_mapping: Mapping for linked columns: ``'{"A":"value_1", "B":"value_2"} | "null_value"'``. The ``| "null_value"`` fallback segment is optional. Default: ``''``
+    :param link_mapping: Mapping for linked columns: ``'{"A":"value_1", "B":"value_2"} | "null_value"'`` (dict form) or a formula ``'[link_column * 2 + 1] | "0"'`` (numeric, ``[...]``) / ``'{upper(link_column)}'`` (string, ``{...}``). The ``| "null_value"`` fallback segment is optional. Default: ``''``
     :type link_mapping: str
     :param link_behaviour: When linking fires. Options: ``'ON_NULL'``/``'OVERWRITE'``. Required when ``link_column`` is set. Default: ``''``
     :type link_behaviour: str
