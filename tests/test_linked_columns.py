@@ -228,7 +228,7 @@ def test_validation_link_mapping_without_link_column():
 
 @pytest.mark.parametrize("link_behaviour", ["", "ALWAYS", "on_null"])
 def test_validation_link_behaviour_invalid(link_behaviour):
-    with pytest.raises(ValueError, match="ON_NULL or OVERWRITE"):
+    with pytest.raises(ValueError, match="PASS, ON_NULL or OVERWRITE"):
         validate_column_links(
             {
                 "value": column_metadata(
@@ -240,6 +240,39 @@ def test_validation_link_behaviour_invalid(link_behaviour):
                 )
             }
         )
+
+
+def test_validation_pass_is_inert_and_validates_nothing():
+    # PASS: link fields retained but inert -- a garbage mapping, a missing
+    # target, even a SKIP on the target must NOT raise (owner 2026-11-21).
+    validate_column_links(
+        {
+            "value": column_metadata(
+                **value_row(
+                    link_column="nope",          # nonexistent target: ignored
+                    link_mapping="not json",      # unparsable mapping: ignored
+                    link_behaviour="PASS",
+                )
+            )
+        }
+    )
+
+
+def test_pass_row_cannot_participate_in_a_cycle():
+    # A -> B -> A is normally a cycle error; with B on PASS the cycle breaks.
+    validate_column_links(
+        {
+            "key": column_metadata(**KEY_ROW),
+            "a": column_metadata(
+                **value_row(link_column="b", link_mapping='{"A":"1"}',
+                            link_behaviour="OVERWRITE", column_name="a")
+            ),
+            "b": column_metadata(
+                **value_row(link_column="a", link_mapping='{"A":"1"}',
+                            link_behaviour="PASS", column_name="b")
+            ),
+        }
+    )
 
 
 def test_validation_link_column_does_not_exist():
@@ -381,6 +414,26 @@ def test_link_case_when_wraps_after_null_handling(tmp_path):
 
 def test_no_link_config_leaves_column_unwrapped(tmp_path):
     source = write_config(tmp_path, CSV, [KEY_ROW, value_row()])
+    staging = build_staging(source)
+
+    assert "Link key" not in staging.tables["links"].sql
+
+
+def test_pass_leaves_column_unwrapped(tmp_path):
+    # PASS is an explicit no-op: the link fields are retained in the metadata
+    # but the staging SQL must show no link transform at all (owner 2026-11-21).
+    source = write_config(
+        tmp_path,
+        CSV,
+        [
+            KEY_ROW,
+            value_row(
+                link_column="key",
+                link_mapping='{"A":"111"}',
+                link_behaviour="PASS",
+            ),
+        ],
+    )
     staging = build_staging(source)
 
     assert "Link key" not in staging.tables["links"].sql

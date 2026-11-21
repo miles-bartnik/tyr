@@ -148,7 +148,7 @@ class ColumnMetadata:
     :type link_column: str
     :param link_mapping: Mapping for linked columns: ``'{"A":"value_1", "B":"value_2"} | "null_value"'`` (dict form) or a formula ``'[link_column * 2 + 1] | "0"'`` (numeric, ``[...]``) / ``'{upper(link_column)}'`` (string, ``{...}``). The ``| "null_value"`` fallback segment is optional. Default: ``''``
     :type link_mapping: str
-    :param link_behaviour: When linking fires. Options: ``'ON_NULL'``/``'OVERWRITE'``. Required when ``link_column`` is set. Default: ``''``
+    :param link_behaviour: When linking fires. Options: ``'PASS'`` (explicit no-op: the link parameters are kept but inert -- nothing is validated or applied), ``'ON_NULL'``/``'OVERWRITE'``. Required when ``link_column`` is set and linking should fire. Default: ``''``
     :type link_behaviour: str
     :param is_primary_key: Default: ``False``
     :type is_primary_key: bool

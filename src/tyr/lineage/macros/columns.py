@@ -613,6 +613,14 @@ def validate_column_links(column_metadata: dict):
                 rf"link_mapping is required when link_column is set: {metadata.dataset}.{name}"
             )
 
+        # PASS: the link parameters are inert -- the column keeps its values
+        # and nothing is validated or applied (owner 2026-11-21: an explicit
+        # ignore, since an empty dropdown selection is not a real option).
+        # Checked before the mapping parse so even an unparsable mapping is
+        # ignored under PASS.
+        if getattr(metadata, "link_behaviour", "") == "PASS":
+            continue
+
         # Formula form ([...]/{...}) validates through the link_formula parser;
         # anything else is the dict form.
         if link_formula.is_link_formula(metadata.link_mapping):
@@ -622,7 +630,7 @@ def validate_column_links(column_metadata: dict):
 
         if getattr(metadata, "link_behaviour", "") not in ["ON_NULL", "OVERWRITE"]:
             raise ValueError(
-                rf"link_behaviour must be ON_NULL or OVERWRITE when link_column is set: {metadata.dataset}.{name}"
+                rf"link_behaviour must be PASS, ON_NULL or OVERWRITE when link_column is set: {metadata.dataset}.{name}"
             )
 
         if link_column not in column_metadata:
@@ -645,10 +653,12 @@ def validate_column_links(column_metadata: dict):
             )
 
     # Reject any cycle among linked columns (A -> B -> ... -> A) in this dataset.
+    # PASS rows are inert (no linking) and cannot participate in a cycle.
     link_graph = {
         name: metadata.link_column
         for name, metadata in column_metadata.items()
         if getattr(metadata, "link_column", "")
+        and getattr(metadata, "link_behaviour", "") != "PASS"
     }
 
     for start in link_graph:
@@ -854,6 +864,7 @@ def apply_column_links(columns, column_metadata_list):
         metadata
         for metadata in column_metadata_list
         if getattr(metadata, "link_column", "")
+        and getattr(metadata, "link_behaviour", "") != "PASS"
     ]
 
     column_metadata_by_name = {
